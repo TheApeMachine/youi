@@ -1,4 +1,3 @@
-import { onMount } from "../lifecycle";
 import { loader } from "../loader";
 
 /** Ref type for referencing HTML elements */
@@ -53,15 +52,24 @@ export const Component = Object.assign(
                     }
 
                     const result = await config.render(props);
+                    console.log('results', result)
 
                     const rootElement = result instanceof DocumentFragment
                         ? result.firstElementChild as HTMLElement
                         : result as HTMLElement;
 
-                    console.log(rootElement)
-
                     if (config.effect && rootElement) {
-                        onMount(rootElement, () => config.effect!(props));
+                        const observer = new MutationObserver((_, obs) => {
+                            if (rootElement.isConnected) {
+                                config.effect!(props);
+                                obs.disconnect();
+                            }
+                        });
+
+                        observer.observe(document.body, {
+                            childList: true,
+                            subtree: true
+                        });
                     }
 
                     return result;
@@ -84,15 +92,7 @@ export const Component = Object.assign(
         create: <Props>(
             render: (props: Props) => Promise<Node | JSX.Element> | Node | JSX.Element
         ) => (props: Props): JSX.Element => {
-            const result = render(props);
-
-            if (result instanceof Promise) {
-                result.then(resolvedNode => {
-                    return resolvedNode as JSX.Element;
-                });
-            }
-
-            return result as JSX.Element;
+            return render(props);
         }
     }
 );

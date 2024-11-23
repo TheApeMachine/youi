@@ -5,6 +5,7 @@ const EventBus = () => {
     const listeners: Record<string, Set<Function>> = {};
 
     const subscribe = (event: string, callback: Function, condition: (payload: any) => boolean = () => true) => {
+        console.log("EventBus.subscribe", event, callback);
         if (!listeners[event]) {
             listeners[event] = new Set();
         }
@@ -50,12 +51,10 @@ export const EventManager = () => {
     type DragHandler = (event: DragEvent) => void;
 
     const handleWheel: WheelHandler = (event) => {
-        console.log("lib.EventManager.handleWheel", event);
         handleEvent(event);
     };
 
     const handleDrag: DragHandler = (event) => {
-        console.log("lib.EventManager.handleDrag", event);
         handleEvent(event);
     };
 
@@ -69,7 +68,6 @@ export const EventManager = () => {
     const init = () => {
         // Initialize event listeners for click, wheel, and drag events globally
         (["click", "wheel", "drag"] as const).forEach(eventType => {
-            console.log("lib.EventManager.init", eventType);
             document.addEventListener(eventType, handlers[eventType] as EventListener);
         });
     };
@@ -91,7 +89,7 @@ export const EventManager = () => {
     // Generic handleEvent function to publish event data through EventBus
     const handleEvent = (event: Event) => {
         const target = event.target as HTMLElement;
-        if (target && target.dataset.event) {
+        if (target?.dataset?.event) {
             // Enhanced payload to include more metadata for debugging and analytics
             eventBus.publish(target.dataset.event, {
                 effect: target.dataset.effect,
@@ -150,28 +148,3 @@ export const EventManager = () => {
     return { init, addEvent, removeEvent, addScopedEventListener, manageComponentLifecycle };
 };
 
-// Usage Example
-
-// Initialize EventManager
-const eventManager = EventManager();
-eventManager.init();
-
-// Example of dynamically adding a click event handler
-eventManager.addEvent("click", (event) => {
-    console.log("Dynamically added click event handler", event);
-});
-
-// Example of component lifecycle management
-const exampleElement = document.createElement("div");
-exampleElement.setAttribute("data-event", "example");
-
-eventManager.manageComponentLifecycle(
-    exampleElement,
-    () => console.log("Element mounted", exampleElement),
-    () => console.log("Element unmounted", exampleElement)
-);
-
-// Subscribe to an event using the EventBus
-eventBus.subscribe("example", (payload: { meta?: { initiator?: string } }) => {
-    console.log("EventBus received example event:", payload);
-}, (payload: { meta?: { initiator?: string } }) => payload.meta?.initiator === "EventManager");

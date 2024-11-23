@@ -90,10 +90,15 @@ export function jsx(
     // Handle Fragments
     if (tag === Fragment) {
         const fragment = document.createDocumentFragment();
-        children.flat().forEach(child => {
-            fragment.appendChild(
-                child instanceof Node ? child : document.createTextNode(String(child))
-            );
+        children.flat().forEach(async child => {
+            if (child instanceof Promise) {
+                const resolved = await child;
+                fragment.appendChild(resolved instanceof Node ? resolved : document.createTextNode(String(resolved)))
+            } else {
+                fragment.appendChild(
+                    child instanceof Node ? child : document.createTextNode(String(child))
+                );
+            }
         });
         return fragment;
     }
@@ -104,7 +109,7 @@ export function jsx(
         if (children.length > 0) {
             componentProps.children = children.length === 1 ? children[0] : children;
         }
-        return (tag as (props: HTMLAttributes & { children?: any }) => Node)(componentProps);
+        return tag(componentProps);
     }
 
     // Check if element is SVG
@@ -148,11 +153,22 @@ export function jsx(
     }
 
     // Flatten and append children
-    children.flat().forEach(child => {
-        if (Array.isArray(child)) {
-            // Recursively flatten arrays
-            child.forEach(subChild => {
-                if (subChild instanceof Node) {
+    children.flat().forEach(async child => {
+        if (child instanceof Promise) {
+            const resolvedChild = await child;
+            if (resolvedChild instanceof Node) {
+                element.appendChild(resolvedChild);
+            } else {
+                element.appendChild(document.createTextNode(String(resolvedChild)));
+            }
+        } else if (Array.isArray(child)) {
+            child.forEach(async subChild => {
+                if (subChild instanceof Promise) {
+                    const resolved = await subChild;
+                    element.appendChild(
+                        resolved instanceof Node ? resolved : document.createTextNode(String(resolved))
+                    );
+                } else if (subChild instanceof Node) {
                     element.appendChild(subChild);
                 } else {
                     element.appendChild(document.createTextNode(String(subChild)));

@@ -1,3 +1,6 @@
+import { Layout } from './ui/layout/Layout';
+import { ErrorBoundary } from './ui/error/ErrorBoundary';
+
 interface RouteModule {
     render: (params: Record<string, string>) => Promise<Node>;
 }
@@ -31,47 +34,60 @@ let currentPath = '';
 export const createRouter = async () => {
     const routes = await discoverRoutes();
 
-    const router = async (targetElement: HTMLElement) => {
+    // Initialize the layout first
+    const layout = await Layout({});
+    document.body.replaceChildren(layout);
+
+    // Find the slides container inside the layout
+    const slidesContainer = document.querySelector('.reveal .slides') as HTMLElement;
+
+    const router = async () => {
         const path = window.location.pathname;
 
         if (path !== currentPath) {
-            const previousContent = targetElement.firstChild as HTMLElement;
             currentPath = path;
-
             const { route, params } = matchRoute(path, routes);
 
             try {
-                if (previousContent) {
-                    targetElement.removeChild(previousContent);
+                // Wait for the view to resolve
+                const content = await route.view(params);
+
+                // Create new slide section and append the resolved content
+                const slideSection = document.createElement('section');
+                if (content instanceof Node) {
+                    slideSection.appendChild(content);
+                } else {
+                    slideSection.innerHTML = String(content);
                 }
 
-                const content = await route.view(params);
-                targetElement.appendChild(content);
+                // Add the new slide
+                slidesContainer.appendChild(slideSection);
+
             } catch (error: any) {
                 console.error("Routing error:", error);
-                const errorElement = document.createElement("error-boundary");
-                errorElement.textContent = error.message;
-                targetElement.innerHTML = '';
-                targetElement.appendChild(errorElement);
+                const errorElement = await ErrorBoundary({ error: error });
+                const errorSection = document.createElement('section');
+                errorSection.appendChild(errorElement);
+                slidesContainer.appendChild(errorSection);
             }
         }
     };
 
+    // Initial route
+    await router();
+
     window.addEventListener("popstate", () => {
-        const target = document.querySelector("#app");
-        if (target) {
-            router(target as HTMLElement);
-        }
+        router();
     });
 
     return { router, navigateTo: createNavigateTo(router) };
 };
 
-const createNavigateTo = (router: (targetElement: HTMLElement) => Promise<void>) => {
-    return async (url: string, targetElement: HTMLElement) => {
+const createNavigateTo = (router: () => Promise<void>) => {
+    return async (url: string) => {
         if (url !== currentPath) {
             history.pushState(null, "", url);
-            await router(targetElement);
+            await router();
         }
     };
 };
@@ -99,14 +115,12 @@ const matchRoute = (path: string, routes: Route[]) => {
         }
     }
 
-    // Add fallback if no route matches and no 404 page exists
-    const notFoundRoute = routes.find(route => route.path === "/404") ?? {
+    // Create a proper fallback route for 404
+    const notFoundRoute: Route = routes.find(route => route.path === "/404") ?? {
         path: "/404",
-        view: async () => {
-            // Import and use the 404 component directly
-            const { render } = await import('@/routes/404');
-            return render({});
-        }
+        view: async () => ErrorBoundary({
+            error: new Error(`Page not found: ${path}`)
+        })
     };
 
     return { route: notFoundRoute, params: {} };

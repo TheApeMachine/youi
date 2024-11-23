@@ -5,7 +5,7 @@ import { EventManager } from "@/lib/event";
 document.addEventListener("DOMContentLoaded", async () => {
     if (document.body) {
         const { router } = await createRouter();
-        await router(document.getElementById('app') as HTMLElement);
+        await router();
         EventManager().init();
     }
 });

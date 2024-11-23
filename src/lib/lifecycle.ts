@@ -16,12 +16,16 @@ export const onMount = (element: HTMLElement | null, handler: () => void) => {
     handlers.push({ onMount: handler });
     lifecycleHandlers.set(element, handlers);
 
-    // Trigger handler immediately if element is already in the DOM
+    // Always use requestAnimationFrame to ensure DOM is painted
     if (element.isConnected) {
-        handler();
+        requestAnimationFrame(() => handler());
     } else {
-        // Listen for a custom "connected" event
-        element.addEventListener('connected', handler, { once: true });
+        const observer = new MutationObserver((mutations, obs) => {
+            if (element.isConnected) {
+                requestAnimationFrame(() => handler());
+                obs.disconnect();
+            }
+        });
     }
 };
 

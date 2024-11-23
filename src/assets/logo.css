@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Londrina+Solid:wght@100;300;400;900&display=swap');
+
+@keyframes rainbow {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        stroke-dasharray: 601.5;
+        opacity: 1;
+    }
+}
+
+@keyframes letter-animation {
+    0% {
+        transform: rotate(-20deg) translateY(-40px) scale(1);
+        opacity: 1;
+    }
+
+    20% {
+        transform: rotate(-20deg) translateY(-60px) scale(1.3);
+    }
+
+    100% {
+        transform: rotate(0deg) translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+body {
+    background: rgb(38, 34, 44);
+    margin: 0;
+    padding: 0
+}
+
+#inner-text {
+    position: relative;
+    z-index: 1;
+}
+
+#text-spot {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.letter {
+    display: inline-block;
+    animation-name: letter-animation;
+    animation-duration: 300ms;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+    transform: rotate(-10deg) translateY(-20px);
+    opacity: 0;
+    font-family: 'Londrina Solid', cursive;
+    text-transform: uppercase;
+    color: white;
+    font-size: 100px;
+    text-shadow: 0 3px 0 black;
+}
+
+circle {
+    opacity: 0;
+    animation-duration: 1000ms;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+}
+
+circle:nth-child(4) {
+    stroke-dasharray: 251.5;
+}
+
+circle:nth-child(3) {
+    stroke-dasharray: 188.5;
+}
+
+circle:nth-child(2) {
+    stroke-dasharray: 125.5;
+}
+
+circle:nth-child(1) {
+    stroke-dasharray: 62.5;
+}
+
+circle:nth-child(0) {
+    stroke-dasharray: .5;
+}

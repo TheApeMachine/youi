@@ -1,0 +1,19 @@
+:root {
+    --unit: 1rem;
+    --md: 0.75rem;
+    --sm: 0.5rem;
+
+    --red: hsl(0, 100%, 80%);
+    --yellow: hsl(62, 100%, 80%);
+    --green: hsl(122, 100%, 80%);
+    --blue: hsl(179, 100%, 80%);
+    --purple: hsl(238, 100%, 80%);
+    --pink: hsl(302, 100%, 80%);
+    --white: hsl(0, 0%, 98%);
+
+    --shadow-page:
+        rgba(0, 0, 0, 0.08) 0px 0.9px 4px,
+        rgba(0, 0, 0, 0.06) 0px 2.6px 8px,
+        rgba(0, 0, 0, 0.05) 0px 5.7px 12px,
+        rgba(0, 0, 0, 0.04) 0px 15px 15px;
+}

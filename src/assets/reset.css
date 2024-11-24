@@ -6,6 +6,7 @@
 *::before,
 *::after {
     box-sizing: border-box;
+    border: none;
 }
 
 /* 2. Remove default margin */
@@ -22,6 +23,11 @@
 body {
     /* 4. Improve text rendering */
     -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible,
+:is(a, button, input, textarea, summary):focus:not(:focus-visible) {
+    outline: none;
 }
 
 /* 5. Improve media defaults */

@@ -1,6 +1,7 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { faker } from "@faker-js/faker";
+
 export const Post = Component({
     render: async () => (
         <div class="post column bg-lighter">

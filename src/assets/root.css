@@ -14,6 +14,7 @@
     --lighter: hsl(0, 0%, 96%);
     --light: hsl(0, 0%, 60%);
     --dark: hsl(0, 0%, 20%);
+    --darker: hsl(225, 5%, 15%);
 
     --shadow-page:
         rgba(0, 0, 0, 0.08) 0px 0.9px 4px,
@@ -56,12 +57,24 @@
     .space-between {
         justify-content: space-between;
     }
+
+    .grow {
+        flex: 1;
+    }
+
+    .shrink {
+        flex: 0;
+    }
 }
 
 .column {
     display: flex;
     flex-direction: column;
     flex: 1;
+
+    .grow {
+        flex: 1;
+    }
 
     .shrink {
         flex: 0;
@@ -74,4 +87,30 @@
 
 .bg-lighter {
     background: var(--lighter);
+    color: var(--dark);
+
+    .material-icons {
+        color: var(--dark);
+    }
+}
+
+.bg-darker {
+    background: var(--darker);
+    color: var(--lighter);
+
+    .material-icons {
+        color: var(--lighter);
+    }
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.ring {
+    box-shadow: var(--ring);
+}
+
+.nobreak {
+    white-space: nowrap;
 }

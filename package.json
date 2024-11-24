@@ -17,6 +17,7 @@
     "reveal.js": "^5.1.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.2.0",
     "@tauri-apps/cli": "^2.1.0",
     "@types/gsap": "^3.0.0",
     "@types/localforage": "^0.0.34",

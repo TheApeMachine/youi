@@ -1,10 +1,10 @@
+@import url(reveal.css);
+@import url(dracula.css);
 @import url(reset.css);
 @import url(root.css);
 @import url(button.css);
 @import url(logo.css);
 @import url(lamp.css);
-@import url(reveal.css);
-@import url(dracula.css);
 @import url(monocle.css);
 
 html,
@@ -83,6 +83,9 @@ aside {
 
 main {
     grid-area: main;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: var(--shadow-page);
 
     .menu-icon {
@@ -113,4 +116,24 @@ footer {
     padding: var(--unit);
     background: hsl(228, 6%, 30%);
     color: hsl(0, 0%, 98%);
+}
+
+.reveal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .slides {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: var(--ring);
 }

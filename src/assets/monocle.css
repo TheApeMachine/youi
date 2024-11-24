@@ -2,7 +2,31 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f5f5f5;
     height: 100%;
     width: 100%;
+    perspective: 500px;
+}
+
+.monocle {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--unit);
+    max-width: 50%;
+    max-height: 200px;
+    overflow: hidden;
+    background: var(--lighter);
+    border-radius: 4px;
+
+    .post {
+        max-width: 100%;
+        height: 200px;
+        z-index: 1;
+    }
+}
+
+.post {
+    max-width: 25%;
+    z-index: -1;
 }

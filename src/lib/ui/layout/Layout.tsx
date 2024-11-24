@@ -1,14 +1,15 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
+import { eventBus } from "@/lib/event";
 import Reveal from "reveal.js";
 import gsap from "gsap";
 import Flip from "gsap/Flip";
 
 gsap.registerPlugin(Flip);
 
-interface LayoutProps {}
+interface LayoutProps { }
 
-/** Layout Component - A wrapper component for page content */
+/* Layout Component - A wrapper component for page content */
 export const Layout = Component<LayoutProps>({
     effect: () => {
         Reveal.initialize({
@@ -51,6 +52,11 @@ export const Layout = Component<LayoutProps>({
             );
 
             tl.play();
+
+            eventBus.subscribe("menu", (e: MouseEvent) => {
+                console.log(e);
+                tl.reverse();
+            });
         });
     },
     render: async () => (
@@ -59,13 +65,17 @@ export const Layout = Component<LayoutProps>({
                 <h1>YouI</h1>
             </header>
             <aside>
-                <span class="material-icons">rocket</span>
+                <span
+                    className="material-icons"
+                >
+                    rocket
+                </span>
                 <nav>
                     <a href="/">
                         <span class="material-icons">home</span>
                         <h4>Home</h4>
                     </a>
-                    <a href="/">
+                    <a href="/users">
                         <span class="material-icons">group</span>
                         <h4>Users</h4>
                     </a>
@@ -76,7 +86,13 @@ export const Layout = Component<LayoutProps>({
                 </nav>
             </aside>
             <main id="app">
-                <span className="material-icons menu-icon">menu</span>
+                <span
+                    data-trigger="click"
+                    data-event="menu"
+                    className="material-icons menu-icon"
+                >
+                    menu
+                </span>
                 <div className="reveal">
                     <div className="slides"></div>
                 </div>

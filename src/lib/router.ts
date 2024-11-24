@@ -1,5 +1,6 @@
 import { Layout } from './ui/layout/Layout';
 import { ErrorBoundary } from './ui/error/ErrorBoundary';
+import { eventBus } from './event';
 
 interface RouteModule {
     render: (params: Record<string, string>) => Promise<Node>;
@@ -34,12 +35,23 @@ let currentPath = '';
 export const createRouter = async () => {
     const routes = await discoverRoutes();
 
-    // Initialize the layout first
+    // Initialize the layout only once at startup
     const layout = await Layout({});
-    document.body.replaceChildren(layout);
+    // Only replace the body contents if it's empty or doesn't have our layout
+    if (!document.body.querySelector('.reveal')) {
+        document.body.replaceChildren(layout);
+    }
 
     // Find the slides container inside the layout
     const slidesContainer = document.querySelector('.reveal .slides') as HTMLElement;
+    if (!slidesContainer) {
+        throw new Error('Could not find slides container');
+    }
+
+    eventBus.subscribe('navigate', async (data: { url: string }) => {
+        history.pushState(null, "", data.url);
+        await router();
+    });
 
     const router = async () => {
         const path = window.location.pathname;
@@ -49,20 +61,29 @@ export const createRouter = async () => {
             const { route, params } = matchRoute(path, routes);
 
             try {
+                // Get the Reveal instance from window
+                const reveal = (window as any).Reveal;
+
                 // Wait for the view to resolve
                 const content = await route.view(params);
 
-                // Create new slide section and append the resolved content
+                // Create new slide section
                 const slideSection = document.createElement('section');
                 if (content instanceof Node) {
                     slideSection.appendChild(content);
                 } else {
                     slideSection.innerHTML = String(content);
                 }
+                slideSection.setAttribute('data-path', path);
 
-                // Add the new slide
+                // Append the new slide
                 slidesContainer.appendChild(slideSection);
 
+                // Tell Reveal.js to update its state
+                if (reveal) {
+                    reveal.sync();
+                    reveal.navigateToSlide(slidesContainer.children.length - 1);
+                }
             } catch (error: any) {
                 console.error("Routing error:", error);
                 const errorElement = await ErrorBoundary({ error: error });

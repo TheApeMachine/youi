@@ -11,9 +11,67 @@
     --pink: hsl(302, 100%, 80%);
     --white: hsl(0, 0%, 98%);
 
+    --lighter: hsl(0, 0%, 96%);
+    --light: hsl(0, 0%, 60%);
+    --dark: hsl(0, 0%, 20%);
+
     --shadow-page:
         rgba(0, 0, 0, 0.08) 0px 0.9px 4px,
         rgba(0, 0, 0, 0.06) 0px 2.6px 8px,
         rgba(0, 0, 0, 0.05) 0px 5.7px 12px,
         rgba(0, 0, 0, 0.04) 0px 15px 15px;
+
+    --ring: 0 0 0 4px var(--purple);
+}
+
+.pad {
+    padding: var(--unit);
+}
+
+.pad-md {
+    padding: var(--md);
+}
+
+.pad-sm {
+    padding: var(--sm);
+}
+
+.gap {
+    gap: var(--unit);
+}
+
+.gap-md {
+    gap: var(--md);
+}
+
+.gap-sm {
+    gap: var(--sm);
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    flex: 1;
+
+    .space-between {
+        justify-content: space-between;
+    }
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    .shrink {
+        flex: 0;
+    }
+}
+
+.border-bottom {
+    border-bottom: 1px solid var(--light);
+}
+
+.bg-lighter {
+    background: var(--lighter);
 }

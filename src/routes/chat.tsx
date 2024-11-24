@@ -6,6 +6,16 @@ import { mergeRegister } from "@lexical/utils";
 import { createEditor, $getRoot, $createParagraphNode } from "lexical";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
+import { Post } from "@/lib/ui/monocle/Post";
+import { EmojiNode, registerEmojiPlugin } from "@/lib/plugins/EmojiPlugin";
+
+// Define message type
+interface ChatMessage {
+    content: any;
+    sender: number;
+    senderName?: string;
+    timestamp: number;
+}
 
 // Initialize Yjs document
 const ydoc = new Y.Doc();
@@ -15,7 +25,7 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_INTERVAL = 3000;
 
 // Create a shared type for messages
-const messages = ydoc.getArray("messages");
+const messages = ydoc.getArray<ChatMessage>("messages");
 
 // Connection status management
 const ConnectionState = {
@@ -27,6 +37,7 @@ const ConnectionState = {
 } as const;
 
 type ConnectionState = (typeof ConnectionState)[keyof typeof ConnectionState];
+import { Profile } from "@/lib/ui/profile/Profile";
 
 export const render = Component({
     effect: () => {
@@ -37,7 +48,7 @@ export const render = Component({
 
         const initialConfig = {
             namespace: "chat",
-            nodes: [HeadingNode, QuoteNode],
+            nodes: [HeadingNode, QuoteNode, EmojiNode],
             onError: (error: Error) => {
                 throw error;
             }
@@ -49,7 +60,8 @@ export const render = Component({
         // Register Lexical plugins
         mergeRegister(
             registerRichText(editor),
-            registerHistory(editor, createEmptyHistoryState(), 300)
+            registerHistory(editor, createEmptyHistoryState(), 300),
+            registerEmojiPlugin(editor)
         );
 
         // Connection management
@@ -85,8 +97,8 @@ export const render = Component({
                 updateStatus(ConnectionState.CONNECTING);
 
                 provider = new WebsocketProvider(
-                    "ws://localhost:1234",
-                    "chat-room",
+                    "ws://localhost:3000/collaboration",
+                    "playground/0/0",
                     ydoc,
                     { connect: true }
                 );
@@ -145,6 +157,12 @@ export const render = Component({
         // Initialize connection
         initializeProvider();
 
+        // Add a hardcoded username for now
+        const currentUser = {
+            id: provider?.awareness?.clientID,
+            name: "Current User" // We can make this configurable later
+        };
+
         // Handle send button click
         const sendButton = document.querySelector(
             ".send-button"
@@ -166,7 +184,8 @@ export const render = Component({
                     const message = {
                         content: editor.getEditorState().toJSON(),
                         timestamp: Date.now(),
-                        sender: currentProvider.awareness.clientID
+                        sender: currentProvider.awareness.clientID,
+                        senderName: currentUser.name // Add the sender name
                     };
                     messages.push([message]);
 
@@ -181,49 +200,89 @@ export const render = Component({
 
         // Message rendering logic (unchanged)
         const messagesContainer = document.getElementById("messages-container");
-        const renderMessage = (message: any) => {
-            const messageDiv = document.createElement("div");
-            messageDiv.className = `message ${
-                message.sender === provider?.awareness.clientID
-                    ? "sent"
-                    : "received"
-            }`;
+        let userHasScrolled = false;
+        let isNearBottom = true;
 
-            const messageContent = document.createElement("div");
-            messageContent.className = "message-content";
-            messageDiv.appendChild(messageContent);
-
-            const messageEditor = createEditor({
-                ...initialConfig,
-                editable: false
-            });
-
-            messageEditor.setRootElement(messageContent);
-            messageEditor.setEditorState(
-                editor.parseEditorState(message.content)
-            );
-
-            const timestamp = document.createElement("div");
-            timestamp.className = "message-timestamp";
-            timestamp.textContent = new Date(
-                message.timestamp
-            ).toLocaleString();
-            messageDiv.appendChild(timestamp);
-
-            messagesContainer?.appendChild(messageDiv);
-            messagesContainer?.scrollTo(0, messagesContainer.scrollHeight);
+        // Check if user is near bottom of container
+        const checkNearBottom = () => {
+            if (!messagesContainer) return true;
+            const threshold = 100; // pixels from bottom to consider "near bottom"
+            const position =
+                messagesContainer.scrollHeight -
+                messagesContainer.scrollTop -
+                messagesContainer.clientHeight;
+            return position < threshold;
         };
 
-        // Render existing messages
-        messages.forEach(renderMessage);
-
-        // Observe new messages
-        messages.observe(() => {
-            const lastMessage = messages.get(messages.length - 1);
-            if (lastMessage) {
-                renderMessage(lastMessage);
-            }
+        // Handle scroll events
+        messagesContainer?.addEventListener("scroll", () => {
+            userHasScrolled = true;
+            isNearBottom = checkNearBottom();
         });
+
+        // Smart scroll to bottom
+        const scrollToBottom = (force = false) => {
+            if (!messagesContainer) return;
+
+            // Always scroll if forced, otherwise check conditions
+            if (force || !userHasScrolled || isNearBottom) {
+                // Use requestAnimationFrame to ensure DOM is ready
+                requestAnimationFrame(() => {
+                    messagesContainer.scrollTop =
+                        messagesContainer.scrollHeight;
+                });
+            }
+        };
+
+        // Clear existing messages first
+        if (messagesContainer) {
+            messagesContainer.innerHTML = "";
+        }
+
+        // Render all messages when they change
+        const renderAllMessages = () => {
+            if (messagesContainer) {
+                const wasAtBottom = checkNearBottom();
+                messagesContainer.innerHTML = "";
+
+                // Use Promise.all to wait for all messages to render
+                Promise.all(
+                    messages.toArray().map(
+                        (message: ChatMessage) =>
+                            new Promise<void>((resolve) => {
+                                const messageDiv =
+                                    document.createElement("div");
+                                messageDiv.className = "message";
+
+                                const isCurrentUser =
+                                    message.sender === currentUser.id;
+                                const displayName = isCurrentUser
+                                    ? currentUser.name
+                                    : message.senderName ||
+                                      `User ${message.sender}`;
+
+                                Post({
+                                    content: message.content,
+                                    sender: displayName,
+                                    timestamp: message.timestamp
+                                }).then((post: HTMLElement) => {
+                                    messageDiv.appendChild(post);
+                                    messagesContainer?.appendChild(messageDiv);
+                                    resolve();
+                                });
+                            })
+                    )
+                ).then(() => {
+                    scrollToBottom(wasAtBottom);
+                });
+            }
+        };
+
+        // Initial render
+        renderAllMessages();
+
+        // Observe changes to messages
+        messages.observe(renderAllMessages);
 
         // Clean up on disconnect
         return () => {
@@ -232,19 +291,44 @@ export const render = Component({
         };
     },
     render: async () => (
-        <div class="chat-container column">
-            <div class="connection-info">
-                <div id="connection-status" class="status status-connecting">
-                    CONNECTING
+        <div class="row pad-lg gap height">
+            <div class="column height pad shrink bg-dark radius">
+                {[...Array(10)].map(() => (
+                    <Profile />
+                ))}
+            </div>
+            <div class="column height pad-lg bg-dark radius grow">
+                <span class="material-icons start-videocall pointer">
+                    videocam
+                </span>
+                <div class="column height">
+                    <div id="messages-container" class="column grow scroll">
+                        <div class="info">
+                            <h2>Connection</h2>
+                            <div
+                                id="connection-message"
+                                class="status-message"
+                            ></div>
+                        </div>
+                    </div>
+                    <div class="column shrink bg-lighter ring radius-sm">
+                        <div class="editor-wrapper row space-between pad gap bg-lighter radius-top-sm">
+                            <div
+                                id="lexical-editor"
+                                class="row pad bg-lighter grow"
+                                contenteditable
+                            ></div>
+                            <span class="material-icons send-button pointer shrink">
+                                send
+                            </span>
+                        </div>
+                        <div class="row pad gap bg-lighter radius-bottom-sm">
+                            <span class="material-icons pointer">add</span>
+                            <span class="material-icons pointer">mic</span>
+                            <span class="material-icons pointer">videocam</span>
+                        </div>
+                    </div>
                 </div>
-                <div id="connection-message" class="status-message"></div>
-            </div>
-            <div id="messages-container" class="messages-container">
-                {/* Messages will be rendered here */}
-            </div>
-            <div class="editor-wrapper row">
-                <div id="lexical-editor" contenteditable></div>
-                <span class="material-icons send-button">send</span>
             </div>
         </div>
     )

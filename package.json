@@ -10,9 +10,13 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@lexical/history": "^0.20.0",
+    "@lexical/rich-text": "^0.20.0",
+    "@lexical/utils": "^0.20.0",
     "@tauri-apps/api": "^2.1.1",
     "@tauri-apps/plugin-shell": "^2.0.1",
     "gsap": "^3.12.5",
+    "lexical": "^0.20.0",
     "localforage": "^1.10.0",
     "reveal.js": "^5.1.0"
   },

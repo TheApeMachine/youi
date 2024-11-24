@@ -6,6 +6,7 @@
 @import url(logo.css);
 @import url(lamp.css);
 @import url(monocle.css);
+@import url(chat.css);
 
 html,
 body {
@@ -128,6 +129,12 @@ footer {
         align-items: center;
         justify-content: center;
     }
+}
+
+.reveal .slides section,
+.reveal .slides section > section {
+    display: flex;
+    flex: 1;
 }
 
 img {

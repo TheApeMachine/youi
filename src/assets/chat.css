@@ -1,0 +1,7 @@
+.editor-wrapper {
+    display: flex;
+    width: 150px;
+    height: 50px;
+    gap: var(--unit);
+    box-shadow: var(--ring);
+}

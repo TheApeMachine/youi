@@ -7,7 +7,7 @@ import Flip from "gsap/Flip";
 
 gsap.registerPlugin(Flip);
 
-interface LayoutProps { }
+interface LayoutProps {}
 
 /* Layout Component - A wrapper component for page content */
 export const Layout = Component<LayoutProps>({
@@ -19,7 +19,8 @@ export const Layout = Component<LayoutProps>({
             transition: "convex",
             loop: true,
             embedded: true,
-            disableLayout: true
+            disableLayout: true,
+            display: "flex"
         }).then(() => {
             const tl = gsap.timeline();
 
@@ -65,11 +66,7 @@ export const Layout = Component<LayoutProps>({
                 <h1>YouI</h1>
             </header>
             <aside>
-                <span
-                    className="material-icons"
-                >
-                    rocket
-                </span>
+                <span className="material-icons">rocket</span>
                 <nav>
                     <a href="/">
                         <span class="material-icons">home</span>
@@ -82,6 +79,10 @@ export const Layout = Component<LayoutProps>({
                     <a href="/products">
                         <span class="material-icons">category</span>
                         <h4>Products</h4>
+                    </a>
+                    <a href="/chat">
+                        <span class="material-icons">forum</span>
+                        <h4>Chat</h4>
                     </a>
                 </nav>
             </aside>

@@ -1,7 +1,173 @@
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: hsl(228, 6%, 18%);
+    color: var(--white);
+}
+
+.connection-info {
+    display: flex;
+    align-items: center;
+    gap: var(--md);
+    padding: var(--md);
+    background: hsl(228, 6%, 22%);
+    border-bottom: 1px solid hsl(228, 6%, 25%);
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    padding: var(--sm) var(--md);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.status-connecting {
+    background: hsl(238, 60%, 20%);
+    color: var(--purple);
+}
+
+.status-connected {
+    background: hsl(122, 60%, 20%);
+    color: var(--green);
+}
+
+.status-disconnected {
+    background: hsl(0, 60%, 20%);
+    color: var(--red);
+}
+
+.status-reconnecting {
+    background: hsl(62, 60%, 20%);
+    color: var(--yellow);
+    animation: pulse 2s infinite;
+}
+
+.status-failed {
+    background: hsl(0, 60%, 15%);
+    color: var(--red);
+}
+
+.status-message {
+    color: var(--light);
+    font-size: 0.875rem;
+}
+
+.messages-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--md);
+    padding: var(--unit);
+    overflow-y: auto;
+}
+
+.message {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sm);
+    max-width: 80%;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.message.sent {
+    align-self: flex-end;
+}
+
+.message.received {
+    align-self: flex-start;
+}
+
+.message-content {
+    padding: var(--md);
+    border-radius: 12px;
+    background: hsl(228, 6%, 25%);
+    box-shadow: var(--shadow-page);
+}
+
+.message.sent .message-content {
+    background: hsl(238, 40%, 25%);
+    border-bottom-right-radius: 4px;
+}
+
+.message.received .message-content {
+    background: hsl(228, 6%, 25%);
+    border-bottom-left-radius: 4px;
+}
+
+.message-timestamp {
+    font-size: 0.75rem;
+    color: var(--light);
+    align-self: flex-end;
+}
+
 .editor-wrapper {
     display: flex;
-    width: 150px;
-    height: 50px;
+    margin: var(--unit);
+    padding: var(--md);
     gap: var(--unit);
+    background: hsl(228, 6%, 22%);
+    border-radius: 12px;
+    box-shadow: var(--shadow-page);
+    transition: opacity 0.3s ease;
+}
+
+#lexical-editor {
+    flex: 1;
+    min-height: 24px;
+    max-height: 150px;
+    padding: var(--sm) var(--md);
+    background: hsl(228, 6%, 25%);
+    border-radius: 8px;
+    overflow-y: auto;
+    color: var(--white);
+}
+
+#lexical-editor:focus {
+    outline: none;
     box-shadow: var(--ring);
+}
+
+.send-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--purple);
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.send-button:hover {
+    transform: scale(1.05);
+    background: hsl(238, 100%, 75%);
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

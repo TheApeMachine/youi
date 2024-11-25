@@ -16,6 +16,7 @@
         "@lexical/yjs": "^0.20.0",
         "@tauri-apps/api": "^2.1.1",
         "@tauri-apps/plugin-shell": "^2.0.1",
+        "drawflow": "^0.0.60",
         "gsap": "^3.12.5",
         "lexical": "^0.20.0",
         "lib-jitsi-meet": "^1.0.6",
@@ -27,6 +28,7 @@
     "devDependencies": {
         "@faker-js/faker": "^9.2.0",
         "@tauri-apps/cli": "^2.1.0",
+        "@types/drawflow": "^0.0.12",
         "@types/gsap": "^3.0.0",
         "@types/localforage": "^0.0.34",
         "@types/node": "^22.9.3",

@@ -17,7 +17,7 @@ async function discoverRoutes(): Promise<Route[]> {
     const routes: Route[] = [];
 
     for (const [path, importFn] of Object.entries(routeModules)) {
-        const moduleName = path.replace(/.*\/(.*)\.ts[x]?$/, '$1');
+        const moduleName = path.replace(/.*\/(.*?)\.tsx?$/, '$1');
         const module = await importFn() as RouteModule;
         if (module.render) {
             routes.push({

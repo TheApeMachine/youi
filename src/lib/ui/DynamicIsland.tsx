@@ -176,7 +176,6 @@ export const DynamicIsland = Component.create(
                 eventBus.subscribe(
                     "submit",
                     async (payload: { originalEvent: Event }) => {
-                        console.log(payload);
                         const form = refs.main.current?.querySelector("form");
                         if (!form) return;
 

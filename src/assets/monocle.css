@@ -5,28 +5,27 @@
     height: 100%;
     width: 100%;
     perspective: 500px;
+
+    .post {
+        z-index: -1;
+    }
 }
 
 .monocle {
     position: fixed;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--unit);
-    max-width: 50%;
-    max-height: 200px;
+    width: 720px;
+    height: 480px;
     overflow: hidden;
     background: var(--lighter);
-    border-radius: 4px;
+    border-radius: var(--md);
+    z-index: 1;
 
-    .post {
-        max-width: 100%;
-        height: 200px;
+    > .post {
         z-index: 1;
     }
 }
 
 .post {
-    max-width: 25%;
-    z-index: -1;
+    width: 720px;
+    height: 480px;
 }

@@ -52,7 +52,6 @@ export const Component = Object.assign(
                     }
 
                     const result = await config.render(props);
-                    console.log('results', result)
 
                     const rootElement = result instanceof DocumentFragment
                         ? result.firstElementChild as HTMLElement

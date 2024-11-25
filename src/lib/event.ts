@@ -5,7 +5,6 @@ const EventBus = () => {
     const listeners: Record<string, Set<Function>> = {};
 
     const subscribe = (event: string, callback: Function, condition: (payload: any) => boolean = () => true) => {
-        console.log("EventBus.subscribe", event, callback);
         if (!listeners[event]) {
             listeners[event] = new Set();
         }

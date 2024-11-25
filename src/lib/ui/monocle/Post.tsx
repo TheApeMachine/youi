@@ -31,7 +31,7 @@ export const Post = Component({
     },
     render: async ({ sender, timestamp }) => (
         <div class="post column bg-lighter radius-sm ring-light">
-            <div class="row pad-sm gap border-bottom">
+            <div class="row space-between pad-sm gap shrink border-bottom">
                 <img
                     class="ring-dark"
                     alt="avatar"
@@ -40,8 +40,11 @@ export const Post = Component({
                 <div class="status online"></div>
                 <h4>{sender ?? faker.person.fullName()}</h4>
             </div>
-            <div id={`post-${timestamp}`} class="post-content pad-sm"></div>
-            <div class="row space-between pad-sm gap border-top left">
+            <div
+                id={`post-${timestamp}`}
+                class="post-content pad-sm grow"
+            ></div>
+            <div class="row space-between pad-sm gap shrink border-top left">
                 <span class="material-icons dark pointer width text-center">
                     thumb_up
                 </span>

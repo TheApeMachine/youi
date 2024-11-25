@@ -1,8 +1,14 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
+import Drawflow from "drawflow";
 
 export const render = Component({
-    render: () => {
-        return <h1>Products</h1>;
-    }
+    effect: () => {
+        const drawflow = new Drawflow(
+            document.getElementById("drawflow") as HTMLElement
+        );
+
+        drawflow.start();
+    },
+    render: async () => <div id="drawflow"></div>
 });

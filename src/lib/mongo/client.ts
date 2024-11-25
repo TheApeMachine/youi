@@ -124,7 +124,6 @@ export const fetchDocument = async (collectionName: string, id: string, pipeline
     let result = await conn.collection(collectionName).findOne({ _id: binaryId });
 
     if (!result) {
-        console.log('Document not found with binary id, trying original');
         result = await conn.collection(collectionName).findOne({ _id: id });
     }
 

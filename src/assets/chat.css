@@ -30,13 +30,18 @@
     }
 }
 
+.avatar-container {
+    width: 48px;
+    height: 32px;
+}
+
 .status {
     position: relative;
     display: inline-block;
     align-self: flex-end;
     width: 8px;
     height: 8px;
-    transform: translate(-300%, 0);
+    transform: translate(-100%, 0);
     border-radius: 50%;
     box-shadow: oklch(100% 0 0) 0 0 0 2px;
 }
@@ -93,15 +98,6 @@
     animation: bigPulse 1.5s infinite ease-in;
 }
 
-/* Chat layout styles */
-.height {
-    height: 100%;
-}
-
-.grow {
-    flex-grow: 1;
-}
-
 .scroll {
     overflow-y: auto;
     overflow-x: hidden;
@@ -124,9 +120,9 @@
 
 #messages-container {
     position: relative;
-    padding: 1.5rem;
+    padding: 1.5rem 3rem;
     display: grid;
-    grid-template-columns: minmax(48px, auto) minmax(200px, 600px) minmax(48px, auto);
+    grid-template-columns: minmax(48px, auto) minmax(200px, 600px);
     gap: 0.5rem;
     align-items: start;
 }
@@ -211,15 +207,6 @@
     background: var(--darker);
 }
 
-/* Messages Container */
-#messages-container {
-    padding: 1.5rem;
-    display: grid;
-    grid-template-columns: minmax(48px, auto) minmax(200px, 600px) minmax(48px, auto);
-    gap: 0.5rem;
-    align-items: start;
-}
-
 /* Message Styles */
 .message {
     display: grid;
@@ -234,7 +221,7 @@
     direction: rtl;
 }
 
-.message.outgoing>* {
+.message.outgoing > * {
     direction: ltr;
 }
 
@@ -281,7 +268,7 @@
 }
 
 /* Group consecutive messages */
-.message+.message {
+.message + .message {
     margin-top: -0.25rem;
 }
 
@@ -294,13 +281,13 @@
 }
 
 /* Hide avatar and header for consecutive messages */
-.message+.message[data-sender=var(--prev-sender)] .message-avatar,
-.message+.message[data-sender=var(--prev-sender)] .message-header {
+.message + .message[data-sender="var(--prev-sender)"] .message-avatar,
+.message + .message[data-sender="var(--prev-sender)"] .message-header {
     display: none;
 }
 
 /* Add spacing between different senders */
-.message:has(+ .message:not([data-sender=var(--prev-sender)])) {
+.message:has(+ .message:not([data-sender="var(--prev-sender)"])) {
     margin-bottom: 0.5rem;
 }
 
@@ -335,7 +322,7 @@
 }
 
 #lexical-editor:empty:before {
-    content: 'Type a message...';
+    content: "Type a message...";
     color: var(--light);
     opacity: 0.7;
 }
@@ -369,9 +356,11 @@
     transform: scale(1.1);
 }
 
-/* Members Panel */
 .members-panel {
-    width: 240px;
+    display: flex;
+    flex-direction: column;
+    padding: var(--unit);
+    border-radius: var(--xs);
     background: hsla(228, 6%, 20%, 0.95);
     backdrop-filter: blur(10px);
     border-right: 1px solid hsla(228, 6%, 40%, 0.2);
@@ -380,7 +369,7 @@
 
 .member {
     display: flex;
-    align-items: center;
+    align-items: space-between;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
     transition: background 0.2s ease;
@@ -508,7 +497,11 @@
     gap: 0.25rem;
     opacity: 0;
     transition: all 0.2s ease;
-    background: linear-gradient(to left, hsla(228, 6%, 30%, 0.95), hsla(228, 6%, 30%, 0) 100%);
+    background: linear-gradient(
+        to left,
+        hsla(228, 6%, 30%, 0.95),
+        hsla(228, 6%, 30%, 0) 100%
+    );
 }
 
 .message-content:hover .message-actions {
@@ -637,7 +630,7 @@
 }
 
 .thread-input .lexical-editor:empty:before {
-    content: 'Reply in thread...';
+    content: "Reply in thread...";
     color: var(--light);
     opacity: 0.7;
 }

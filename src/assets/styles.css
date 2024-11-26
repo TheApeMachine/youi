@@ -33,7 +33,7 @@ body {
         "aside footer footer";
     width: 100vw;
     height: 100vh;
-    background: hsl(228, 6%, 15%);
+    background: var(--dark);
     perspective: 1000px;
 }
 
@@ -96,6 +96,7 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
+    background: var(--darker);
     box-shadow: var(--shadow-page);
 
     .menu-icon {
@@ -141,7 +142,7 @@ footer {
 }
 
 .reveal .slides section,
-.reveal .slides section>section {
+.reveal .slides section > section {
     display: flex;
     flex: 1;
     width: 100%;
@@ -163,11 +164,13 @@ img {
 }
 
 ::backdrop {
-    background-image: linear-gradient(45deg,
-            magenta,
-            rebeccapurple,
-            dodgerblue,
-            green);
+    background-image: linear-gradient(
+        45deg,
+        magenta,
+        rebeccapurple,
+        dodgerblue,
+        green
+    );
     opacity: 0.75;
 }
 
@@ -177,13 +180,12 @@ dialog {
     left: 50%;
     transform: translate(-50%, -50%);
     border: none;
-    border-radius: 1rem;
-    padding: 2rem;
+    border-radius: var(--xs);
+    padding: var(--unit);
     background: hsla(228, 6%, 15%, 0.95);
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     width: min(90vw, 400px);
-    height: auto;
 
     &::backdrop {
         background: rgba(0, 0, 0, 0.5);
@@ -205,7 +207,7 @@ dialog {
             gap: 0.5rem;
             text-decoration: none;
             padding: 1rem;
-            border-radius: 0.75rem;
+            border-radius: var(--xs);
             background: hsla(228, 6%, 30%, 0.5);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid hsla(228, 6%, 40%, 0.2);
@@ -225,7 +227,7 @@ dialog {
                 h4 {
                     color: var(--pink);
                     opacity: 1;
-                    transform: translateY(0);
+                    transform: translateY(8px);
                 }
             }
 

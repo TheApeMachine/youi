@@ -7,7 +7,7 @@ import Flip from "gsap/Flip";
 
 gsap.registerPlugin(Flip);
 
-interface LayoutProps { }
+interface LayoutProps {}
 
 /* Layout Component - A wrapper component for page content */
 export const Layout = Component<LayoutProps>({
@@ -32,12 +32,6 @@ export const Layout = Component<LayoutProps>({
                 opacity: 0,
                 y: -20,
                 scale: 0.8
-            });
-
-            gsap.set("dialog nav a h4", {
-                opacity: 0,
-                y: -10,
-                display: "block"
             });
 
             for (const element of ["header", "footer"]) {
@@ -75,18 +69,48 @@ export const Layout = Component<LayoutProps>({
                     }
                 });
 
+                gsap.to("main", {
+                    z: 0,
+                    duration: 0.4,
+                    ease: "back.out(1.7)"
+                });
+
                 isOpen = false;
+            };
+
+            const replaceButtons = () => {
+                let children: HTMLElement[] = [];
+                const nav = document.querySelector("dialog nav");
+                [{ label: "Users", icon: "group", href: "/users" }].forEach(
+                    (item) => {
+                        const a = document.createElement("a");
+                        a.href = item.href;
+                        a.innerHTML = `
+                        <span class="material-icons">${item.icon}</span>
+                        <h4>${item.label}</h4>
+                    `;
+                        children.push(a);
+                    }
+                );
+
+                nav?.replaceChildren(...children);
             };
 
             // Handle clicks outside the menu
             dialog?.addEventListener("click", (e) => {
+                console.log(e.target);
+                if (e.target?.href === "#admin-menu") {
+                    replaceButtons();
+                    return;
+                }
+
                 if (e.target === dialog) {
                     closeMenu();
                 }
             });
 
             // Handle menu item clicks
-            menuItems.forEach(item => {
+            menuItems.forEach((item) => {
                 item.addEventListener("click", () => {
                     closeMenu();
                 });
@@ -119,6 +143,12 @@ export const Layout = Component<LayoutProps>({
                     // Subtle scale animation for the dialog
                     gsap.from(dialog, {
                         scale: 0.9,
+                        duration: 0.4,
+                        ease: "back.out(1.7)"
+                    });
+
+                    gsap.to("main", {
+                        z: -250,
                         duration: 0.4,
                         ease: "back.out(1.7)"
                     });
@@ -175,6 +205,14 @@ export const Layout = Component<LayoutProps>({
                     <a href="/call" data-event="navigate">
                         <span class="material-icons">videocam</span>
                         <h4>Call</h4>
+                    </a>
+                    <a href="/orgchart" data-event="navigate">
+                        <span class="material-icons">lan</span>
+                        <h4>Org Chart</h4>
+                    </a>
+                    <a href="#admin-menu" data-event="navigate">
+                        <span class="material-icons">admin_panel_settings</span>
+                        <h4>Admin</h4>
                     </a>
                 </nav>
             </dialog>

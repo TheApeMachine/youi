@@ -3,6 +3,7 @@
     --unit: 1rem;
     --md: 0.75rem;
     --sm: 0.5rem;
+    --xs: 0.25rem;
 
     --red: hsl(0, 100%, 80%);
     --yellow: hsl(62, 100%, 80%);
@@ -98,6 +99,11 @@
     text-align: left;
 }
 
+.center {
+    align-items: center;
+    justify-content: center;
+}
+
 .text-center {
     text-align: center;
 }
@@ -167,6 +173,10 @@
 
 .radius-sm {
     border-radius: var(--sm);
+}
+
+.radius-xs {
+    border-radius: var(--xs);
 }
 
 .radius-top {

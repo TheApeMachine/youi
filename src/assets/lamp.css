@@ -1,26 +1,3 @@
-form {
-    position: fixed;
-    width: var(--width);
-    aspect-ratio: 1;
-    top: 1rem;
-    right: 1rem;
-}
-
-form button {
-    width: 100%;
-    aspect-ratio: 1;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 3;
-    background: transparent;
-    border: 0;
-    padding: 0;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-}
-
 .grab-handle {
     width: 48px;
     aspect-ratio: 1;

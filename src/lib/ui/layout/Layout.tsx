@@ -7,7 +7,7 @@ import Flip from "gsap/Flip";
 
 gsap.registerPlugin(Flip);
 
-interface LayoutProps {}
+interface LayoutProps { }
 
 /* Layout Component - A wrapper component for page content */
 export const Layout = Component<LayoutProps>({
@@ -18,20 +18,26 @@ export const Layout = Component<LayoutProps>({
             history: true,
             transition: "convex",
             loop: true,
+            keyboard: false,
             embedded: true,
             disableLayout: true,
             display: "flex"
         }).then(() => {
-            const tl = gsap.timeline();
             const dialog = document.querySelector("dialog");
             const menuItems = document.querySelectorAll("dialog nav a");
-            const radius = 150; // Radius of the circular menu
+            const menuIcon = document.querySelector(".menu-icon");
 
             // Initially hide menu items
             gsap.set(menuItems, {
                 opacity: 0,
-                scale: 0,
-                transformOrigin: "center center"
+                y: -20,
+                scale: 0.8
+            });
+
+            gsap.set("dialog nav a h4", {
+                opacity: 0,
+                y: -10,
+                display: "block"
             });
 
             for (const element of ["header", "footer"]) {
@@ -54,59 +60,70 @@ export const Layout = Component<LayoutProps>({
 
             let isOpen = false;
 
+            const closeMenu = () => {
+                if (!isOpen) return;
+
+                gsap.to(menuItems, {
+                    opacity: 0,
+                    y: -20,
+                    scale: 0.8,
+                    duration: 0.3,
+                    stagger: 0.03,
+                    ease: "power2.in",
+                    onComplete: () => {
+                        dialog?.close();
+                    }
+                });
+
+                isOpen = false;
+            };
+
+            // Handle clicks outside the menu
+            dialog?.addEventListener("click", (e) => {
+                if (e.target === dialog) {
+                    closeMenu();
+                }
+            });
+
+            // Handle menu item clicks
+            menuItems.forEach(item => {
+                item.addEventListener("click", () => {
+                    closeMenu();
+                });
+            });
+
             eventBus.subscribe("menu", (e: MouseEvent) => {
                 if (!isOpen) {
+                    // Record the menu icon's position for animation
+                    const state = Flip.getState(menuIcon);
                     dialog?.showModal();
 
-                    // Create circular animation for menu items
-                    menuItems.forEach((item, index) => {
-                        const angle = (index / menuItems.length) * Math.PI * 2;
-                        const x = Math.cos(angle) * radius;
-                        const y = Math.sin(angle) * radius;
-
-                        gsap.to(item, {
-                            x,
-                            y,
-                            opacity: 1,
-                            scale: 1,
-                            duration: 0.5,
-                            delay: index * 0.1,
-                            ease: "back.out(1.7)"
-                        });
-                    });
-
-                    // Rotate the entire nav
-                    gsap.to("dialog nav", {
-                        rotation: 360,
-                        duration: 20,
-                        repeat: -1,
-                        ease: "none"
-                    });
-
-                    // Counter-rotate items to keep them upright
+                    // Stagger animation for menu items
                     gsap.to(menuItems, {
-                        rotation: -360,
-                        duration: 20,
-                        repeat: -1,
-                        ease: "none"
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        duration: 0.4,
+                        stagger: 0.05,
+                        ease: "back.out(1.7)"
+                    });
+
+                    // Animate menu icon
+                    Flip.from(state, {
+                        duration: 0.5,
+                        ease: "power1.inOut",
+                        scale: true,
+                        absolute: true
+                    });
+
+                    // Subtle scale animation for the dialog
+                    gsap.from(dialog, {
+                        scale: 0.9,
+                        duration: 0.4,
+                        ease: "back.out(1.7)"
                     });
                 } else {
-                    // Collapse animation
-                    gsap.to(menuItems, {
-                        x: 0,
-                        y: 0,
-                        opacity: 0,
-                        scale: 0,
-                        duration: 0.3,
-                        ease: "back.in(1.7)",
-                        onComplete: () => {
-                            dialog?.close();
-                            gsap.killTweensOf("dialog nav");
-                            gsap.killTweensOf(menuItems);
-                            gsap.set("dialog nav", { rotation: 0 });
-                            gsap.set(menuItems, { rotation: 0 });
-                        }
-                    });
+                    closeMenu();
                 }
 
                 isOpen = !isOpen;
@@ -125,7 +142,7 @@ export const Layout = Component<LayoutProps>({
                 <span
                     data-trigger="click"
                     data-event="menu"
-                    className="material-icons menu-icon"
+                    class="material-icons light menu-icon"
                 >
                     menu
                 </span>
@@ -139,23 +156,23 @@ export const Layout = Component<LayoutProps>({
             </footer>
             <dialog>
                 <nav>
-                    <a href="/">
+                    <a href="/" data-event="navigate">
                         <span class="material-icons">home</span>
                         <h4>Home</h4>
                     </a>
-                    <a href="/users">
+                    <a href="/users" data-event="navigate">
                         <span class="material-icons">group</span>
                         <h4>Users</h4>
                     </a>
-                    <a href="/products">
+                    <a href="/products" data-event="navigate">
                         <span class="material-icons">category</span>
                         <h4>Products</h4>
                     </a>
-                    <a href="/chat">
+                    <a href="/chat" data-event="navigate">
                         <span class="material-icons">forum</span>
                         <h4>Chat</h4>
                     </a>
-                    <a href="/call">
+                    <a href="/call" data-event="navigate">
                         <span class="material-icons">videocam</span>
                         <h4>Call</h4>
                     </a>

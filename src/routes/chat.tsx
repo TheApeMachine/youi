@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx, Fragment } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { createEmptyHistoryState, registerHistory } from "@lexical/history";
 import { HeadingNode, QuoteNode, registerRichText } from "@lexical/rich-text";
@@ -6,8 +6,17 @@ import { mergeRegister } from "@lexical/utils";
 import { createEditor, $getRoot, $createParagraphNode } from "lexical";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
-import { Post } from "@/lib/ui/monocle/Post";
 import { EmojiNode, registerEmojiPlugin } from "@/lib/plugins/EmojiPlugin";
+import { Profile } from "@/lib/ui/profile/Profile";
+import { Reactions, QUICK_REACTIONS } from "@/lib/ui/chat/reactions";
+import { Reaction } from "@/lib/ui/chat/types"
+
+// Define thread type
+interface Thread {
+    replyCount: number;
+    lastReply?: ChatMessage;
+    replies: ChatMessage[];
+}
 
 // Define message type
 interface ChatMessage {
@@ -15,6 +24,16 @@ interface ChatMessage {
     sender: number;
     senderName?: string;
     timestamp: number;
+    reactions?: Record<string, Reaction>;
+    thread?: Thread;
+}
+
+// Define awareness state type
+interface AwarenessState {
+    user: {
+        name: string;
+        color: string;
+    };
 }
 
 // Initialize Yjs document
@@ -24,8 +43,49 @@ let connectionAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_INTERVAL = 3000;
 
-// Create a shared type for messages
+// Create shared types for messages and interactions
 const messages = ydoc.getArray<ChatMessage>("messages");
+const reactions = ydoc.getMap<Record<string, Reaction>>("reactions");
+const threads = ydoc.getMap<Thread>("threads");
+
+// Helper to safely get current user ID
+const getCurrentUserId = (): number => {
+    if (!provider?.awareness) return 0;
+    return provider.awareness.clientID;
+};
+
+// Helper to safely get current user state
+const getCurrentUserState = (): AwarenessState['user'] | null => {
+    if (!provider?.awareness) return null;
+    const state = provider.awareness.getLocalState() as AwarenessState;
+    return state?.user || null;
+};
+
+const addThreadReply = (parentTimestamp: number, replyContent: any) => {
+    if (!provider?.wsconnected) return;
+
+    const userState = getCurrentUserState();
+    if (!userState) return;
+
+    const thread = threads.get(parentTimestamp.toString()) || {
+        replyCount: 0,
+        replies: []
+    };
+
+    const reply: ChatMessage = {
+        content: replyContent,
+        sender: getCurrentUserId(),
+        senderName: userState.name,
+        timestamp: Date.now()
+    };
+
+    thread.replies.push(reply);
+    thread.replyCount = thread.replies.length;
+    thread.lastReply = reply;
+
+    // Update the Yjs map
+    threads.set(parentTimestamp.toString(), thread);
+};
 
 // Connection status management
 const ConnectionState = {
@@ -37,14 +97,181 @@ const ConnectionState = {
 } as const;
 
 type ConnectionState = (typeof ConnectionState)[keyof typeof ConnectionState];
-import { Profile } from "@/lib/ui/profile/Profile";
+
+// Message component with interaction handlers
+const Message = ({ message, isCurrentUser, isThreadReply = false }: {
+    message: ChatMessage;
+    isCurrentUser: boolean;
+    isThreadReply?: boolean;
+}) => {
+    const { addReaction } = Reactions({ provider, reactions, getCurrentUserId });
+    const displayName = isCurrentUser ? "You" : message.senderName || `User ${message.sender}`;
+    const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // Get reactions for this message
+    const messageReactions = reactions.get(message.timestamp.toString()) || {};
+    const activeReactions = Object.entries(messageReactions)
+        .map(([key, reaction]) => ({
+            emoji: QUICK_REACTIONS.find(r => r.key === key)?.emoji || key,
+            count: reaction.count,
+            active: reaction.users.includes(getCurrentUserId())
+        }))
+        .filter(r => r.count > 0);
+
+    // Get thread for this message
+    const thread = threads.get(message.timestamp.toString());
+
+    // Event handler type
+    type ReactionHandler = (key: string, event: Event & { currentTarget: HTMLElement }) => void;
+
+    // Handlers
+    const handleReaction: ReactionHandler = (reactionKey, event) => {
+        addReaction(message.timestamp, reactionKey, event.currentTarget);
+    };
+
+    const showThreadInput = () => {
+        const messageElement = document.querySelector(`[data-message-id="${message.timestamp}"]`);
+        if (!messageElement) return;
+
+        let threadContainer = messageElement.querySelector('.thread-container');
+        if (!threadContainer) {
+            threadContainer = document.createElement('div');
+            threadContainer.className = 'thread-container';
+            messageElement.querySelector('.message-content')?.appendChild(threadContainer);
+        }
+
+        // Only add input if it doesn't exist
+        if (!threadContainer.querySelector('.thread-input')) {
+            const threadInput = document.createElement('div');
+            threadInput.className = 'thread-input';
+
+            // Create Lexical editor for thread reply
+            const editor = createEditor({
+                namespace: `thread-${message.timestamp}`,
+                nodes: [HeadingNode, QuoteNode, EmojiNode],
+                editable: true,
+                onError: (error: Error) => {
+                    throw error;
+                }
+            });
+
+            const editorDiv = document.createElement('div');
+            editorDiv.className = 'lexical-editor';
+            threadInput.appendChild(editorDiv);
+
+            const sendButton = document.createElement('span');
+            sendButton.className = 'material-icons send-button pointer';
+            sendButton.textContent = 'send';
+            sendButton.onclick = () => {
+                editor.getEditorState().read(() => {
+                    const content = editor.getEditorState().toJSON();
+                    if (content) {
+                        addThreadReply(message.timestamp, content);
+                        editor.setEditorState(editor.parseEditorState(''));
+                    }
+                });
+            };
+            threadInput.appendChild(sendButton);
+
+            threadContainer.appendChild(threadInput);
+            editor.setRootElement(editorDiv);
+        }
+    };
+
+    return (
+        <div
+            class={`message ${isCurrentUser ? 'outgoing' : ''} ${isThreadReply ? 'thread-reply' : ''}`}
+            data-sender={message.sender}
+            data-message-id={message.timestamp}
+            style={`--prev-sender: ${message.sender}`}
+        >
+            <img
+                class="message-avatar"
+                src={`https://api.dicebear.com/7.x/avatars/svg?seed=${message.sender}`}
+                alt={displayName}
+            />
+            <div class="message-content">
+                <div class="message-header">
+                    <span>{displayName}</span>
+                    <span class="message-time">{time}</span>
+                </div>
+                <div class="lexical-content" id={`message-${message.timestamp}`}></div>
+
+                {!isThreadReply && (
+                    <Fragment>
+                        {/* Quick Reactions */}
+                        <div class="quick-reactions">
+                            {QUICK_REACTIONS.map(({ emoji, key }) => (
+                                <span
+                                    class="quick-reaction"
+                                    title={key}
+                                    data-reaction={key}
+                                    onclick={(e: Event) => handleReaction(key, e as Event & { currentTarget: HTMLElement })}
+                                >
+                                    {emoji}
+                                </span>
+                            ))}
+                            <span class="quick-reaction material-icons">add</span>
+                        </div>
+
+                        {/* Message Actions */}
+                        <div class="message-actions">
+                            <span class="material-icons message-action" title="React">add_reaction</span>
+                            <span
+                                class="material-icons message-action"
+                                title="Reply in Thread"
+                                onclick={showThreadInput}
+                            >
+                                chat
+                            </span>
+                            <span class="material-icons message-action" title="More">more_vert</span>
+                        </div>
+
+                        {/* Active Reactions */}
+                        {activeReactions.length > 0 && (
+                            <div class="message-reactions">
+                                {activeReactions.map(({ emoji, count, active }) => (
+                                    <div
+                                        class={`reaction ${active ? 'active' : ''}`}
+                                        onclick={(e: Event) => handleReaction(emoji, e as Event & { currentTarget: HTMLElement })}
+                                    >
+                                        {emoji} <span class="reaction-count">{count}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Thread Preview */}
+                        {thread && thread.replyCount > 0 && (
+                            <div class="thread-container">
+                                <div class="thread-reply-count">
+                                    <span class="material-icons">chat</span>
+                                    <span class="thread-count">
+                                        {thread.replyCount} {thread.replyCount === 1 ? 'reply' : 'replies'}
+                                    </span>
+                                </div>
+                                <div class="thread-replies">
+                                    {thread.replies.slice(-2).map(reply => (
+                                        <Message
+                                            message={reply}
+                                            isCurrentUser={reply.sender === getCurrentUserId()}
+                                            isThreadReply={true}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </Fragment>
+                )}
+            </div>
+        </div>
+    );
+};
 
 export const render = Component({
     effect: () => {
         // Initialize input editor
-        const editorRef = document.getElementById(
-            "lexical-editor"
-        ) as HTMLElement;
+        const editorRef = document.getElementById("lexical-editor") as HTMLElement;
 
         const initialConfig = {
             namespace: "chat",
@@ -66,29 +293,24 @@ export const render = Component({
 
         // Connection management
         const updateStatus = (state: ConnectionState, message?: string) => {
-            const statusEl = document.getElementById("connection-status");
-            const statusMessageEl =
-                document.getElementById("connection-message");
-            const editorWrapper = document.querySelector(
-                ".editor-wrapper"
-            ) as HTMLElement;
+            const statusEl = document.querySelector(".connection-status");
+            if (!statusEl) return;
 
-            if (statusEl && statusMessageEl && editorWrapper) {
-                statusEl.className = `status status-${state}`;
-                statusEl.textContent = state.toUpperCase();
+            statusEl.className = `connection-status visible status-${state}`;
+            statusEl.textContent = message || state.toUpperCase();
 
-                if (message) {
-                    statusMessageEl.textContent = message;
-                    statusMessageEl.style.display = "block";
-                } else {
-                    statusMessageEl.style.display = "none";
-                }
+            // Auto-hide success status after 3 seconds
+            if (state === "connected") {
+                setTimeout(() => {
+                    statusEl.classList.remove("visible");
+                }, 3000);
+            }
 
-                // Disable editor when not connected
-                editorWrapper.style.opacity =
-                    state === "connected" ? "1" : "0.5";
-                editorRef.contentEditable =
-                    state === "connected" ? "true" : "false";
+            // Update editor state
+            const editorWrapper = document.querySelector(".editor-wrapper") as HTMLElement;
+            if (editorWrapper) {
+                editorWrapper.style.opacity = state === "connected" ? "1" : "0.5";
+                editorRef.contentEditable = state === "connected" ? "true" : "false";
             }
         };
 
@@ -97,7 +319,7 @@ export const render = Component({
                 updateStatus(ConnectionState.CONNECTING);
 
                 provider = new WebsocketProvider(
-                    "ws://localhost:3000/collaboration",
+                    "wss://crdt.fanfactory.io/collaboration",
                     "playground/0/0",
                     ydoc,
                     { connect: true }
@@ -163,11 +385,8 @@ export const render = Component({
             name: "Current User" // We can make this configurable later
         };
 
-        // Handle send button click
-        const sendButton = document.querySelector(
-            ".send-button"
-        ) as HTMLElement;
-        sendButton.addEventListener("click", () => {
+        // Handle send button click and Enter key
+        const sendMessage = () => {
             if (!provider || provider.wsconnected === false) {
                 updateStatus(
                     ConnectionState.DISCONNECTED,
@@ -176,7 +395,6 @@ export const render = Component({
                 return;
             }
 
-            // At this point, provider is guaranteed to be non-null
             const currentProvider = provider;
             editor.getEditorState().read(() => {
                 const root = $getRoot();
@@ -185,7 +403,7 @@ export const render = Component({
                         content: editor.getEditorState().toJSON(),
                         timestamp: Date.now(),
                         sender: currentProvider.awareness.clientID,
-                        senderName: currentUser.name // Add the sender name
+                        senderName: currentUser.name
                     };
                     messages.push([message]);
 
@@ -196,86 +414,73 @@ export const render = Component({
                     });
                 }
             });
+        };
+
+        const sendButton = document.querySelector(".send-button") as HTMLElement;
+        sendButton?.addEventListener("click", sendMessage);
+
+        editorRef?.addEventListener("keydown", (e: KeyboardEvent) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
         });
 
-        // Message rendering logic (unchanged)
+        // Message rendering logic
         const messagesContainer = document.getElementById("messages-container");
         let userHasScrolled = false;
         let isNearBottom = true;
 
-        // Check if user is near bottom of container
         const checkNearBottom = () => {
             if (!messagesContainer) return true;
-            const threshold = 100; // pixels from bottom to consider "near bottom"
-            const position =
-                messagesContainer.scrollHeight -
-                messagesContainer.scrollTop -
-                messagesContainer.clientHeight;
+            const threshold = 100;
+            const position = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight;
             return position < threshold;
         };
 
-        // Handle scroll events
         messagesContainer?.addEventListener("scroll", () => {
             userHasScrolled = true;
             isNearBottom = checkNearBottom();
         });
 
-        // Smart scroll to bottom
         const scrollToBottom = (force = false) => {
             if (!messagesContainer) return;
-
-            // Always scroll if forced, otherwise check conditions
             if (force || !userHasScrolled || isNearBottom) {
-                // Use requestAnimationFrame to ensure DOM is ready
                 requestAnimationFrame(() => {
-                    messagesContainer.scrollTop =
-                        messagesContainer.scrollHeight;
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 });
             }
         };
 
-        // Clear existing messages first
-        if (messagesContainer) {
-            messagesContainer.innerHTML = "";
-        }
-
         // Render all messages when they change
         const renderAllMessages = () => {
-            if (messagesContainer) {
-                const wasAtBottom = checkNearBottom();
-                messagesContainer.innerHTML = "";
+            if (!messagesContainer) return;
 
-                // Use Promise.all to wait for all messages to render
-                Promise.all(
-                    messages.toArray().map(
-                        (message: ChatMessage) =>
-                            new Promise<void>((resolve) => {
-                                const messageDiv =
-                                    document.createElement("div");
-                                messageDiv.className = "message";
+            const wasAtBottom = checkNearBottom();
+            messagesContainer.innerHTML = "";
 
-                                const isCurrentUser =
-                                    message.sender === currentUser.id;
-                                const displayName = isCurrentUser
-                                    ? currentUser.name
-                                    : message.senderName ||
-                                      `User ${message.sender}`;
+            Promise.all(
+                messages.toArray().map((message: ChatMessage) => {
+                    const isCurrentUser = message.sender === currentUser.id;
+                    const messageElement = Message({ message, isCurrentUser });
+                    messagesContainer.appendChild(messageElement);
 
-                                Post({
-                                    content: message.content,
-                                    sender: displayName,
-                                    timestamp: message.timestamp
-                                }).then((post: HTMLElement) => {
-                                    messageDiv.appendChild(post);
-                                    messagesContainer?.appendChild(messageDiv);
-                                    resolve();
-                                });
-                            })
-                    )
-                ).then(() => {
-                    scrollToBottom(wasAtBottom);
-                });
-            }
+                    // Initialize Lexical editor for the message content
+                    const contentElement = document.getElementById(`message-${message.timestamp}`);
+                    if (contentElement) {
+                        const messageEditor = createEditor({
+                            ...initialConfig,
+                            editable: false
+                        });
+                        messageEditor.setRootElement(contentElement);
+                        messageEditor.setEditorState(messageEditor.parseEditorState(message.content));
+                    }
+
+                    return Promise.resolve();
+                })
+            ).then(() => {
+                scrollToBottom(wasAtBottom);
+            });
         };
 
         // Initial render
@@ -284,48 +489,32 @@ export const render = Component({
         // Observe changes to messages
         messages.observe(renderAllMessages);
 
-        // Clean up on disconnect
+        // Clean up
         return () => {
             provider?.disconnect();
             ydoc.destroy();
         };
     },
     render: async () => (
-        <div class="row pad-lg gap height">
-            <div class="column height pad shrink bg-dark radius">
+        <div class="row height">
+            <div class="members-panel">
                 {[...Array(10)].map(() => (
                     <Profile />
                 ))}
             </div>
-            <div class="column height pad-lg bg-dark radius grow">
-                <span class="material-icons start-videocall pointer">
-                    videocam
-                </span>
-                <div class="column height">
-                    <div id="messages-container" class="column grow scroll">
-                        <div class="info">
-                            <h2>Connection</h2>
-                            <div
-                                id="connection-message"
-                                class="status-message"
-                            ></div>
-                        </div>
-                    </div>
-                    <div class="column shrink bg-lighter ring radius-sm">
-                        <div class="editor-wrapper row space-between pad gap bg-lighter radius-top-sm">
-                            <div
-                                id="lexical-editor"
-                                class="row pad bg-lighter grow"
-                                contenteditable
-                            ></div>
-                            <span class="material-icons send-button pointer shrink">
-                                send
-                            </span>
-                        </div>
-                        <div class="row pad gap bg-lighter radius-bottom-sm">
-                            <span class="material-icons pointer">add</span>
-                            <span class="material-icons pointer">mic</span>
-                            <span class="material-icons pointer">videocam</span>
+            <div class="chat-container grow">
+                <div class="connection-status"></div>
+                <span class="material-icons start-videocall pointer">videocam</span>
+                <div id="messages-container" class="scroll"></div>
+                <div class="input-container">
+                    <div class="editor-wrapper">
+                        <div id="lexical-editor" contenteditable></div>
+                        <div class="input-actions">
+                            <span class="material-icons action-button pointer">add_photo_alternate</span>
+                            <span class="material-icons action-button pointer">mic</span>
+                            <span class="material-icons action-button pointer">mood</span>
+                            <div class="grow"></div>
+                            <span class="material-icons send-button pointer">send</span>
                         </div>
                     </div>
                 </div>

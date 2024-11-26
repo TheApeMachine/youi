@@ -74,15 +74,17 @@ export const createRouter = async () => {
                 } else {
                     slideSection.innerHTML = String(content);
                 }
-                slideSection.setAttribute('data-path', path);
+                slideSection.id = path;
 
                 // Append the new slide
                 slidesContainer.appendChild(slideSection);
 
                 // Tell Reveal.js to update its state
                 if (reveal) {
-                    reveal.sync();
-                    reveal.navigateToSlide(slidesContainer.children.length - 1);
+                    setTimeout(() => {
+                        reveal.sync();
+                        reveal.navigateToSlide(slidesContainer.children.length - 1);
+                    }, 100);
                 }
             } catch (error: any) {
                 console.error("Routing error:", error);

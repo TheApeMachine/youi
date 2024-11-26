@@ -20,10 +20,18 @@ async function discoverRoutes(): Promise<Route[]> {
         const moduleName = path.replace(/.*\/(.*?)\.tsx?$/, '$1');
         const module = await importFn() as RouteModule;
         if (module.render) {
-            routes.push({
-                path: moduleName === 'home' ? '/' : `/${moduleName}`,
-                view: async (params) => module.render(params)
-            });
+            // Special handling for collection routes
+            if (moduleName === 'collection') {
+                routes.push({
+                    path: '/collection/:id',
+                    view: async (params) => module.render(params)
+                });
+            } else {
+                routes.push({
+                    path: moduleName === 'home' ? '/' : `/${moduleName}`,
+                    view: async (params) => module.render(params)
+                });
+            }
         }
     }
 

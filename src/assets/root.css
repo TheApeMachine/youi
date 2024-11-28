@@ -32,6 +32,10 @@
     --ring-purple: 0 0 0 4px var(--purple);
 }
 
+.nopointer {
+    pointer-events: none;
+}
+
 .width {
     width: 100%;
 }

@@ -72,13 +72,6 @@ export const Timeline = Component({
             preventDefault: true
         });
 
-        // Optional: Add keyboard navigation
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowUp")
-                animate(Math.min(progress + 1, posts.length - 1));
-            if (e.key === "ArrowDown") animate(Math.max(progress - 1, 0));
-        });
-
         return () => {
             Observer.getAll().forEach((observer) => observer.kill());
         };

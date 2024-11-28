@@ -91,7 +91,7 @@ export const createRouter = async () => {
                 if (reveal) {
                     setTimeout(() => {
                         reveal.sync();
-                        reveal.navigateToSlide(slidesContainer.children.length - 1);
+                        reveal.next();
                     }, 100);
                 }
             } catch (error: any) {

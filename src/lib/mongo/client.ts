@@ -1,5 +1,6 @@
 import * as Realm from "realm-web";
 import { FromBinary, ToBinary } from "./utils";
+import { DateTime } from "luxon";
 
 // Initialize the Realm app once
 const app = new Realm.App({ id: import.meta.env.VITE_REALM_APP_ID });
@@ -35,7 +36,7 @@ const convertBinary = (doc: any): any => {
         } else if (value?.$date?.$numberLong) {
             converted[key] = new Date(parseInt(value.$date.$numberLong)).toISOString();
         } else if (value instanceof Date) {
-            converted[key] = value.toISOString();
+            converted[key] = DateTime.fromISO(value.toISOString()).toFormat("dd-mm-yyyy");
         } else if (value && typeof value === 'object') {
             converted[key] = convertBinary(value);
         }
@@ -84,6 +85,14 @@ export const fetchCollection = async (
             {}
         );
         pipeline.push({ $project: projectFields });
+    } else {
+        // When no projection is specified, exclude _t and _Etag
+        pipeline.push({
+            $project: {
+                _t: 0,
+                _Etag: 0
+            }
+        });
     }
 
     if (join) {

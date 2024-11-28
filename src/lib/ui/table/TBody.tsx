@@ -4,6 +4,7 @@ import { Component } from "@/lib/ui/Component";
 
 interface RenderProps {
     data?: any[];
+    columns?: string[];
 }
 
 const renderNestedContent = (value: any, level: number = 0): HTMLElement => {
@@ -84,22 +85,12 @@ const renderNestedContent = (value: any, level: number = 0): HTMLElement => {
 
     // Handle primitive values with more context
     const valueStr = String(value);
-    const displayValue =
-        typeof value === "string" && valueStr.length > 50
-            ? `"${valueStr.substring(0, 47)}..."`
-            : typeof value === "string"
-            ? `"${valueStr}"`
-            : valueStr;
 
-    return jsx(
-        "span",
-        { class: `primitive-value ${typeof value}` },
-        displayValue
-    );
+    return jsx("span", { class: `primitive-value ${typeof value}` }, valueStr);
 };
 
 export const TBody = Component({
-    effect: (props: RenderProps) => {
+    effect: () => {
         eventBus.subscribe("collectionData", (payload: any) => {
             const tbody = document.querySelector("tbody");
             if (!tbody) return;
@@ -130,7 +121,7 @@ export const TBody = Component({
             }
         });
     },
-    render: (props: RenderProps) => {
+    render: () => {
         return <tbody></tbody>;
     }
 });

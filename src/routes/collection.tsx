@@ -15,17 +15,24 @@ export const render = Component({
             limit: 10
         });
 
+        // Get all unique keys from all rows
+        const allKeys = data.reduce((keys: Set<string>, row: any) => {
+            Object.keys(row).forEach((key) => keys.add(key));
+            return keys;
+        }, new Set<string>());
+
         eventBus.publish("collectionData", {
             key: props.id,
-            value: data
+            value: data,
+            columns: Array.from(allKeys)
         });
 
-        return { data };
+        return { data, columns: Array.from(allKeys) };
     },
     render: async (props) => (
         <Table collection={props.id}>
-            <THead keys={Object.keys(props.data?.[0] || {})} />
-            <TBody />
+            <THead keys={props.columns || []} />
+            <TBody columns={props.columns || []} />
             <TFoot />
         </Table>
     )

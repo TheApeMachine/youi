@@ -40,10 +40,9 @@ export const Post = Component({
                 <div class="status online"></div>
                 <h4>{sender ?? faker.person.fullName()}</h4>
             </div>
-            <div
-                id={`post-${timestamp}`}
-                class="post-content pad-sm grow"
-            ></div>
+            <div id={`post-${timestamp}`} class="post-content pad-sm grow">
+                Let's put some text
+            </div>
             <div class="row space-between pad-sm gap shrink border-top left">
                 <span class="material-icons dark pointer width text-center">
                     thumb_up

@@ -8,37 +8,6 @@ import { faker } from "@faker-js/faker";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 gsap.registerPlugin(Observer, MotionPathPlugin, ScrollTrigger);
 
-const alignOrigins = (fromElement: HTMLElement, toElement: HTMLElement) => {
-    const elements = gsap.utils.toArray([fromElement, toElement]);
-    const [fromEl, toEl] = elements as HTMLElement[];
-    const style = window.getComputedStyle(toEl);
-    const origins = style.transformOrigin.split(" ");
-
-    const newOrigin = MotionPathPlugin.convertCoordinates(toEl, fromEl, {
-        x: parseFloat(origins[0]),
-        y: parseFloat(origins[1])
-    });
-
-    // Store original bounds
-    const bounds1 = fromEl.getBoundingClientRect();
-
-    // Apply new transform origin with eased transition
-    gsap.to(fromEl, {
-        transformOrigin: `${newOrigin.x}px ${newOrigin.y}px`,
-        duration: 0.3,
-        ease: "power2.out"
-    });
-
-    // Adjust position smoothly
-    const bounds2 = fromEl.getBoundingClientRect();
-    gsap.to(fromEl, {
-        x: `+=${bounds1.left - bounds2.left}`,
-        y: `+=${bounds1.top - bounds2.top}`,
-        duration: 0.3,
-        ease: "power2.out"
-    });
-};
-
 export const Timeline = Component({
     effect: () => {
         let progress = 0;
@@ -49,48 +18,47 @@ export const Timeline = Component({
 
         if (!posts.length || !monoclePosts.length || !monocle) return;
 
-        gsap.to(posts, {
-            z: (index: number) => -220,
-            duration: 0.6,
-            ease: "power2.inOut",
-            stagger: 0.05
-        });
+        const postHeight = monocle.offsetHeight;
+
+        const updatePostPositions = (
+            currentProgress: number,
+            animate = false
+        ) => {
+            const duration = animate ? 0.6 : 0;
+            const centerY = window.innerHeight / 2;
+            const postHeight = posts[0].clientHeight;
+
+            // Position active post centered in viewport
+            const activePostY = centerY - postHeight / 2;
+            console.log(activePostY + currentProgress * postHeight);
+
+            gsap.to(posts, {
+                z: 0,
+                duration,
+                y: (index, target, targets) => {
+                    // If the target
+                },
+                opacity: 1,
+                ease: "power2.inOut"
+            });
+        };
+
+        // Initial setup
+        updatePostPositions(0);
 
         const animate = (targetProgress: number) => {
             progress = targetProgress;
             tl.clear();
 
-            // Create a smooth transition effect
+            // Animate monocle posts
             tl.to(monoclePosts, {
                 duration: 0.6,
-                y: gsap.utils.distribute({
-                    base:
-                        monocle.offsetTop -
-                        monocle.offsetHeight * targetProgress,
-                    amount: monocle.offsetHeight,
-                    from: targetProgress,
-                    grid: "auto",
-                    axis: "y",
-                    ease: "power2.inOut"
-                })
-            }).to(
-                posts,
-                {
-                    duration: 0.6,
-                    y: gsap.utils.distribute({
-                        base:
-                            monocle.offsetTop +
-                            monocle.offsetHeight +
-                            posts[targetProgress].scrollTop * 2,
-                        amount: monocle.offsetHeight,
-                        from: targetProgress,
-                        grid: "auto",
-                        axis: "y",
-                        ease: "power2.inOut"
-                    })
-                },
-                "<"
-            );
+                y: -postHeight * targetProgress,
+                ease: "power2.inOut"
+            });
+
+            // Animate timeline posts positions
+            updatePostPositions(targetProgress, true);
         };
 
         // Enhanced scroll/touch handling
@@ -99,6 +67,8 @@ export const Timeline = Component({
             type: "wheel,touch,pointer",
             onUp: () => animate(Math.min(progress + 1, posts.length - 1)),
             onDown: () => animate(Math.max(progress - 1, 0)),
+            tolerance: 200,
+            debounce: true,
             preventDefault: true
         });
 
@@ -129,10 +99,8 @@ export const Timeline = Component({
         ));
 
         return (
-            <div class="timeline column gap">
-                <div class="monocle">
-                    <div class="monocle-content">{monoclePosts}</div>
-                </div>
+            <div class="timeline column">
+                <div class="monocle">{monoclePosts}</div>
                 {posts}
             </div>
         );

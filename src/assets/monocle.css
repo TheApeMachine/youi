@@ -3,11 +3,12 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    width: 100%;
+    width: 720px;
     perspective: 500px;
 
     .post {
         z-index: -1;
+        transform-origin: center center;
     }
 }
 
@@ -15,6 +16,8 @@
     position: fixed;
     width: 720px;
     height: 480px;
+    top: 50%;
+    transform: translateY(-50%);
     overflow: hidden;
     background: var(--lighter);
     border-radius: var(--md);

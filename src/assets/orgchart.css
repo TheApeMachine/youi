@@ -1,0 +1,40 @@
+.hide {
+    display: none;
+}
+
+.drag-enabled:not(.dragging-active).node.draggable {
+    stroke: grey;
+    stroke-width: 3px;
+    stroke-dasharray: 2px;
+}
+
+.drag-enabled.dragging-active.droppable {
+    stroke: green;
+    stroke-width: 3px;
+    stroke-dasharray: 5px;
+}
+
+.node.dragging {
+    stroke-dasharray: 0 !important;
+    stroke-width: 0 !important;
+}
+
+.node.dragging .content-container {
+    background-color: #ffffff;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}

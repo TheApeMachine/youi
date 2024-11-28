@@ -9,7 +9,7 @@
     --yellow: hsl(62, 100%, 80%);
     --green: hsl(122, 100%, 80%);
     --blue: hsl(179, 100%, 80%);
-    --purple: hsl(238, 100%, 80%);
+    --purple: #999cff;
     --pink: hsl(302, 100%, 80%);
     --white: hsl(0, 0%, 98%);
 
@@ -30,6 +30,8 @@
     --ring-red: 0 0 0 4px var(--red);
     --ring-yellow: 0 0 0 4px var(--yellow);
     --ring-purple: 0 0 0 4px var(--purple);
+
+    --transition-all: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nopointer {

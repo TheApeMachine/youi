@@ -1,0 +1,37 @@
+.modal {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out,
+        backdrop-filter 0.3s ease-out;
+    border: none;
+    border-radius: 8px;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(0);
+}
+
+.modal::backdrop {
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.3s ease-out;
+}
+
+/* Styles for when dialog is opened */
+.modal[open] {
+    opacity: 1;
+    transform: translateY(0);
+    backdrop-filter: blur(10px);
+}
+
+.modal[open]::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Closing animation */
+.modal.closing {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+.modal.closing::backdrop {
+    background: rgba(0, 0, 0, 0);
+}

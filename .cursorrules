@@ -1,0 +1,39 @@
+<important>
+    1. We NEVER EVER use classes, only functional components.
+    2. There is NO React in this project, we use our own custom JSX implementation.
+    3. We use TypeScript.
+</important>
+
+        ```
+    This is what a component looks like:
+
+    import { jsx } from "@/lib/template";
+    import { Component } from "../Component";
+
+    export const Message = Component({
+        effect: () => { 
+            // Subscriptions go here
+            eventBus.subscribe("messaging", (message: EventPayload) => {
+                console.log(message.event, message.topic, message.effect, message.trigger, message.originalEvent);
+            });
+        },
+        render: ({ message }) => {
+            return <div>{message.content}</div>;
+        }
+    });
+
+    The effect function is optional, it's used for side effects like subscriptions.
+    It means that it runs after the component is fully rendered.
+```
+        ```
+    We do not define event listeners everywhere, instead we have a number of ways we can handle events:
+
+    <button
+        data-trigger="click"
+        data-event="messaging"
+        data-effect="sendMessage"
+        data-topic="sometopic"
+    > 
+        Send Message
+    </button>
+```

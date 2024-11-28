@@ -42,18 +42,28 @@ let currentPath = '';
 
 export const createRouter = async () => {
     const routes = await discoverRoutes();
-
-    // Initialize the layout only once at startup
     const layout = await Layout({});
+
     // Only replace the body contents if it's empty or doesn't have our layout
     if (!document.body.querySelector('.reveal')) {
         document.body.replaceChildren(layout);
     }
 
-    // Find the slides container inside the layout
     const slidesContainer = document.querySelector('.reveal .slides') as HTMLElement;
     if (!slidesContainer) {
         throw new Error('Could not find slides container');
+    }
+
+    // Initialize Reveal.js with hash: false to prevent default hash navigation
+    const reveal = (window as any).Reveal;
+    if (reveal) {
+        reveal.configure({
+            hash: false,
+            // Prevent auto-sliding
+            autoSlide: 0,
+            // Disable the help overlay
+            help: false
+        });
     }
 
     eventBus.subscribe('navigate', async (data: { url: string }) => {
@@ -69,30 +79,39 @@ export const createRouter = async () => {
             const { route, params } = matchRoute(path, routes);
 
             try {
-                // Get the Reveal instance from window
                 const reveal = (window as any).Reveal;
-
-                // Wait for the view to resolve
                 const content = await route.view(params);
 
                 // Create new slide section
                 const slideSection = document.createElement('section');
+                slideSection.dataset.path = path;
                 if (content instanceof Node) {
                     slideSection.appendChild(content);
                 } else {
                     slideSection.innerHTML = String(content);
                 }
-                slideSection.id = path;
 
-                // Append the new slide
-                slidesContainer.appendChild(slideSection);
-
-                // Tell Reveal.js to update its state
-                if (reveal) {
-                    setTimeout(() => {
+                // Find if we already have a slide with this path
+                const existingSlide = slidesContainer.querySelector(`section[data-path="${path}"]`);
+                if (existingSlide) {
+                    // If slide exists, navigate to it
+                    const slideIndex = Array.from(slidesContainer.children).indexOf(existingSlide);
+                    if (reveal && reveal.isReady()) {
+                        reveal.slide(slideIndex);
+                    }
+                } else {
+                    // Add new slide and navigate to it
+                    slidesContainer.appendChild(slideSection);
+                    if (reveal && reveal.isReady()) {
                         reveal.sync();
-                        reveal.next();
-                    }, 100);
+                        reveal.slide(slidesContainer.children.length - 1);
+                    }
+                }
+
+                // Optional: Clean up old slides
+                const maxSlidesToKeep = 5;
+                while (slidesContainer.children.length > maxSlidesToKeep) {
+                    slidesContainer.removeChild(slidesContainer.firstChild!);
                 }
             } catch (error: any) {
                 console.error("Routing error:", error);

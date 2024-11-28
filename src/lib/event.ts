@@ -1,5 +1,18 @@
 import { stateManager } from "@/lib/state";
 
+export interface EventPayload {
+    topic?: string;
+    effect?: string;
+    event?: string;
+    trigger?: string;
+    originalEvent?: Event;
+    meta?: {
+        timeStamp: number;
+        target: string;
+        initiator: string;
+    };
+}
+
 // EventBus for handling publish/subscribe system
 const EventBus = () => {
     const listeners: Record<string, Set<Function>> = {};

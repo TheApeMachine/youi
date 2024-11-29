@@ -40,6 +40,13 @@ export const render = Component({
                 // Redirect to home page
                 window.location.href = "/";
             } catch (error) {
+                eventBus.publish("status", new CustomEvent("status", {
+                    detail: {
+                        status: "error",
+                        title: "Login failed",
+                        message: error instanceof Error ? error.message : "Login failed"
+                    }
+                }));
                 if (errorMessage instanceof HTMLElement && errorMessageText instanceof HTMLElement) {
                     errorMessageText.textContent = error instanceof Error ? error.message : "Login failed";
                     errorMessage.style.opacity = "1";
@@ -69,8 +76,8 @@ export const render = Component({
         });
     },
     render: async () => (
-        <div class="row grow">
-            <div class="column pad center">
+        <div class="row grow page">
+            <div class="login-container">
                 <div class="column pad gap radius-xs login-card">
                     <div class="column gap brand">
                         <h1>Fan App</h1>

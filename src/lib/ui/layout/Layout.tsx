@@ -1,6 +1,5 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { eventBus } from "@/lib/event";
 import Reveal from "reveal.js";
 import gsap from "gsap";
 import Flip from "gsap/Flip";
@@ -19,11 +18,12 @@ interface RevealSlideEvent {
     indexv: number;
 }
 
-interface LayoutProps {}
+interface LayoutProps { }
 
 /* Layout Component - A wrapper component for page content */
 export const Layout = Component<LayoutProps>({
     effect: () => {
+        console.log("Layout effect");
         Reveal.initialize({
             hash: false,
             respondToHashChanges: false,
@@ -35,6 +35,7 @@ export const Layout = Component<LayoutProps>({
             disableLayout: true,
             display: "flex"
         }).then(() => {
+            window.Reveal = Reveal;
             (Reveal as any).on("slidechanged", (event: RevealSlideEvent) => {
                 console.log("slidechanged", event);
                 const path = event.currentSlide?.dataset.path;
@@ -55,7 +56,7 @@ export const Layout = Component<LayoutProps>({
                     data-event="menu"
                     data-effect="open"
                 >
-                    <span class="material-icons light menu-icon">rocket</span>
+                    <span class="material-icons menu-icon">rocket</span>
                     <Player />
                 </div>
                 <div className="reveal">

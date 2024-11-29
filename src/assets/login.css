@@ -1,13 +1,24 @@
-.login-container {
+.page {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.login-container,
+.random-image {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--xxl);
+    align-items: center;
+    justify-content: center;
     min-height: 100vh;
-    padding: 2rem;
-    background: linear-gradient(135deg, var(--darker) 0%, hsla(302, 100%, 20%, 0.95) 100%);
 }
 
 .login-card {
+    flex: 0;
+    width: 100%;
+    padding: var(--unit);
     background: hsla(228, 6%, 15%, 0.95);
     border: 1px solid hsla(228, 6%, 40%, 0.2);
     backdrop-filter: blur(10px);
@@ -20,8 +31,8 @@
 }
 
 .brand h1 {
-    font-size: 1.75rem;
-    color: var(--white);
+    font-size: var(--lg);
+    color: var(--lighter);
 }
 
 .brand p {
@@ -102,9 +113,14 @@
     }
 }
 
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
 .input-group input {
     width: 100%;
-    padding: var(--unit);
+    padding: var(--unit) var(--unit) var(--unit) 3rem;
     background: hsla(228, 6%, 25%, 0.5);
     border: 1px solid hsla(228, 6%, 40%, 0.2);
     border-radius: var(--xs);
@@ -113,10 +129,8 @@
     transition: all 0.3s ease;
 }
 
-.input-group input:focus {
-    border-color: var(--pink);
-    outline: none;
-    background: hsla(228, 6%, 30%, 0.5);
+.input-group input::placeholder {
+    color: transparent;
 }
 
 .input-group label {
@@ -125,7 +139,9 @@
     top: 50%;
     transform: translateY(-50%);
     color: var(--light);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease-out;
+    background: transparent;
+    padding: 0 0.25rem;
     pointer-events: none;
 }
 
@@ -133,11 +149,9 @@
 .input-group input:not(:placeholder-shown)+label {
     top: 0;
     left: 0.75rem;
-    font-size: 0.8rem;
-    padding: 0 0.5rem;
-    background: var(--darker);
-    border-radius: var(--xs);
+    transform: translateY(-50%) scale(0.8);
     color: var(--pink);
+    background: var(--darker);
 }
 
 .input-group .material-icons {
@@ -147,6 +161,7 @@
     transform: translateY(-50%);
     color: var(--light);
     transition: color 0.3s ease;
+    pointer-events: none;
 }
 
 .input-group.focused .material-icons {
@@ -236,7 +251,8 @@
 .social-buttons {
     display: flex;
     justify-content: center;
-    gap: 1rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .social-button {
@@ -290,5 +306,60 @@
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .page {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 0;
+        gap: 0;
+    }
+
+    .random-image,
+    .login-container {
+        min-height: 0;
+        padding: 0;
+        gap: 0;
+    }
+
+    .random-image {
+        flex: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: auto;
+        order: -1;
+        width: 100%;
+        padding: 0;
+    }
+
+    .login-container {
+        flex: 1;
+    }
+
+    .login-card {
+        flex: 1;
+        padding: 1rem;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .brand h1 {
+        font-size: 1.5rem;
+    }
+
+    .social-button {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .options {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
     }
 }

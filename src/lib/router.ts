@@ -80,6 +80,7 @@ export const createRouter = async () => {
 
             try {
                 const reveal = (window as any).Reveal;
+                console.log("reveal", reveal)
                 const content = await route.view(params);
 
                 // Create new slide section

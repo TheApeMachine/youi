@@ -1,4 +1,6 @@
 :root {
+    --xxl: 6rem;
+    --xl: 3rem;
     --lg: 2rem;
     --unit: 1rem;
     --md: 0.75rem;
@@ -30,6 +32,7 @@
     --ring-red: 0 0 0 4px var(--red);
     --ring-yellow: 0 0 0 4px var(--yellow);
     --ring-purple: 0 0 0 4px var(--purple);
+    --ring-double-purple: 0 0 0 8px var(--purple);
 
     --transition-all: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -44,6 +47,10 @@
 
 .height {
     height: 100%;
+}
+
+.pad-xl {
+    padding: var(--xl);
 }
 
 .pad-lg {
@@ -64,6 +71,10 @@
 
 .gap {
     gap: var(--unit);
+}
+
+.gap-xl {
+    gap: var(--xl);
 }
 
 .gap-md {

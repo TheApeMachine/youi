@@ -118,7 +118,6 @@ aside {
     flex-direction: column;
     align-items: center;
     gap: var(--unit);
-    background: hsl(228, 6%, 30%);
     color: hsl(0, 0%, 98%);
 
     nav {
@@ -174,7 +173,7 @@ footer {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: var(--xs);
+    height: 0;
     font-size: var(--md);
     background: hsl(228, 6%, 30%);
     color: hsl(0, 0%, 98%);
@@ -193,7 +192,7 @@ footer {
 }
 
 .reveal .slides section,
-.reveal .slides section > section {
+.reveal .slides section>section {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -247,6 +246,7 @@ img {
 
         &.error {
             border-left: 4px solid var(--red);
+
             h3 {
                 color: var(--red);
             }
@@ -254,6 +254,7 @@ img {
 
         &.success {
             border-left: 4px solid var(--green);
+
             h3 {
                 color: var(--green);
             }
@@ -261,6 +262,7 @@ img {
 
         &.warning {
             border-left: 4px solid var(--yellow);
+
             h3 {
                 color: var(--yellow);
             }
@@ -268,6 +270,7 @@ img {
 
         &.info {
             border-left: 4px solid var(--blue);
+
             h3 {
                 color: var(--blue);
             }
@@ -284,13 +287,11 @@ img {
 }
 
 ::backdrop {
-    background-image: linear-gradient(
-        45deg,
-        magenta,
-        rebeccapurple,
-        dodgerblue,
-        green
-    );
+    background-image: linear-gradient(45deg,
+            magenta,
+            rebeccapurple,
+            dodgerblue,
+            green);
     opacity: 0.75;
 }
 
@@ -348,9 +349,10 @@ dialog {
     flex-direction: column;
     padding: 0;
     border: none;
+    border-radius: var(--xs);
     background: hsla(228, 6%, 15%, 0.95);
     backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-page);
 
     &::backdrop {
         background: rgba(0, 0, 0, 0.5);
@@ -379,7 +381,7 @@ dialog {
             overflow: hidden;
             cursor: pointer;
 
-            > a {
+            >a {
                 height: 0;
                 opacity: 0;
             }
@@ -455,5 +457,51 @@ dialog {
 
     &[open] {
         display: flex;
+    }
+}
+
+.controls-arrow {
+    color: var(--purple);
+}
+
+#donut-chart,
+#bars-cart {
+    width: 400px;
+    height: 400px;
+}
+
+img.avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: var(--ring-double-purple);
+    outline: 8px solid var(--darker);
+    outline-offset: 8px;
+    transform: translateY(-50%);
+}
+
+.accent-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: var(--unit);
+    gap: var(--xs);
+
+    a {
+        color: var(--dark);
+    }
+
+    &.red {
+        border-top: 4px solid var(--red);
+    }
+
+    &.yellow {
+        border-top: 4px solid var(--yellow);
+    }
+
+    &.green {
+        border-top: 4px solid var(--green);
     }
 }

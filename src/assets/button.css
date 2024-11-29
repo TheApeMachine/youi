@@ -1,3 +1,24 @@
+.badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--sm);
+    background: var(--red);
+    color: var(--lighter);
+    border: 1px solid var(--lighter);
+    border-radius: var(--unit);
+}
+
+.badge-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sm);
+    padding: var(--md) var(--sm);
+    width: 100%;
+    border-bottom: 1px solid var(--darker);
+}
+
 .glowButtonWrapper {
     position: relative;
     padding: 0;

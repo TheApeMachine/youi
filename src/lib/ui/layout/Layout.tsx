@@ -18,7 +18,7 @@ interface RevealSlideEvent {
     indexv: number;
 }
 
-interface LayoutProps { }
+interface LayoutProps {}
 
 /* Layout Component - A wrapper component for page content */
 export const Layout = Component<LayoutProps>({
@@ -76,9 +76,9 @@ export const Layout = Component<LayoutProps>({
                 <Navigation
                     items={[
                         {
-                            href: "/",
-                            icon: "home",
-                            label: "Home"
+                            href: "/dashboard",
+                            icon: "dashboard",
+                            label: "Dashboard"
                         },
                         {
                             href: "/orgchart",
@@ -86,7 +86,7 @@ export const Layout = Component<LayoutProps>({
                             label: "Orgchart"
                         },
                         {
-                            href: "/",
+                            href: "/chat",
                             icon: "chat",
                             label: "Chat"
                         },

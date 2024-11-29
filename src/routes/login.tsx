@@ -15,8 +15,12 @@ export const render = Component({
         form?.addEventListener("submit", async (e: Event) => {
             e.preventDefault();
 
-            const username = (document.querySelector("#username") as HTMLInputElement).value;
-            const password = (document.querySelector("#password") as HTMLInputElement).value;
+            const username = (
+                document.querySelector("#username") as HTMLInputElement
+            ).value;
+            const password = (
+                document.querySelector("#password") as HTMLInputElement
+            ).value;
 
             if (!username || !password) {
                 if (errorMessage instanceof HTMLElement) {
@@ -40,15 +44,26 @@ export const render = Component({
                 // Redirect to home page
                 window.location.href = "/";
             } catch (error) {
-                eventBus.publish("status", new CustomEvent("status", {
-                    detail: {
-                        status: "error",
-                        title: "Login failed",
-                        message: error instanceof Error ? error.message : "Login failed"
-                    }
-                }));
-                if (errorMessage instanceof HTMLElement && errorMessageText instanceof HTMLElement) {
-                    errorMessageText.textContent = error instanceof Error ? error.message : "Login failed";
+                eventBus.publish(
+                    "status",
+                    new CustomEvent("status", {
+                        detail: {
+                            status: "error",
+                            variant: "error",
+                            title: "Login failed",
+                            message:
+                                error instanceof Error
+                                    ? error.message
+                                    : "Login failed"
+                        }
+                    })
+                );
+                if (
+                    errorMessage instanceof HTMLElement &&
+                    errorMessageText instanceof HTMLElement
+                ) {
+                    errorMessageText.textContent =
+                        error instanceof Error ? error.message : "Login failed";
                     errorMessage.style.opacity = "1";
                 }
             } finally {
@@ -59,7 +74,7 @@ export const render = Component({
         });
 
         // Handle input focus effects
-        document.querySelectorAll(".input-group input").forEach(input => {
+        document.querySelectorAll(".input-group input").forEach((input) => {
             input.addEventListener("focus", () => {
                 const group = input.closest(".input-group");
                 if (group instanceof HTMLElement) {
@@ -69,7 +84,10 @@ export const render = Component({
 
             input.addEventListener("blur", () => {
                 const group = input.closest(".input-group");
-                if (group instanceof HTMLElement && !(input as HTMLInputElement).value) {
+                if (
+                    group instanceof HTMLElement &&
+                    !(input as HTMLInputElement).value
+                ) {
                     group.classList.remove("focused");
                 }
             });
@@ -109,7 +127,9 @@ export const render = Component({
                                 <input type="checkbox" />
                                 <span>Remember me</span>
                             </label>
-                            <a href="/forgot-password" class="forgot-password">Forgot password?</a>
+                            <a href="/forgot-password" class="forgot-password">
+                                Forgot password?
+                            </a>
                         </div>
 
                         <button type="submit" class="row center shrink button">
@@ -134,7 +154,9 @@ export const render = Component({
                     </div>
 
                     <div class="signup-link">
-                        <p>Don't have an account? <a href="/signup">Sign up</a></p>
+                        <p>
+                            Don't have an account? <a href="/signup">Sign up</a>
+                        </p>
                     </div>
                 </div>
             </div>

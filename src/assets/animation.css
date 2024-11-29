@@ -1,0 +1,31 @@
+@keyframes sonar {
+    0% {
+        transform: scale(0.1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes sonarOuter {
+    0% {
+        transform: scale(0.1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(3);
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}

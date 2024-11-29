@@ -24,9 +24,15 @@
         rgba(0, 0, 0, 0.06) 0px 2.6px 8px, rgba(0, 0, 0, 0.05) 0px 5.7px 12px,
         rgba(0, 0, 0, 0.04) 0px 15px 15px;
 
+    --shadow-tilt: rgba(0, 0, 0, 0.45) 0px 25px 20px -20px;
+    --shadow-tile: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+        rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+        rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+
     --ring: 0 0 0 4px var(--darker);
     --ring-light: 0 0 0 2px var(--light);
     --ring-dark: 0 0 0 2px var(--dark);
+    --ring-darker: 0 0 0 2px var(--darker);
     --ring-blue: 0 0 0 4px var(--blue);
     --ring-green: 0 0 0 4px var(--green);
     --ring-red: 0 0 0 4px var(--red);
@@ -34,7 +40,12 @@
     --ring-purple: 0 0 0 4px var(--purple);
     --ring-double-purple: 0 0 0 8px var(--purple);
 
-    --transition-all: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-all: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: all 0.2s cubic-bezier(0.64, 0, 0.78, 0);
+}
+
+.front {
+    z-index: 100;
 }
 
 .nopointer {
@@ -67,6 +78,10 @@
 
 .pad-sm {
     padding: var(--sm);
+}
+
+.pad-xs {
+    padding: var(--xs);
 }
 
 .gap {
@@ -131,11 +146,15 @@
 }
 
 .border-top {
-    border-top: 1px solid var(--light);
+    border-top: 1px solid var(--darker);
 }
 
 .border-bottom {
     border-bottom: 1px solid var(--light);
+}
+
+.border-right {
+    border-right: 1px solid var(--darker);
 }
 
 .bg-lighter {
@@ -169,6 +188,30 @@
     color: var(--darker);
 }
 
+.green {
+    color: var(--green);
+}
+
+.red {
+    color: var(--red);
+}
+
+.yellow {
+    color: var(--yellow);
+}
+
+.blue {
+    color: var(--blue);
+}
+
+.purple {
+    color: var(--purple);
+}
+
+.pink {
+    color: var(--pink);
+}
+
 .pointer {
     cursor: pointer;
 }
@@ -183,6 +226,10 @@
 
 .ring-dark {
     box-shadow: var(--ring-dark);
+}
+
+.ring-darker {
+    box-shadow: var(--ring-darker);
 }
 
 .nobreak {
@@ -214,4 +261,31 @@
 .radius-bottom-sm {
     border-bottom-left-radius: var(--sm);
     border-bottom-right-radius: var(--sm);
+}
+
+.radius-bottom-xs {
+    border-bottom-left-radius: var(--xs);
+    border-bottom-right-radius: var(--xs);
+}
+
+.shadow-page {
+    box-shadow: var(--shadow-page);
+}
+
+.shadow-tilt {
+    box-shadow: var(--shadow-tilt);
+}
+
+.shadow-tile {
+    box-shadow: var(--shadow-tile);
+}
+
+.stick-right {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.pulse {
+    animation: sonarOuter 1.5s infinite;
 }

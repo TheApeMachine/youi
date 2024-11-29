@@ -1,9 +1,9 @@
-import { Bars } from "@/lib/charts/Bars"
-import { Donut } from "@/lib/charts/Donut"
-import { jsx } from "@/lib/template"
-import { Component } from "@/lib/ui/Component"
-import { faker } from "@faker-js/faker"
-import { Calendar } from "@/lib/ui/calendar/Calendar"
+import { Bars } from "@/lib/ui/charts/Bars";
+import { Donut } from "@/lib/ui/charts/Donut";
+import { jsx } from "@/lib/template";
+import { Component } from "@/lib/ui/Component";
+import { faker } from "@faker-js/faker";
+import { Calendar } from "@/lib/ui/calendar/Calendar";
 
 export const render = Component({
     render: () => (
@@ -11,56 +11,80 @@ export const render = Component({
             <header class="row center pad bg-dark">
                 <h1>Dashboard</h1>
             </header>
-            <div class="row gap-xl">
+            <div class="row gap">
                 <aside class="column gap grow">
                     <div class="column grow width bg-dark">
                         <nav class="column grow width">
                             <a href="/dashboard/settings" class="badge-button">
-                                <span class="material-symbols-rounded">mail</span>
+                                <span class="material-symbols-rounded">
+                                    mail
+                                </span>
                                 Messages
                                 <span class="badge">3</span>
                             </a>
                             <a href="/dashboard/profile" class="badge-button">
-                                <span class="material-symbols-rounded">send</span>
+                                <span class="material-symbols-rounded">
+                                    send
+                                </span>
                                 Invitations
                                 <span class="badge">3</span>
                             </a>
                             <a href="/dashboard/logout" class="badge-button">
-                                <span class="material-symbols-rounded">calendar_month</span>
+                                <span class="material-symbols-rounded">
+                                    calendar_month
+                                </span>
                                 Events
                                 <span class="badge">3</span>
                             </a>
                             <a href="/dashboard/logout" class="badge-button">
-                                <span class="material-symbols-rounded">settings</span>
+                                <span class="material-symbols-rounded">
+                                    settings
+                                </span>
                                 Account Settings
                             </a>
                             <a href="/dashboard/logout" class="badge-button">
-                                <span class="material-symbols-rounded">monitoring</span>
+                                <span class="material-symbols-rounded">
+                                    monitoring
+                                </span>
                                 Statistics
                             </a>
                         </nav>
                     </div>
-                    <div class="column grow bg-dark">
+                    <div class="column grow width center bg-dark">
                         <Donut />
                     </div>
                 </aside>
                 <div class="column gap grow">
-                    <div class="column center grow bg-dark">
-                        <img class="avatar xl" src={faker.image.avatar()} alt="avatar" />
+                    <div class="column center grow width bg-dark">
+                        <img
+                            class="avatar xl"
+                            src={faker.image.avatar()}
+                            alt="avatar"
+                        />
                         <h3 class="lighter">{faker.person.fullName()}</h3>
                         <footer class="row">
-                            <a href="/dashboard/profile" class="accent-button yellow">
+                            <a
+                                href="/dashboard/profile"
+                                class="accent-button yellow"
+                            >
                                 <span class="material-icons">forum</span> 6
                             </a>
-                            <a href="/dashboard/profile" class="accent-button green">
-                                <span class="material-icons">visibility</span> 14
+                            <a
+                                href="/dashboard/profile"
+                                class="accent-button green"
+                            >
+                                <span class="material-icons">visibility</span>{" "}
+                                14
                             </a>
-                            <a href="/dashboard/profile" class="accent-button red">
+                            <a
+                                href="/dashboard/profile"
+                                class="accent-button red"
+                            >
                                 <span class="material-icons">favorite</span> 22
                             </a>
                         </footer>
                     </div>
-                    <div class="column grow bg-dark">
+                    <div class="column grow width height bg-dark">
                         <Bars />
                     </div>
                 </div>
@@ -68,4 +92,4 @@ export const render = Component({
             </div>
         </div>
     )
-})
+});

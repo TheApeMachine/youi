@@ -1,6 +1,7 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import "@/assets/logo.css";
+import { Expanse } from "@/lib/ui/logo/Expanse";
 
 export const render = Component({
     effect: () => {
@@ -74,47 +75,5 @@ export const render = Component({
 
         drawText();
     },
-    render: async () => (
-        <div id="text-spot">
-            <svg id="rainbow" height="100" width="200">
-                <circle
-                    class="colored-circle"
-                    cx="100"
-                    cy="100"
-                    fill="transparent"
-                    r="20"
-                    stroke-width="10px"
-                    stroke="#D8334A"
-                ></circle>
-                <circle
-                    class="colored-circle"
-                    cx="100"
-                    cy="100"
-                    fill="transparent"
-                    r="40"
-                    stroke-width="10px"
-                    stroke="#AC92EC"
-                ></circle>
-                <circle
-                    class="colored-circle"
-                    cx="100"
-                    cy="100"
-                    fill="transparent"
-                    r="60"
-                    stroke-width="10px"
-                    stroke="#F6BB42"
-                ></circle>
-                <circle
-                    class="colored-circle"
-                    cx="100"
-                    cy="100"
-                    fill="transparent"
-                    r="80"
-                    stroke-width="10px"
-                    stroke="#2ECC71"
-                ></circle>
-            </svg>
-            <div id="inner-text"></div>
-        </div>
-    )
+    render: async () => <Expanse />
 });

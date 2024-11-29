@@ -40,7 +40,7 @@ export const AuthService = {
                     eventBus.publish("auth:error", error);
                     return reject(error);
                 }
-                
+
                 // Store token in state
                 stateManager.setState({ token: result });
                 eventBus.publish("auth:login", result);
@@ -57,7 +57,7 @@ export const AuthService = {
                     eventBus.publish("auth:error", error);
                     return reject(error);
                 }
-                
+
                 // Store user in state
                 stateManager.setState({ user: result });
                 eventBus.publish("auth:user", result);

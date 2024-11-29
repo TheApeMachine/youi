@@ -7,6 +7,7 @@
 @import url(lamp.css);
 @import url(monocle.css);
 @import url(chat.css);
+@import url(animation.css);
 
 html,
 body {
@@ -192,7 +193,7 @@ footer {
 }
 
 .reveal .slides section,
-.reveal .slides section>section {
+.reveal .slides section > section {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -287,11 +288,13 @@ img {
 }
 
 ::backdrop {
-    background-image: linear-gradient(45deg,
-            magenta,
-            rebeccapurple,
-            dodgerblue,
-            green);
+    background-image: linear-gradient(
+        45deg,
+        magenta,
+        rebeccapurple,
+        dodgerblue,
+        green
+    );
     opacity: 0.75;
 }
 
@@ -381,7 +384,7 @@ dialog {
             overflow: hidden;
             cursor: pointer;
 
-            >a {
+            > a {
                 height: 0;
                 opacity: 0;
             }
@@ -464,21 +467,129 @@ dialog {
     color: var(--purple);
 }
 
-#donut-chart,
-#bars-cart {
-    width: 400px;
-    height: 400px;
-}
-
-img.avatar {
-    width: 100px;
-    height: 100px;
+.avatar {
+    width: 128px;
+    height: 128px;
     border-radius: 50%;
     object-fit: cover;
-    box-shadow: var(--ring-double-purple);
-    outline: 8px solid var(--darker);
-    outline-offset: 8px;
-    transform: translateY(-50%);
+    border: 4px solid transparent;
+    scale: 1;
+    box-shadow: var(--shadow-tilt);
+}
+
+div.incoming {
+    flex: 0 1 200px;
+    width: 480px;
+    height: 640px;
+    background: var(--light);
+    border-radius: var(--xs);
+    box-shadow: var(--ring-darker);
+    box-shadow: var(--shadow-page);
+
+    h3 {
+        transform: translateY(100px);
+    }
+}
+
+div.call-buttons {
+    display: flex;
+    flex-direction: row;
+    align-self: stretch;
+    justify-content: center;
+    transform: translateY(100px);
+    border: 1px solid var(--darker);
+    border-radius: var(--xs);
+    background: var(--dark);
+    box-shadow: var(--shadow-tile);
+}
+
+.rainbow,
+.rainbow:before,
+.rainbow:after {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+}
+
+.rainbow:before {
+    content: "";
+    background: conic-gradient(
+        #ff9999,
+        #ffcc99,
+        #ffff99,
+        #ccff99,
+        #99ff99,
+        #99ffcc,
+        #99ffff,
+        #99ccff,
+        #9999ff,
+        #cc99ff,
+        #ff99ff,
+        #ff99cc,
+        #ff9999
+    );
+    background: conic-gradient(
+        #ff9999,
+        #ffcc99,
+        #ffff99,
+        #ccff99,
+        #99ff99,
+        #99ffcc,
+        #99ffff,
+        #99ccff,
+        #9999ff,
+        #cc99ff,
+        #ff99ff,
+        #ff99cc,
+        #ff9999
+    );
+    animation: spun 2s linear infinite;
+    z-index: -1;
+}
+
+.rainbow:after {
+    content: "";
+    background: conic-gradient(
+        #ff9999,
+        #ffcc99,
+        #ffff99,
+        #ccff99,
+        #99ff99,
+        #99ffcc,
+        #99ffff,
+        #99ccff,
+        #9999ff,
+        #cc99ff,
+        #ff99ff,
+        #ff99cc,
+        #ff9999
+    );
+    background: conic-gradient(
+        #ff9999,
+        #ffcc99,
+        #ffff99,
+        #ccff99,
+        #99ff99,
+        #99ffcc,
+        #99ffff,
+        #99ccff,
+        #9999ff,
+        #cc99ff,
+        #ff99ff,
+        #ff99cc,
+        #ff9999
+    );
+    animation: sonar 3s ease-out infinite;
+    z-index: -2;
+}
+
+@keyframes spun {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .accent-button {
@@ -488,6 +599,7 @@ img.avatar {
     flex: 1;
     padding: var(--unit);
     gap: var(--xs);
+    transition: var(--transition-all);
 
     a {
         color: var(--dark);
@@ -503,5 +615,15 @@ img.avatar {
 
     &.green {
         border-top: 4px solid var(--green);
+    }
+
+    cursor: pointer;
+
+    &:hover {
+        transform: translateY(-2px);
+
+        > span {
+            scale: 1.2;
+        }
     }
 }

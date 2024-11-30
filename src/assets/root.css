@@ -46,6 +46,11 @@
 
 [data-trigger="click"] {
     cursor: pointer;
+    transition: var(--transition-all);
+
+    &:hover {
+        transform: translateY(-2px);
+    }
 }
 
 .front {

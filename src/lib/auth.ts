@@ -79,7 +79,7 @@ export const AuthService = {
                 if (result) {
                     const user = result as User;
                     eventBus.publish("stateChange", {
-                        key: "user",
+                        key: "authUser",
                         value: user
                     });
                     resolve(user);
@@ -127,7 +127,7 @@ export const AuthService = {
             value: null
         });
         eventBus.publish("stateChange", {
-            key: "user",
+            key: "authUser",
             value: null
         });
 

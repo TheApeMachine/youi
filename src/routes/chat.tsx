@@ -3,30 +3,73 @@ import { Component } from "@/lib/ui/Component";
 import { Profile } from "@/lib/ui/profile/Profile";
 import { P2P } from "@/lib/ui/chat/p2p";
 import { messaging } from "@/lib/ui/chat/messaging";
-import { eventBus, EventPayload } from "@/lib/event";
 import { Input } from "@/lib/ui/chat/Input";
-import { Ringer } from "@/lib/ui/call/Ringer";
+import { stateManager } from "@/lib/state";
+import { from } from "@/lib/mongo/query";
+import { eventBus, EventPayload } from "@/lib/event";
 
 export const render = Component({
-    effect: () => {
+    loader: () => {
+        const authUser = stateManager.getState("authUser");
+        console.log("user", authUser);
+        return {
+            user: from("User").where({ Auth0UserId: authUser?.sub }).exec(),
+            // You can add more queries here and they'll be cached automatically
+            // messages: from("Message").where({ channelId: someId }).exec(),
+        };
+    },
+    effect: ({ data }) => {
+        // Now you have access to the loader data in effect
+        console.log("Loaded user data:", data.user);
+
+        eventBus.subscribe("group-select", (e: EventPayload) => {
+            console.log("group-select", e);
+            from("User")
+                .whereArrayField("Groups", { _id: e.effect })
+                .exec()
+                .then(users => {
+                    console.log("Found users:", users);
+                    const groupMemberList = document.getElementById("group-members");
+                    if (groupMemberList) {
+                        groupMemberList.innerHTML = "";
+                        users.forEach((groupUser: any) => {
+                            const userItem = document.createElement("li");
+                            const img = document.createElement("img");
+                            const name = document.createElement("span");
+                            img.src = groupUser.ImageURL;
+                            name.textContent = groupUser.FirstName;
+                            userItem.appendChild(img);
+                            userItem.appendChild(name);
+                            groupMemberList.appendChild(userItem);
+                        });
+                    }
+                });
+        });
+
         const { provider, ydoc } = P2P();
         if (!provider) return;
 
-        const { sendMessage } = messaging(provider, ydoc);
-
-        eventBus.subscribe("send-message", (event: EventPayload) => {
-            console.log("send-message", event);
-            if (event.effect === "send-message") {
-                sendMessage();
-            }
-        });
+        messaging(provider, ydoc);
     },
-    render: () => (
+    render: ({ data }) => (
         <div class="row height pad-xl gap-xl">
-            <div class="members-panel">
-                {[...Array(10)].map(() => (
-                    <Profile />
-                ))}
+            <div class="column start shrink height gap">
+                <div class="column height width">
+                    <ul class="list">
+                        {data.user[0].Groups.filter((group: any) => group.HasChat).map((group: any) => (
+                            <li
+                                data-trigger="click"
+                                data-event="group-select"
+                                data-effect={group._id}>
+                                {group.GroupName}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                <div class="column height width">
+                    <ul class="list" id="group-members">
+                    </ul>
+                </div>
             </div>
             <div class="column grow height pad-xl bg-dark radius shadow-page">
                 <div class="column stick-right">
@@ -41,7 +84,6 @@ export const render = Component({
                     id="messages-container"
                     class="column center grow height scroll"
                 >
-                    <Ringer />
                 </div>
                 <div class="column shrink radius-xs ring-darker shadow-tile">
                     <Input />

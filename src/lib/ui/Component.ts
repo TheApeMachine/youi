@@ -7,15 +7,12 @@ export type Ref = { current: HTMLElement | null };
 export const createRef = (): Ref => ({ current: null });
 
 /** Configuration interface for Component */
-interface ComponentConfig<Props = any> {
-    loader?: Record<string, {
-        url: string;
-        method: string;
-    }>;
+interface ComponentConfig<Props = any, LoaderData = any> {
+    loader?: () => Record<string, Promise<any>>;
     loading?: () => Promise<Node | JSX.Element>;
     error?: (error: any) => Promise<Node | JSX.Element>;
-    effect?: (data: any) => void;
-    render: (props: Props) => Promise<Node | JSX.Element>;
+    effect?: (props: Props & { data?: LoaderData }) => void;
+    render: (props: Props & { data?: LoaderData }) => Promise<Node | JSX.Element> | Node | JSX.Element;
 }
 
 /** Creator interface for Component */
@@ -27,8 +24,8 @@ type ComponentCreator = {
 
 /** Component utility */
 export const Component = Object.assign(
-    <Props = any>(config: ComponentConfig<Props>) => {
-        return (Component as ComponentCreator).create<Props>(
+    <Props = any, LoaderData = Record<string, any>>(config: ComponentConfig<Props, LoaderData>) => {
+        return (Component as ComponentCreator).create<Props & { data?: LoaderData }>(
             async (props: Props): Promise<Node | JSX.Element> => {
                 try {
                     if (config.loader) {
@@ -36,7 +33,9 @@ export const Component = Object.assign(
                             return await config.loading();
                         }
 
-                        const { state, results } = await loader(config.loader);
+                        // Execute the loader function to get the requests
+                        const requests = config.loader();
+                        const { state, results } = await loader(requests);
 
                         if (state === "error") {
                             throw results;
@@ -44,14 +43,35 @@ export const Component = Object.assign(
 
                         const propsWithData = {
                             ...props,
-                            data: results
+                            data: results as LoaderData
                         };
 
                         const renderedElement = await config.render(propsWithData);
+                        
+                        // Set up effect after render if needed
+                        const rootElement = renderedElement instanceof DocumentFragment
+                            ? renderedElement.firstElementChild as HTMLElement
+                            : renderedElement as HTMLElement;
+
+                        if (config.effect && rootElement) {
+                            const observer = new MutationObserver((_, obs) => {
+                                if (rootElement.isConnected) {
+                                    config.effect!(propsWithData);
+                                    obs.disconnect();
+                                }
+                            });
+
+                            observer.observe(document.body, {
+                                childList: true,
+                                subtree: true
+                            });
+                        }
+
                         return renderedElement;
                     }
 
-                    const result = await config.render(props);
+                    const propsWithoutData = { ...props, data: undefined };
+                    const result = await config.render(propsWithoutData);
 
                     const rootElement = result instanceof DocumentFragment
                         ? result.firstElementChild as HTMLElement
@@ -60,7 +80,7 @@ export const Component = Object.assign(
                     if (config.effect && rootElement) {
                         const observer = new MutationObserver((_, obs) => {
                             if (rootElement.isConnected) {
-                                config.effect!(props);
+                                config.effect!(propsWithoutData);
                                 obs.disconnect();
                             }
                         });

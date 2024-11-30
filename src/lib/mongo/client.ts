@@ -59,13 +59,55 @@ export const fetchCollection = async (
 ) => {
     const { query = {}, projection = [], join, sort, limit = 20, offset = 0, count = false } = options;
 
+    // Define processQuery before using it
+    const processQuery = (q: Record<string, any>): Record<string, any> => {
+        return Object.entries(q).reduce((acc, [key, value]) => {
+            if (typeof value === 'string' && value.endsWith('==')) {
+                // Looks like a base64 string, convert to BSON Binary
+                return {
+                    ...acc,
+                    [key]: {
+                        $binary: {
+                            base64: value,
+                            subType: "03"
+                        }
+                    }
+                };
+            }
+            if (value && typeof value === 'object') {
+                if ('$elemMatch' in value) {
+                    return {
+                        ...acc,
+                        [key]: {
+                            $elemMatch: processQuery(value.$elemMatch)
+                        }
+                    };
+                }
+                return { ...acc, [key]: processQuery(value) };
+            }
+            return { ...acc, [key]: value };
+        }, {});
+    };
+
+    // Add the not-deleted condition to the query
+    const notDeletedCondition = { Deleted: null };
+    const combinedQuery = {
+        ...processQuery(query),
+        ...notDeletedCondition
+    };
+
+    const processedQuery = processQuery(query);
+    console.log("Processed query:", JSON.stringify(processedQuery, null, 2));
+
     const user = await ensureUser();
     const conn = user.mongoClient("mongodb-atlas").db("FanApp");
+
+    console.log("fetchCollection raw query:", JSON.stringify(processedQuery, null, 2));
 
     // If count is requested, return the total count
     if (count) {
         const pipeline = [
-            ...(Object.keys(query).length > 0 ? [{ $match: query }] : []),
+            { $match: combinedQuery },
             { $count: "total" }
         ];
         const result = await conn.collection(name).aggregate(pipeline);
@@ -73,11 +115,9 @@ export const fetchCollection = async (
     }
 
     // Rest of the existing pipeline logic...
-    const pipeline: any[] = [];
-
-    if (Object.keys(query).length > 0) {
-        pipeline.push({ $match: query });
-    }
+    const pipeline: any[] = [
+        { $match: combinedQuery }
+    ];
 
     if (projection.length > 0) {
         const projectFields = projection.reduce(
@@ -114,6 +154,7 @@ export const fetchCollection = async (
     pipeline.push({ $skip: offset });
     pipeline.push({ $limit: limit });
 
+    console.log("Final pipeline:", JSON.stringify(pipeline, null, 2));
     const results = await conn.collection(name).aggregate(pipeline);
     return results.map((doc: any) => convertBinary(doc));
 };
@@ -123,17 +164,25 @@ export const fetchDocument = async (collectionName: string, id: string, pipeline
     const conn = user.mongoClient("mongodb-atlas").db("FanApp");
 
     if (pipeline) {
+        // Add not-deleted condition to custom pipeline
+        pipeline.unshift({ $match: { Deleted: null } });
         const results = await conn.collection(collectionName).aggregate(pipeline);
-        const result = results[0]; // Get first document from pipeline result
+        const result = results[0];
         return result ? convertBinary(result) : null;
     }
 
-    // Existing logic for when no pipeline is provided
+    // Update existing logic to include not-deleted condition
     const binaryId = ToBinary(id);
-    let result = await conn.collection(collectionName).findOne({ _id: binaryId });
+    let result = await conn.collection(collectionName).findOne({ 
+        _id: binaryId,
+        Deleted: null
+    });
 
     if (!result) {
-        result = await conn.collection(collectionName).findOne({ _id: id });
+        result = await conn.collection(collectionName).findOne({ 
+            _id: id,
+            Deleted: null
+        });
     }
 
     if (!result) return null;

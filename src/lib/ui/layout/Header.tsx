@@ -31,7 +31,7 @@ export const Header = Component({
         });
     },
     render: async () => {
-        const user = stateManager.getState("user");
+        const user = stateManager.getState("authUser");
         const isAuthenticated = await AuthService.isAuthenticated();
 
         if (!isAuthenticated) {

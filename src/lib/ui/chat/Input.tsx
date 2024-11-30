@@ -6,11 +6,19 @@ import { mergeRegister } from "@lexical/utils";
 import { createEditor, $getRoot } from "lexical";
 import { EmojiNode, registerEmojiPlugin } from "@/lib/plugins/EmojiPlugin";
 import { eventBus } from "@/lib/event";
+import { stateManager } from "@/lib/state";
+import { from } from "@/lib/mongo/query";
 
-interface InputProps {}
+interface InputProps { }
 
 export const Input = Component<InputProps>({
     effect: () => {
+        const { user } = stateManager.getState("user");
+        let userData: any | null = null;
+        from("User").where({ Auth0UserId: user?.sub }).exec().then((data) => {
+            userData = data[0];
+        });
+
         const editorRef = document.getElementById(
             "lexical-editor"
         ) as HTMLElement;
@@ -43,8 +51,9 @@ export const Input = Component<InputProps>({
                             detail: {
                                 content: editor.getEditorState().toJSON(),
                                 timestamp: Date.now(),
-                                sender: "Anonymous",
-                                senderName: "Anonymous"
+                                sender: userData?._id,
+                                senderName: userData?.FirstName,
+                                senderAvatar: userData?.ImageURL
                             }
                         };
 
@@ -64,7 +73,7 @@ export const Input = Component<InputProps>({
 
                         eventBus.publish(
                             "send-message",
-                            new CustomEvent("send-message")
+                            new CustomEvent("send-message", message)
                         );
                     }
                 });

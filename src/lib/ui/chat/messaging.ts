@@ -12,31 +12,28 @@ interface StatusEventInit {
 export const messaging = (
     provider: WebsocketProvider,
     ydoc: Doc
-): { sendMessage: (message: ChatMessage) => void } => {
-
+) => {
     const messages = ydoc.getArray<ChatMessage>("messages");
     const reactions = ydoc.getMap<Reaction>("reactions");
     const threads = ydoc.getMap<Thread>("threads");
 
-    const sendMessage = (message: ChatMessage): void => {
-        if (!provider?.wsconnected) {
-            const event = new CustomEvent("status", {
-                detail: {
-                    variant: "error",
-                    title: ConnectionState.DISCONNECTED,
-                    message: "cannot send message while disconnected"
-                }
-            });
+    eventBus.subscribe("send-message", (event: CustomEvent) => {
+        console.log("send-message", event);
+        if (event.detail) {
+            if (!provider?.wsconnected) {
+                const event = new CustomEvent("status", {
+                    detail: {
+                        variant: "error",
+                        title: ConnectionState.DISCONNECTED,
+                        message: "cannot send message while disconnected"
+                    }
+                });
 
-            eventBus.publish("status", event);
-            return;
+                eventBus.publish("status", event);
+                return;
+            }
+
+            messages.insert(messages.length, [event.detail]);
         }
-
-        messages.insert(messages.length, [message]);
-    }
-
-    return {
-        sendMessage
-    }
-
+    });
 }

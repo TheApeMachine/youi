@@ -1,0 +1,28 @@
+ul.list {
+    border-radius: var(--xs);
+    background: var(--dark);
+    list-style: none;
+    padding: 0;
+
+    li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--sm);
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        border-bottom: 1px solid var(--darker);
+        transition: var(--transition-all);
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:hover {
+            color: var(--pink);
+            border-top: 2px solid var(--pink);
+            box-shadow: var(--shadow-tile);
+        }
+    }
+}

@@ -1,4 +1,4 @@
-import { ToBinary } from "./utils";
+import { ToBinary, FromBinary } from "./utils";
 
 import { fetchCollection, updateCollection } from "./client";
 
@@ -84,18 +84,22 @@ type QueryBuilder = {
     count: () => Promise<number>;
     set: (data: Record<string, any>) => Promise<any>;
     softDelete: () => Promise<void>;
+    whereArrayField: (field: string, conditions: Record<string, any>) => QueryBuilder;
 };
 
 // Helper to ensure PascalCase
 const toPascalCase = (str: string) =>
     str.charAt(0).toUpperCase() + str.slice(1);
 
+// At the top of the file, add this type
+type WhereConditions = Record<string, any>;
+
 // Smart query function - now accepts PascalCase collection names
 export const from = (collection: string): QueryBuilder => {
     let state = {
         collection: toPascalCase(collection),
         fields: [] as string[],
-        where: {},
+        where: {} as WhereConditions,
         joins: [] as any[],
         limit: 20,
         offset: 0,
@@ -153,10 +157,39 @@ export const from = (collection: string): QueryBuilder => {
 
     const builder = {
         where: (conditions: Record<string, any>) => {
-            // Handle binary ID conversion in where clauses
-            const processedConditions = Object.entries(conditions).reduce((acc, [key, value]) => {
-                if (key === "_id" || key.endsWith("Id")) {
+            // First handle array field queries
+            const arrayProcessed = Object.entries(conditions).reduce((acc, [key, value]) => {
+                if (value && typeof value === 'object' && !('$elemMatch' in value)) {
+                    // Assume this is an array field query
+                    acc[key] = { $elemMatch: value };
+                } else {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {} as Record<string, any>);
+
+            // Then handle binary conversion
+            const processedConditions = Object.entries(arrayProcessed).reduce((acc, [key, value]) => {
+                if ((key === "_id" || key.endsWith("Id")) && isUUID(value)) {
                     return { ...acc, [key]: ToBinary(value) };
+                }
+                // If it's an $elemMatch, check its contents for IDs too
+                if (value && typeof value === 'object' && '$elemMatch' in value) {
+                    const processedElemMatch = Object.entries(value.$elemMatch).reduce((acc, [elemKey, elemValue]) => {
+                        if ((elemKey === "_id" || elemKey.endsWith("Id")) && isUUID(elemValue as string)) {
+                            return { 
+                                ...acc, 
+                                [elemKey]: { 
+                                    $binary: {
+                                        base64: ToBinary(elemValue as string),
+                                        subType: "03"
+                                    }
+                                }
+                            };
+                        }
+                        return { ...acc, [elemKey]: elemValue };
+                    }, {});
+                    return { ...acc, [key]: { $elemMatch: processedElemMatch }};
                 }
                 return { ...acc, [key]: value };
             }, {});
@@ -253,6 +286,13 @@ export const from = (collection: string): QueryBuilder => {
                     }
                 }
             });
+        },
+
+        // Add new method for array field queries
+        whereArrayField: (field: string, conditions: Record<string, any>) => {
+            const processedConditions = convertToBinary(conditions);
+            state.where[field] = { $elemMatch: processedConditions };
+            return builder;
         }
     };
 

@@ -26,7 +26,7 @@ export const NeuralCanvas = Component({
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        
+
         renderer.setSize(container.clientWidth, container.clientHeight);
         container.appendChild(renderer.domElement);
 
@@ -139,7 +139,7 @@ export const NeuralCanvas = Component({
         window.addEventListener('resize', onResize);
 
         // Subscribe to system events
-        eventBus.subscribe("test", (event: EventPayload) => {
+        eventBus.subscribe("test", (_: EventPayload) => {
             // Create energy pulse at random neuron
             const neuron = neurons[Math.floor(Math.random() * neurons.length)];
             gsap.to(neuron.mesh.scale, {

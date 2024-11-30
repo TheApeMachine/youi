@@ -2,7 +2,6 @@ import { Bars } from "@/lib/ui/charts/Bars";
 import { Donut } from "@/lib/ui/charts/Donut";
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { faker } from "@faker-js/faker";
 import { Calendar } from "@/lib/ui/calendar/Calendar";
 import { stateManager } from "@/lib/state";
 import gsap from "gsap";
@@ -48,7 +47,7 @@ export const render = Component({
         });
     },
     render: () => {
-        const user = stateManager.getState("user");
+        const user = stateManager.getState("authUser");
 
         return (
             <div class="column width height gap pad">

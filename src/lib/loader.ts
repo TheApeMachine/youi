@@ -5,7 +5,7 @@ const cacheExpirationTime = 60000; // Cache for 60 seconds
 
 // Define the loader that initially returns "loading" state
 export const loader = async (
-    requests: Record<string, { 
+    requests: Record<string, Promise<any> | { 
         url: string, 
         method?: string, 
         params?: Record<string, any>,
@@ -18,7 +18,30 @@ export const loader = async (
     const results: Record<string, any> = {};
     try {
         for (const key in requests) {
-            const { url, method = "GET", params, headers } = requests[key];
+            const request = requests[key];
+
+            // Handle Promise-based requests (like MongoDB queries)
+            if (request instanceof Promise) {
+                const cacheKey = `promise:${key}`;
+                
+                if (cache[cacheKey] && now - cache[cacheKey].timestamp < cacheExpirationTime) {
+                    results[key] = cache[cacheKey].data;
+                    console.debug("loader", "cache hit", cacheKey, results[key]);
+                } else {
+                    const data = await request;
+                    results[key] = data;
+                    eventBus.publish("stateChange", {
+                        key,
+                        value: data
+                    });
+                    cache[cacheKey] = { data, timestamp: now };
+                    console.debug("loader", "cache miss", cacheKey, results[key]);
+                }
+                continue;
+            }
+
+            // Existing HTTP request handling
+            const { url, method = "GET", params, headers } = request;
             const cacheKey = `${method}:${url}:${JSON.stringify(params || {})}`;
             
             console.debug("loader", "cacheKey", cacheKey)

@@ -2,6 +2,7 @@
 @import url(drawflow.min.css);
 @import url(reset.css);
 @import url(root.css);
+@import url(theme.css);
 @import url(button.css);
 @import url(lamp.css);
 @import url(monocle.css);
@@ -198,7 +199,7 @@ footer {
 }
 
 .reveal .slides section,
-.reveal .slides section > section {
+.reveal .slides section>section {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -308,13 +309,11 @@ img {
 }
 
 ::backdrop {
-    background-image: linear-gradient(
-        45deg,
-        magenta,
-        rebeccapurple,
-        dodgerblue,
-        green
-    );
+    background-image: linear-gradient(45deg,
+            magenta,
+            rebeccapurple,
+            dodgerblue,
+            green);
     opacity: 0.75;
 }
 
@@ -404,7 +403,7 @@ dialog {
             overflow: hidden;
             cursor: pointer;
 
-            > a {
+            >a {
                 height: 0;
                 opacity: 0;
             }
@@ -555,72 +554,64 @@ div.call-buttons {
 
 .rainbow:before {
     content: "";
-    background: conic-gradient(
-        #ff9999,
-        #ffcc99,
-        #ffff99,
-        #ccff99,
-        #99ff99,
-        #99ffcc,
-        #99ffff,
-        #99ccff,
-        #9999ff,
-        #cc99ff,
-        #ff99ff,
-        #ff99cc,
-        #ff9999
-    );
-    background: conic-gradient(
-        #ff9999,
-        #ffcc99,
-        #ffff99,
-        #ccff99,
-        #99ff99,
-        #99ffcc,
-        #99ffff,
-        #99ccff,
-        #9999ff,
-        #cc99ff,
-        #ff99ff,
-        #ff99cc,
-        #ff9999
-    );
+    background: conic-gradient(#ff9999,
+            #ffcc99,
+            #ffff99,
+            #ccff99,
+            #99ff99,
+            #99ffcc,
+            #99ffff,
+            #99ccff,
+            #9999ff,
+            #cc99ff,
+            #ff99ff,
+            #ff99cc,
+            #ff9999);
+    background: conic-gradient(#ff9999,
+            #ffcc99,
+            #ffff99,
+            #ccff99,
+            #99ff99,
+            #99ffcc,
+            #99ffff,
+            #99ccff,
+            #9999ff,
+            #cc99ff,
+            #ff99ff,
+            #ff99cc,
+            #ff9999);
     animation: spun 2s linear infinite;
     z-index: -1;
 }
 
 .rainbow:after {
     content: "";
-    background: conic-gradient(
-        #ff9999,
-        #ffcc99,
-        #ffff99,
-        #ccff99,
-        #99ff99,
-        #99ffcc,
-        #99ffff,
-        #99ccff,
-        #9999ff,
-        #cc99ff,
-        #ff99ff,
-        #ff99cc,
-        #ff9999
-    );
-    background: conic-gradient(
-        #ff9999,
-        #ffcc99,
-        #ffff99,
-        #ccff99,
-        #99ff99,
-        #99ffcc,
-        #99ffff,
-        #99ccff,
-        #9999ff,
-        #cc99ff,
-        #ff99ff,
-        #ff99cc,
-        #ff9999
-    );
+    background: conic-gradient(#ff9999,
+            #ffcc99,
+            #ffff99,
+            #ccff99,
+            #99ff99,
+            #99ffcc,
+            #99ffff,
+            #99ccff,
+            #9999ff,
+            #cc99ff,
+            #ff99ff,
+            #ff99cc,
+            #ff9999);
+    background: conic-gradient(#ff9999,
+            #ffcc99,
+            #ffff99,
+            #ccff99,
+            #99ff99,
+            #99ffcc,
+            #99ffff,
+            #99ccff,
+            #9999ff,
+            #cc99ff,
+            #ff99ff,
+            #ff99cc,
+            #ff9999);
     animation: sonar 3s ease-out infinite;
     z-index: -2;
 }
@@ -661,7 +652,7 @@ div.call-buttons {
     &:hover {
         transform: translateY(-2px);
 
-        > span {
+        >span {
             scale: 1.2;
         }
     }

@@ -1,3 +1,5 @@
+import { eventBus } from "./event";
+
 const cache: Record<string, { data: any, timestamp: number }> = {};
 const cacheExpirationTime = 60000; // Cache for 60 seconds
 
@@ -29,7 +31,10 @@ export const loader = async (
                 const response = await fetchWithParams(url, method, params, headers);
                 const data = await response.json();
                 results[key] = data;
-                window.stateManager.setState(key, data);
+                eventBus.publish("stateChange", {
+                    key,
+                    value: data
+                });
                 cache[cacheKey] = { data, timestamp: now }; // Store with timestamp
                 console.debug("loader", "cache miss", cacheKey, results[key])
             }

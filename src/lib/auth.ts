@@ -21,30 +21,66 @@ export type User = {
 };
 
 // Initialize Auth0 client
-export const auth = new auth0.Authentication({
+export const auth = new auth0.WebAuth({
     domain: import.meta.env.VITE_AUTH0_DOMAIN,
     clientID: import.meta.env.VITE_AUTH0_CLIENT_ID,
+    responseType: 'token id_token',
+    scope: 'openid profile email',
+    redirectUri: window.location.origin
 });
 
 // Auth service
 export const AuthService = {
     // Login with username and password
-    login: async (username: string, password: string): Promise<Token> => {
+    login: async (username: string, password: string): Promise<void> => {
         return new Promise((resolve, reject) => {
             auth.login({
                 realm: "Username-Password-Authentication",
                 username,
                 password,
-            }, (error: Auth0Error | null, result: Token) => {
+                responseType: 'token id_token',
+            }, (error: Auth0Error | null) => {
                 if (error) {
-                    eventBus.publish("auth:error", error);
+                    eventBus.publish("status", {
+                        status: "error",
+                        variant: "error",
+                        title: "Login failed",
+                        message: error.description || "Login failed"
+                    });
                     return reject(error);
                 }
+                resolve();
+            });
+        });
+    },
 
-                // Store token in state
-                stateManager.setState({ token: result });
-                eventBus.publish("auth:login", result);
-                resolve(result);
+    // Handle authentication callback
+    handleAuthentication: async (): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            auth.parseHash((error, authResult) => {
+                if (error) {
+                    eventBus.publish("status", {
+                        status: "error",
+                        variant: "error",
+                        title: "Login failed",
+                        message: error.description || "Login failed"
+                    });
+                    return reject(error);
+                }
+                if (authResult && authResult.accessToken && authResult.idToken) {
+                    const token = {
+                        accessToken: authResult.accessToken,
+                        idToken: authResult.idToken,
+                        scope: authResult.scope || '',
+                        expiresIn: authResult.expiresIn || 0,
+                        tokenType: authResult.tokenType || 'Bearer'
+                    };
+                    eventBus.publish("stateChange", {
+                        key: "token",
+                        value: token
+                    });
+                    resolve();
+                }
             });
         });
     },
@@ -52,15 +88,22 @@ export const AuthService = {
     // Get user details
     getUserInfo: async (accessToken: string): Promise<User> => {
         return new Promise((resolve, reject) => {
-            auth.userInfo(accessToken, (error, result) => {
+            auth.client.userInfo(accessToken, (error, result) => {
                 if (error) {
-                    eventBus.publish("auth:error", error);
+                    eventBus.publish("status", {
+                        status: "error",
+                        variant: "error",
+                        title: "Error",
+                        message: error.description || "Error fetching user info"
+                    });
                     return reject(error);
                 }
 
                 // Store user in state
-                stateManager.setState({ user: result });
-                eventBus.publish("auth:user", result);
+                eventBus.publish("stateChange", {
+                    key: "user",
+                    value: result
+                });
                 resolve(result as User);
             });
         });
@@ -78,7 +121,16 @@ export const AuthService = {
 
     // Logout
     logout: () => {
-        stateManager.setState({ token: null, user: null });
-        eventBus.publish("auth:logout", null);
+        eventBus.publish("stateChange", {
+            key: "token",
+            value: null
+        });
+        eventBus.publish("stateChange", {
+            key: "user",
+            value: null
+        });
+        auth.logout({
+            returnTo: window.location.origin
+        });
     }
 }; 

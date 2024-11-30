@@ -1,6 +1,7 @@
-import { Layout } from './ui/layout/Layout';
-import { ErrorBoundary } from './ui/error/ErrorBoundary';
-import { eventBus } from './event';
+import { Layout } from '@/lib/ui/layout/Layout';
+import { ErrorBoundary } from '@/lib/ui/error/ErrorBoundary';
+import { eventBus } from '@/lib/event';
+import { AuthService } from '@/lib/auth';
 
 interface RouteModule {
     render: (params: Record<string, string>) => Promise<Node>;
@@ -9,7 +10,11 @@ interface RouteModule {
 export interface Route {
     path: string;
     view: (params: Record<string, string>) => Promise<Node>;
+    public?: boolean;
 }
+
+// List of routes that don't require authentication
+const publicPaths = ['/login', '/404'];
 
 // Function to load and discover all route files dynamically
 async function discoverRoutes(): Promise<Route[]> {
@@ -24,12 +29,14 @@ async function discoverRoutes(): Promise<Route[]> {
             if (moduleName === 'collection') {
                 routes.push({
                     path: '/collection/:id',
-                    view: async (params) => module.render(params)
+                    view: async (params) => module.render(params),
+                    public: false
                 });
             } else {
                 routes.push({
                     path: moduleName === 'home' ? '/' : `/${moduleName}`,
-                    view: async (params) => module.render(params)
+                    view: async (params) => module.render(params),
+                    public: publicPaths.includes(moduleName === 'home' ? '/' : `/${moduleName}`)
                 });
             }
         }
@@ -78,50 +85,71 @@ export const createRouter = async () => {
             currentPath = path;
             const { route, params } = matchRoute(path, routes);
 
+            // Check if the route requires authentication
+            if (!route.public && !AuthService.isAuthenticated()) {
+                // Store the attempted URL to redirect back after login
+                sessionStorage.setItem('redirectUrl', path);
+                history.pushState(null, "", '/login');
+                currentPath = '/login';
+                const { route: loginRoute, params: loginParams } = matchRoute('/login', routes);
+                try {
+                    const content = await loginRoute.view(loginParams);
+                    updateSlides(content, '/login');
+                } catch (error: any) {
+                    handleRoutingError(error);
+                }
+                return;
+            }
+
             try {
-                const reveal = (window as any).Reveal;
-                console.log("reveal", reveal)
                 const content = await route.view(params);
-
-                // Create new slide section
-                const slideSection = document.createElement('section');
-                slideSection.dataset.path = path;
-                if (content instanceof Node) {
-                    slideSection.appendChild(content);
-                } else {
-                    slideSection.innerHTML = String(content);
-                }
-
-                // Find if we already have a slide with this path
-                const existingSlide = slidesContainer.querySelector(`section[data-path="${path}"]`);
-                if (existingSlide) {
-                    // If slide exists, navigate to it
-                    const slideIndex = Array.from(slidesContainer.children).indexOf(existingSlide);
-                    if (reveal && reveal.isReady()) {
-                        reveal.slide(slideIndex);
-                    }
-                } else {
-                    // Add new slide and navigate to it
-                    slidesContainer.appendChild(slideSection);
-                    if (reveal && reveal.isReady()) {
-                        reveal.sync();
-                        reveal.slide(slidesContainer.children.length - 1);
-                    }
-                }
-
-                // Optional: Clean up old slides
-                const maxSlidesToKeep = 5;
-                while (slidesContainer.children.length > maxSlidesToKeep) {
-                    slidesContainer.removeChild(slidesContainer.firstChild!);
-                }
+                updateSlides(content, path);
             } catch (error: any) {
-                console.error("Routing error:", error);
-                const errorElement = await ErrorBoundary({ error: error });
-                const errorSection = document.createElement('section');
-                errorSection.appendChild(errorElement);
-                slidesContainer.appendChild(errorSection);
+                handleRoutingError(error);
             }
         }
+    };
+
+    const updateSlides = (content: Node | string, path: string) => {
+        // Create new slide section
+        const slideSection = document.createElement('section');
+        slideSection.dataset.path = path;
+        if (content instanceof Node) {
+            slideSection.appendChild(content);
+        } else {
+            slideSection.innerHTML = String(content);
+        }
+
+        // Find if we already have a slide with this path
+        const existingSlide = slidesContainer.querySelector(`section[data-path="${path}"]`);
+        if (existingSlide) {
+            // If slide exists, navigate to it
+            const slideIndex = Array.from(slidesContainer.children).indexOf(existingSlide);
+            if (reveal && reveal.isReady()) {
+                reveal.slide(slideIndex);
+            }
+        } else {
+            // Add new slide and navigate to it
+            slidesContainer.appendChild(slideSection);
+            if (reveal && reveal.isReady()) {
+                reveal.sync();
+                reveal.slide(slidesContainer.children.length - 1);
+            }
+        }
+
+        // Optional: Clean up old slides
+        const maxSlidesToKeep = 5;
+        while (slidesContainer.children.length > maxSlidesToKeep) {
+            slidesContainer.removeChild(slidesContainer.firstChild!);
+        }
+    };
+
+    const handleRoutingError = async (error: Error) => {
+        console.error("Routing error:", error);
+        const errorElement = await ErrorBoundary({ error: error });
+        const errorSection = document.createElement('section');
+        errorSection.appendChild(errorElement);
+        slidesContainer.appendChild(errorSection);
     };
 
     // Initial route
@@ -134,7 +162,7 @@ export const createRouter = async () => {
     return { router, navigateTo: createNavigateTo(router) };
 };
 
-const createNavigateTo = (router: () => Promise<void>) => {
+export const createNavigateTo = (router: () => Promise<void>) => {
     return async (url: string) => {
         if (url !== currentPath) {
             history.pushState(null, "", url);

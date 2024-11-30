@@ -3,13 +3,16 @@ import { Component } from "@/lib/ui/Component";
 import { AuthService } from "@/lib/auth";
 import "@/assets/login.css";
 import { eventBus } from "@/lib/event";
+import { createRouter } from "@/lib/router";
 
 export const render = Component({
-    effect: () => {
+    effect: async () => {
         const form = document.querySelector("form");
         const errorMessage = document.querySelector(".callout.error");
         const errorMessageText = document.querySelector(".message h6");
         const loadingSpinner = document.querySelector(".loading-spinner");
+
+        const { navigateTo } = await createRouter();
 
         // Handle form submission
         form?.addEventListener("submit", async (e: Event) => {
@@ -38,11 +41,19 @@ export const render = Component({
                     errorMessage.style.opacity = "0";
                 }
 
-                const token = await AuthService.login(username, password);
-                const user = await AuthService.getUserInfo(token.accessToken);
+                await AuthService.login(username, password);
 
-                // Redirect to home page
-                window.location.href = "/";
+                // Subscribe to auth:login event to get the token
+                eventBus.subscribe("stateChange", async (payload: { key: string, value: any }) => {
+                    if (payload.key === "token") {
+                        const user = await AuthService.getUserInfo(payload.value.accessToken);
+                        eventBus.publish("stateChange", {
+                            key: "user",
+                            value: user
+                        });
+                        navigateTo("/dashboard");
+                    }
+                });
             } catch (error) {
                 eventBus.publish(
                     "status",

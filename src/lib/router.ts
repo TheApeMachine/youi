@@ -2,6 +2,7 @@ import { Layout } from '@/lib/ui/layout/Layout';
 import { ErrorBoundary } from '@/lib/ui/error/ErrorBoundary';
 import { eventBus } from '@/lib/event';
 import { AuthService } from '@/lib/auth';
+import { stateManager } from '@/lib/state';
 
 interface RouteModule {
     render: (params: Record<string, string>) => Promise<Node>;
@@ -14,7 +15,7 @@ export interface Route {
 }
 
 // List of routes that don't require authentication
-const publicPaths = ['/login', '/404'];
+const publicPaths = ['/login', '/404', '/signup', '/forgot-password'];
 
 // Function to load and discover all route files dynamically
 async function discoverRoutes(): Promise<Route[]> {
@@ -48,6 +49,9 @@ async function discoverRoutes(): Promise<Route[]> {
 let currentPath = '';
 
 export const createRouter = async () => {
+    // Wait for state to be initialized first
+    await stateManager.init();
+    
     const routes = await discoverRoutes();
     const layout = await Layout({});
 
@@ -86,19 +90,22 @@ export const createRouter = async () => {
             const { route, params } = matchRoute(path, routes);
 
             // Check if the route requires authentication
-            if (!route.public && !AuthService.isAuthenticated()) {
-                // Store the attempted URL to redirect back after login
-                sessionStorage.setItem('redirectUrl', path);
-                history.pushState(null, "", '/login');
-                currentPath = '/login';
-                const { route: loginRoute, params: loginParams } = matchRoute('/login', routes);
-                try {
-                    const content = await loginRoute.view(loginParams);
-                    updateSlides(content, '/login');
-                } catch (error: any) {
-                    handleRoutingError(error);
+            if (!route.public) {
+                const isAuthenticated = await AuthService.isAuthenticated();
+                if (!isAuthenticated) {
+                    // Store the attempted URL to redirect back after login
+                    sessionStorage.setItem('redirectUrl', path);
+                    history.pushState(null, "", '/login');
+                    currentPath = '/login';
+                    const { route: loginRoute, params: loginParams } = matchRoute('/login', routes);
+                    try {
+                        const content = await loginRoute.view(loginParams);
+                        updateSlides(content, '/login');
+                    } catch (error: any) {
+                        handleRoutingError(error);
+                    }
+                    return;
                 }
-                return;
             }
 
             try {

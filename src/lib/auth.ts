@@ -1,4 +1,4 @@
-import auth0, { Auth0Error } from "auth0-js";
+import auth0, { Auth0Error, Auth0UserProfile } from "auth0-js";
 import { eventBus } from "@/lib/event";
 import { stateManager } from "@/lib/state";
 
@@ -21,12 +21,11 @@ export type User = {
 };
 
 // Initialize Auth0 client
-export const auth = new auth0.WebAuth({
+export const auth = new auth0.Authentication({
     domain: import.meta.env.VITE_AUTH0_DOMAIN,
     clientID: import.meta.env.VITE_AUTH0_CLIENT_ID,
-    responseType: 'token id_token',
-    scope: 'openid profile email',
-    redirectUri: window.location.origin
+    responseType: "token",
+    scope: "openid profile email"
 });
 
 // Auth service
@@ -37,9 +36,8 @@ export const AuthService = {
             auth.login({
                 realm: "Username-Password-Authentication",
                 username,
-                password,
-                responseType: 'token id_token',
-            }, (error: Auth0Error | null) => {
+                password
+            }, (error: Auth0Error | null, result?: Token) => {
                 if (error) {
                     eventBus.publish("status", {
                         status: "error",
@@ -48,39 +46,18 @@ export const AuthService = {
                         message: error.description || "Login failed"
                     });
                     return reject(error);
+                }
+                if (result) {
+                    console.log("login", result);
+                    eventBus.publish("stateChange", {
+                        key: "auth",
+                        value: {
+                            ...result,
+                            timestamp: Date.now()
+                        }
+                    });
                 }
                 resolve();
-            });
-        });
-    },
-
-    // Handle authentication callback
-    handleAuthentication: async (): Promise<void> => {
-        return new Promise((resolve, reject) => {
-            auth.parseHash((error, authResult) => {
-                if (error) {
-                    eventBus.publish("status", {
-                        status: "error",
-                        variant: "error",
-                        title: "Login failed",
-                        message: error.description || "Login failed"
-                    });
-                    return reject(error);
-                }
-                if (authResult && authResult.accessToken && authResult.idToken) {
-                    const token = {
-                        accessToken: authResult.accessToken,
-                        idToken: authResult.idToken,
-                        scope: authResult.scope || '',
-                        expiresIn: authResult.expiresIn || 0,
-                        tokenType: authResult.tokenType || 'Bearer'
-                    };
-                    eventBus.publish("stateChange", {
-                        key: "token",
-                        value: token
-                    });
-                    resolve();
-                }
             });
         });
     },
@@ -88,7 +65,7 @@ export const AuthService = {
     // Get user details
     getUserInfo: async (accessToken: string): Promise<User> => {
         return new Promise((resolve, reject) => {
-            auth.client.userInfo(accessToken, (error, result) => {
+            auth.userInfo(accessToken, (error: Auth0Error | null, result?: Auth0UserProfile) => {
                 if (error) {
                     eventBus.publish("status", {
                         status: "error",
@@ -99,38 +76,66 @@ export const AuthService = {
                     return reject(error);
                 }
 
-                // Store user in state
-                eventBus.publish("stateChange", {
-                    key: "user",
-                    value: result
-                });
-                resolve(result as User);
+                if (result) {
+                    const user = result as User;
+                    eventBus.publish("stateChange", {
+                        key: "user",
+                        value: user
+                    });
+                    resolve(user);
+                } else {
+                    reject(new Error("No user info returned"));
+                }
             });
         });
     },
 
-    // Check if user is authenticated
-    isAuthenticated: (): boolean => {
-        const token = stateManager.getState("token") as Token | null;
-        if (!token) return false;
+    isAuthenticated: async (): Promise<boolean> => {
+        const auth = stateManager.getState('auth');
+        console.log("isAuthenticated check", {
+            auth,
+            hasToken: !!auth?.accessToken,
+            timestamp: auth?.timestamp,
+            expiresIn: auth?.expiresIn
+        });
+
+        if (!auth?.accessToken) {
+            return false;
+        }
 
         // Check if token is expired
-        const expirationDate = new Date(token.expiresIn * 1000);
-        return new Date() < expirationDate;
+        const expirationTime = auth.expiresIn * 1000; // Convert to milliseconds
+        const tokenTimestamp = auth.timestamp || 0;
+        const now = Date.now();
+
+        if (now - tokenTimestamp > expirationTime) {
+            // Token is expired
+            eventBus.publish("stateChange", {
+                key: "auth",
+                value: null
+            });
+            return false;
+        }
+
+        return true;
     },
 
     // Logout
     logout: () => {
         eventBus.publish("stateChange", {
-            key: "token",
+            key: "auth",
             value: null
         });
         eventBus.publish("stateChange", {
             key: "user",
             value: null
         });
-        auth.logout({
-            returnTo: window.location.origin
+
+        eventBus.publish("status", {
+            status: "success",
+            variant: "success",
+            title: "Logged out",
+            message: "You have been logged out successfully"
         });
     }
 }; 

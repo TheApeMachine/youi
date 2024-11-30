@@ -7,12 +7,22 @@ type ButtonProps = {
     icon?: string;
     label?: string;
     href?: string;
+    effect?: string;
+    trigger?: string;
     children?: Node | Node[];
 };
 
 export const Button = Component({
     effect: () => {},
-    render: ({ variant, icon, label, href, children }: ButtonProps) => {
+    render: ({
+        variant,
+        icon,
+        label,
+        href,
+        effect,
+        trigger,
+        children
+    }: ButtonProps) => {
         switch (variant) {
             case "menu":
                 return (
@@ -55,7 +65,18 @@ export const Button = Component({
                     </button>
                 );
             case "icon":
-                return <span class="material-icons">{icon}</span>;
+                return (
+                    <button
+                        data-trigger={trigger}
+                        data-event="menu"
+                        data-effect={effect}
+                        class="icon"
+                    >
+                        <span class="material-icons" data-trigger="click">
+                            {icon}
+                        </span>
+                    </button>
+                );
         }
     }
 });

@@ -44,6 +44,10 @@
     --transition: all 0.2s cubic-bezier(0.64, 0, 0.78, 0);
 }
 
+[data-trigger="click"] {
+    cursor: pointer;
+}
+
 .front {
     z-index: 100;
 }
@@ -106,8 +110,20 @@
     justify-content: center;
     flex: 1;
 
-    .space-between {
+    &.space-between {
         justify-content: space-between;
+    }
+
+    &.end {
+        justify-content: flex-end;
+    }
+
+    &.start {
+        justify-content: flex-start;
+    }
+
+    &.stretch {
+        align-items: stretch;
     }
 }
 
@@ -139,6 +155,10 @@
 .center {
     align-items: center;
     justify-content: center;
+}
+
+.pull-up {
+    transform: translateY(-50%);
 }
 
 .text-center {
@@ -230,6 +250,16 @@
 
 .ring-darker {
     box-shadow: var(--ring-darker);
+}
+
+.ring-purple {
+    box-shadow: var(--ring-purple);
+}
+
+.ring-double-purple {
+    box-shadow: var(--ring-double-purple);
+    outline: 8px solid var(--darker);
+    outline-offset: 6px;
 }
 
 .nobreak {

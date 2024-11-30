@@ -8,6 +8,7 @@ import { Navigation } from "../menu/Navigation";
 import { Toaster } from "../toast/Toaster";
 import "@dotlottie/player-component";
 import { Player } from "../animoji/Player";
+import { Header } from "./Header";
 
 gsap.registerPlugin(Flip);
 
@@ -47,18 +48,9 @@ export const Layout = Component<LayoutProps>({
     },
     render: async () => (
         <div className="layout">
-            <header></header>
+            <Header />
             <aside></aside>
             <main id="app">
-                <div
-                    className="animoji"
-                    data-trigger="click"
-                    data-event="menu"
-                    data-effect="open"
-                >
-                    <span class="material-icons menu-icon">rocket</span>
-                    <Player />
-                </div>
                 <div className="reveal">
                     <div className="slides"></div>
                 </div>

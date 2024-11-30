@@ -1,3 +1,16 @@
+button {
+    &.icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--xs);
+        border-radius: var(--xs);
+        background: var(--darker);
+        color: var(--light);
+        cursor: pointer;
+    }
+}
+
 .badge {
     display: flex;
     align-items: center;
@@ -56,8 +69,7 @@
 
     background: hsl(0 0% 0% / 0%);
 
-    box-shadow: 0 0 3px hsl(0 0% 0% / 20%),
-        0 1px 6px hsl(0 0% 0% / 15%),
+    box-shadow: 0 0 3px hsl(0 0% 0% / 20%), 0 1px 6px hsl(0 0% 0% / 15%),
         0 4px 8px hsl(0 0% 0% / 13%);
     z-index: 1;
 }
@@ -65,16 +77,16 @@
 .glowButtonWrapper:hover .glowButton {
     transition: background 3ms linear;
 
-    background: conic-gradient(in hsl longer hue from var(--angle),
-            hsl(0, 100%, 80%) 0 0) border-box;
+    background: conic-gradient(
+            in hsl longer hue from var(--angle),
+            hsl(0, 100%, 80%) 0 0
+        )
+        border-box;
     background-repeat: no-repeat;
     background-size: 100% 100%;
 
-    box-shadow:
-        0 0 3px hsl(0 35% 80% / 65%),
-        0 1px 6px hsl(60 15% 80% / 50%),
-        0 4px 8px hsl(120 48% 80% / 30%),
-        0 5px 11px hsl(5 20% 80% / 20%);
+    box-shadow: 0 0 3px hsl(0 35% 80% / 65%), 0 1px 6px hsl(60 15% 80% / 50%),
+        0 4px 8px hsl(120 48% 80% / 30%), 0 5px 11px hsl(5 20% 80% / 20%);
 
     mix-blend-mode: color-dodge;
 
@@ -82,9 +94,9 @@
 }
 
 @property --angle {
-    syntax: '<angle>';
+    syntax: "<angle>";
     initial-value: 0deg;
-    inherits: false
+    inherits: false;
 }
 
 /* target only Firefox */
@@ -98,15 +110,17 @@
         --angleFX: 0deg;
         /* transition: background 3ms linear; */
         transition: background 3ms linear;
-        background:
-            conic-gradient(from var(--angleFX) at 50% 50%,
+        background: conic-gradient(
+                from var(--angleFX) at 50% 50%,
                 var(--red),
                 var(--yellow),
                 var(--green),
                 var(--blue),
                 var(--purple),
                 var(--pink),
-                var(--red)) border-box;
+                var(--red)
+            )
+            border-box;
 
         animation: angleFX 2s linear infinite;
     }
@@ -128,10 +142,12 @@
     padding: 0;
 
     background: hsl(233 12% 13% / 1) padding-box;
-    background:
-        linear-gradient(to bottom,
+    background: linear-gradient(
+            to bottom,
             hsl(228 5% 20% / 1),
-            hsl(228 4% 25% / 1)) padding-box;
+            hsl(228 4% 25% / 1)
+        )
+        padding-box;
     border: 1px solid hsl(210 14% 9% / 60%);
 
     border-radius: var(--buttonBorderRadiusBefore);
@@ -146,10 +162,12 @@
         0 0 2px hsl(0 0% 75% / 30%);
 
     background: hsl(0 0% 25% / 90%) padding-box;
-    background:
-        linear-gradient(to bottom,
+    background: linear-gradient(
+            to bottom,
             hsl(228 5% 20% / 88%),
-            hsl(228 4% 25% / 92%)) padding-box;
+            hsl(228 4% 25% / 92%)
+        )
+        padding-box;
 }
 
 @keyframes angle {
@@ -161,126 +179,351 @@
 @keyframes angleFX {
     00.00% {
         --angleFX: 0deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     04.16% {
         --angleFX: 15deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     08.32% {
         --angleFX: 30deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     12.48% {
         --angleFX: 45deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     16.64% {
         --angleFX: 60deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     20.80% {
         --angleFX: 75deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     24.96% {
         --angleFX: 90deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     29.12% {
         --angleFX: 105deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     33.28% {
         --angleFX: 120deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     37.44% {
         --angleFX: 135deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     41.60% {
         --angleFX: 150deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     45.76% {
         --angleFX: 165deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     49.92% {
         --angleFX: 180deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     54.08% {
         --angleFX: 195deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     58.24% {
         --angleFX: 210deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     62.40% {
         --angleFX: 225deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     66.56% {
         --angleFX: 240deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     70.72% {
         --angleFX: 255deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     74.88% {
         --angleFX: 270deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     79.04% {
         --angleFX: 285deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     83.20% {
         --angleFX: 300deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     87.36% {
         --angleFX: 315deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     91.52% {
         --angleFX: 330deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     95.68% {
         --angleFX: 345deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 
     100.0% {
         --angleFX: 360deg;
-        background: conic-gradient(from var(--angleFX) at 50% 50%, var(--red), var(--yellow), var(--green), var(--blue), var(--purple), var(--pink), var(--red));
+        background: conic-gradient(
+            from var(--angleFX) at 50% 50%,
+            var(--red),
+            var(--yellow),
+            var(--green),
+            var(--blue),
+            var(--purple),
+            var(--pink),
+            var(--red)
+        );
     }
 }

@@ -73,7 +73,7 @@
     stroke-width: 8;
 }
 
-[data-theme='light'] .bulb__filament {
+[data-theme="light"] .bulb__filament {
     stroke-width: 12;
 }
 
@@ -100,10 +100,6 @@
     stroke: var(--stroke);
 }
 
-.center {
-    position: relative;
-}
-
 .controls {
     position: absolute;
     display: grid;
@@ -114,7 +110,7 @@
 }
 
 label {
-    font-family: 'Gloria Hallelujah', cursive;
+    font-family: "Gloria Hallelujah", cursive;
     font-weight: 300;
     letter-spacing: 1px;
 }

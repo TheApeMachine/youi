@@ -91,8 +91,6 @@ html.reveal-full-page {
     position: relative;
     line-height: 1;
     margin: 0;
-    background-color: #fff;
-    color: #000;
     --r-controls-spacing: 12px;
 }
 .reveal-viewport:fullscreen {

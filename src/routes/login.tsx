@@ -6,85 +6,86 @@ import { eventBus } from "@/lib/event";
 import { createRouter } from "@/lib/router";
 
 export const render = Component({
-    effect: async () => {
+    effect: () => {
         const form = document.querySelector("form");
         const errorMessage = document.querySelector(".callout.error");
         const errorMessageText = document.querySelector(".message h6");
         const loadingSpinner = document.querySelector(".loading-spinner");
 
-        const { navigateTo } = await createRouter();
-
-        // Handle form submission
-        form?.addEventListener("submit", async (e: Event) => {
-            e.preventDefault();
-
-            const username = (
-                document.querySelector("#username") as HTMLInputElement
-            ).value;
-            const password = (
-                document.querySelector("#password") as HTMLInputElement
-            ).value;
-
-            if (!username || !password) {
-                if (errorMessage instanceof HTMLElement) {
-                    errorMessage.textContent = "Please fill in all fields";
-                    errorMessage.style.opacity = "1";
-                }
-                return;
-            }
-
-            try {
-                if (loadingSpinner instanceof HTMLElement) {
-                    loadingSpinner.style.display = "block";
-                }
-                if (errorMessage instanceof HTMLElement) {
-                    errorMessage.style.opacity = "0";
-                }
-
-                await AuthService.login(username, password);
-
-                // Subscribe to auth:login event to get the token
-                eventBus.subscribe("stateChange", async (payload: { key: string, value: any }) => {
-                    if (payload.key === "token") {
-                        const user = await AuthService.getUserInfo(payload.value.accessToken);
-                        eventBus.publish("stateChange", {
-                            key: "user",
-                            value: user
-                        });
+        createRouter().then(({ navigateTo }) => {
+            eventBus.subscribe(
+                "stateChange",
+                async (payload: { key: string; value: any }) => {
+                    console.log("login.stateChange", payload);
+                    if (payload.key === "auth") {
+                        await AuthService.getUserInfo(
+                            payload.value.accessToken
+                        );
                         navigateTo("/dashboard");
                     }
-                });
-            } catch (error) {
-                eventBus.publish(
-                    "status",
-                    new CustomEvent("status", {
-                        detail: {
-                            status: "error",
-                            variant: "error",
-                            title: "Login failed",
-                            message:
-                                error instanceof Error
-                                    ? error.message
-                                    : "Login failed"
-                        }
-                    })
-                );
-                if (
-                    errorMessage instanceof HTMLElement &&
-                    errorMessageText instanceof HTMLElement
-                ) {
-                    errorMessageText.textContent =
-                        error instanceof Error ? error.message : "Login failed";
-                    errorMessage.style.opacity = "1";
                 }
-            } finally {
-                if (loadingSpinner instanceof HTMLElement) {
-                    loadingSpinner.style.display = "none";
+            );
+
+            form?.addEventListener("submit", async (e: Event) => {
+                e.preventDefault();
+
+                const username = (
+                    document.querySelector("#username") as HTMLInputElement
+                ).value;
+                const password = (
+                    document.querySelector("#password") as HTMLInputElement
+                ).value;
+
+                if (!username || !password) {
+                    if (errorMessage instanceof HTMLElement) {
+                        errorMessage.textContent = "Please fill in all fields";
+                        errorMessage.style.opacity = "1";
+                    }
+                    return;
                 }
-            }
+
+                try {
+                    if (loadingSpinner instanceof HTMLElement) {
+                        loadingSpinner.style.display = "block";
+                    }
+                    if (errorMessage instanceof HTMLElement) {
+                        errorMessage.style.opacity = "0";
+                    }
+
+                    await AuthService.login(username, password);
+                } catch (error) {
+                    eventBus.publish(
+                        "status",
+                        new CustomEvent("status", {
+                            detail: {
+                                status: "error",
+                                variant: "error",
+                                title: "Login failed",
+                                message:
+                                    error instanceof Error
+                                        ? error.message
+                                        : "Login failed"
+                            }
+                        })
+                    );
+                    if (
+                        errorMessage instanceof HTMLElement &&
+                        errorMessageText instanceof HTMLElement
+                    ) {
+                        errorMessageText.textContent =
+                            error instanceof Error
+                                ? error.message
+                                : "Login failed";
+                        errorMessage.style.opacity = "1";
+                    }
+                } finally {
+                    if (loadingSpinner instanceof HTMLElement) {
+                        loadingSpinner.style.display = "none";
+                    }
+                }
+            });
         });
 
-        // Handle input focus effects
         document.querySelectorAll(".input-group input").forEach((input) => {
             input.addEventListener("focus", () => {
                 const group = input.closest(".input-group");

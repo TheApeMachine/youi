@@ -46,14 +46,6 @@
     margin-bottom: 0;
 }
 
-/* Ensure certain elements are never larger than the slide itself */
-.reveal img,
-.reveal video,
-.reveal iframe {
-    max-width: 95%;
-    max-height: 95%;
-}
-
 .reveal strong,
 .reveal b {
     font-weight: bold;
@@ -177,10 +169,6 @@
 
 .reveal small * {
     vertical-align: top;
-}
-
-.reveal img {
-    margin: var(--r-block-margin) 0;
 }
 
 /*********************************************

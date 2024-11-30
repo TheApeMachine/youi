@@ -4,92 +4,148 @@ import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { faker } from "@faker-js/faker";
 import { Calendar } from "@/lib/ui/calendar/Calendar";
+import { stateManager } from "@/lib/state";
+import gsap from "gsap";
+import { Flip } from "gsap/Flip";
+
+gsap.registerPlugin(Flip);
 
 export const render = Component({
-    render: () => (
-        <div class="column width height gap pad">
-            <header class="row center pad bg-dark">
-                <h1>Dashboard</h1>
-            </header>
-            <div class="row gap">
-                <aside class="column gap grow">
-                    <div class="column grow width bg-dark">
-                        <nav class="column grow width">
-                            <a href="/dashboard/settings" class="badge-button">
-                                <span class="material-symbols-rounded">
-                                    mail
-                                </span>
-                                Messages
-                                <span class="badge">3</span>
-                            </a>
-                            <a href="/dashboard/profile" class="badge-button">
-                                <span class="material-symbols-rounded">
-                                    send
-                                </span>
-                                Invitations
-                                <span class="badge">3</span>
-                            </a>
-                            <a href="/dashboard/logout" class="badge-button">
-                                <span class="material-symbols-rounded">
-                                    calendar_month
-                                </span>
-                                Events
-                                <span class="badge">3</span>
-                            </a>
-                            <a href="/dashboard/logout" class="badge-button">
-                                <span class="material-symbols-rounded">
-                                    settings
-                                </span>
-                                Account Settings
-                            </a>
-                            <a href="/dashboard/logout" class="badge-button">
-                                <span class="material-symbols-rounded">
-                                    monitoring
-                                </span>
-                                Statistics
-                            </a>
-                        </nav>
+    effect: () => {
+        // Get the header avatar
+        const headerAvatar = document.querySelector("header img");
+        const profileCard = document.querySelector(".profile-card");
+
+        if (!headerAvatar) return;
+
+        // Store initial state
+        const state = Flip.getState(headerAvatar);
+
+        // Add dashboard avatar classes
+        headerAvatar.classList.add("xl", "ring-double-purple");
+        gsap.set(profileCard, {
+            height: "+=128px"
+        });
+
+        // Set new position and size
+        gsap.set(headerAvatar, {
+            width: "128px",
+            height: "128px",
+            position: "absolute",
+            top: "32px", // Adjust based on your layout
+            left: "50%",
+            xPercent: -50,
+            zIndex: 99999
+        });
+
+        // Animate from original state
+        Flip.from(state, {
+            duration: 0.6,
+            ease: "power2.inOut",
+            absolute: true,
+            scale: true,
+            spin: 0.5
+        });
+    },
+    render: () => {
+        const user = stateManager.getState("user");
+
+        return (
+            <div class="column width height gap pad">
+                <div class="row start gap">
+                    <aside class="column gap">
+                        <div class="column width bg-dark">
+                            <nav class="column width">
+                                <a
+                                    href="/dashboard/settings"
+                                    class="badge-button"
+                                >
+                                    <span class="material-symbols-rounded">
+                                        mail
+                                    </span>
+                                    Messages
+                                    <span class="badge">3</span>
+                                </a>
+                                <a
+                                    href="/dashboard/profile"
+                                    class="badge-button"
+                                >
+                                    <span class="material-symbols-rounded">
+                                        send
+                                    </span>
+                                    Invitations
+                                    <span class="badge">3</span>
+                                </a>
+                                <a
+                                    href="/dashboard/logout"
+                                    class="badge-button"
+                                >
+                                    <span class="material-symbols-rounded">
+                                        calendar_month
+                                    </span>
+                                    Events
+                                    <span class="badge">3</span>
+                                </a>
+                                <a
+                                    href="/dashboard/logout"
+                                    class="badge-button"
+                                >
+                                    <span class="material-symbols-rounded">
+                                        settings
+                                    </span>
+                                    Account Settings
+                                </a>
+                                <a
+                                    href="/dashboard/logout"
+                                    class="badge-button"
+                                >
+                                    <span class="material-symbols-rounded">
+                                        monitoring
+                                    </span>
+                                    Statistics
+                                </a>
+                            </nav>
+                        </div>
+                        <div class="column width center bg-dark">
+                            <Donut />
+                        </div>
+                    </aside>
+                    <div class="column gap front">
+                        <div class="column center width radius-xs bg-dark">
+                            <div class="profile-card"></div>
+                            <h3 class="lighter">{faker.person.fullName()}</h3>
+                            <div class="row stretch width">
+                                <a
+                                    href="/dashboard/profile"
+                                    class="accent-button yellow"
+                                >
+                                    <span class="material-icons">forum</span> 6
+                                </a>
+                                <a
+                                    href="/dashboard/profile"
+                                    class="accent-button green"
+                                >
+                                    <span class="material-icons">
+                                        visibility
+                                    </span>{" "}
+                                    14
+                                </a>
+                                <a
+                                    href="/dashboard/profile"
+                                    class="accent-button red"
+                                >
+                                    <span class="material-icons">favorite</span>{" "}
+                                    22
+                                </a>
+                            </div>
+                        </div>
+                        <div class="column width height bg-dark">
+                            <Bars />
+                        </div>
                     </div>
-                    <div class="column grow width center bg-dark">
-                        <Donut />
-                    </div>
-                </aside>
-                <div class="column gap grow">
-                    <div class="column center grow width bg-dark">
-                        <img
-                            class="avatar xl"
-                            src={faker.image.avatar()}
-                            alt="avatar"
-                        />
-                        <h3 class="lighter">{faker.person.fullName()}</h3>
-                        <footer class="row">
-                            <a
-                                href="/dashboard/profile"
-                                class="accent-button yellow"
-                            >
-                                <span class="material-icons">forum</span> 6
-                            </a>
-                            <a
-                                href="/dashboard/profile"
-                                class="accent-button green"
-                            >
-                                <span class="material-icons">visibility</span>{" "}
-                                14
-                            </a>
-                            <a
-                                href="/dashboard/profile"
-                                class="accent-button red"
-                            >
-                                <span class="material-icons">favorite</span> 22
-                            </a>
-                        </footer>
-                    </div>
-                    <div class="column grow width height bg-dark">
-                        <Bars />
-                    </div>
+                    <Calendar />
                 </div>
-                <Calendar />
             </div>
-        </div>
-    )
+        );
+    }
 });

@@ -6,7 +6,8 @@ export interface StateModel {
 
 const StateManager = () => {
     const state: Record<string, any> = {
-        ready: false
+        ready: false,
+        initialized: false
     };
 
     const registry: Record<string, any> = {};
@@ -14,18 +15,22 @@ const StateManager = () => {
     const getState = (key: string) => {
         console.debug("lib.StateManager.get", "key", key);
         const stateValue = state[key];
-        const registryValue = stateValue ? undefined : registry[key];
-
-        if (!stateValue && !registryValue) {
-            console.error("lib.StateManager.get", "No state value found for key", key);
-        }
+        const registryValue = stateValue === undefined ? registry[key] : undefined;
 
         return stateValue ?? registryValue;
     };
 
     const setState = (stateFragment: Record<string, any>) => {
         console.debug("lib.StateManager.set", "stateFragment", stateFragment);
-        Object.assign(state, stateFragment);
+
+        // If it's a key-value pair format
+        if ('key' in stateFragment && 'value' in stateFragment) {
+            state[stateFragment.key] = stateFragment.value;
+        } else {
+            // Direct state fragment
+            Object.assign(state, stateFragment);
+        }
+
         persist();
     };
 
@@ -34,22 +39,27 @@ const StateManager = () => {
         registry[key] = value;
     };
 
-    const persist = () => {
+    const persist = async () => {
         console.debug("lib.StateManager.persist", "state", state);
-        localforage.setItem('state', state);
+        try {
+            await localforage.setItem('state', state);
+        } catch (error) {
+            console.error("Error persisting state:", error);
+        }
     };
 
     const init = async (): Promise<void> => {
         console.debug("lib.StateManager.init");
         try {
             const value = await localforage.getItem('state');
+            console.log("Loaded state from storage:", value);
             if (value) {
                 Object.assign(state, value);
             }
-            setState({ ready: true });
+            setState({ ready: true, initialized: true });
         } catch (error) {
             console.error("Error initializing StateManager:", error);
-            setState({ ready: false });
+            setState({ ready: false, initialized: true });
             throw error;
         }
     };

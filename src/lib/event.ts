@@ -46,8 +46,8 @@ const EventBus = () => {
 
     // Subscribe to state change events and update the stateManager accordingly
     subscribe("stateChange", (data: { key: string; value: any }) => {
-        const { key, value } = data;
-        stateManager.setState({ [key]: value });
+        console.log("stateChange", data);
+        stateManager.setState(data);
     });
 
     return { subscribe, publish };

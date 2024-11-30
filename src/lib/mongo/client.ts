@@ -139,4 +139,22 @@ export const fetchDocument = async (collectionName: string, id: string, pipeline
     if (!result) return null;
 
     return convertBinary(result);
-}; 
+};
+
+export const updateCollection = async (
+    name: string,
+    options: {
+        query: Record<string, any>;
+        update: Record<string, any>;
+        upsert?: boolean;
+    }
+) => {
+    const user = await ensureUser();
+    const conn = user.mongoClient("mongodb-atlas").db("FanApp");
+    
+    return conn.collection(name).updateOne(
+        options.query,
+        options.update,
+        { upsert: options.upsert || false }
+    );
+};

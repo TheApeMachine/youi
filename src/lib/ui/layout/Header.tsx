@@ -8,6 +8,7 @@ import gsap from "gsap";
 
 export const Header = Component({
     effect: ({ rootElement }) => {
+        if (window.location.pathname === "/dashboard") return;
         console.log(rootElement);
         const tl = gsap.timeline();
 

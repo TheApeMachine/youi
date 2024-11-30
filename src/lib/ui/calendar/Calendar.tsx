@@ -4,8 +4,8 @@ import "@/assets/calendar.css"
 
 export const Calendar = Component({
     render: async () => (
-        <div class="container column grow bg-dark">
-            <div class="calendar dark">
+        <div class="container column height bg-dark">
+            <div class="column heightcalendar dark">
                 <div class="calendar_plan">
                     <div class="cl_plan">
                         <div class="cl_title">Today</div>

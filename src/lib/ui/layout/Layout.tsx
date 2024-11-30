@@ -7,7 +7,6 @@ import { Dialog } from "../dialog/Dialog";
 import { Navigation } from "../menu/Navigation";
 import { Toaster } from "../toast/Toaster";
 import "@dotlottie/player-component";
-import { Player } from "../animoji/Player";
 import { Header } from "./Header";
 
 gsap.registerPlugin(Flip);

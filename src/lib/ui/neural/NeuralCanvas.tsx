@@ -4,6 +4,7 @@ import * as THREE from "three";
 import gsap from "gsap";
 import { eventBus } from "@/lib/event";
 import { EventPayload } from "@/lib/event";
+import "@/assets/neural.css";
 
 interface Neuron {
     position: THREE.Vector3;
@@ -169,19 +170,7 @@ export const NeuralCanvas = Component({
     },
     render: () => {
         return (
-            <div 
-                id="neural-canvas"
-                style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100vw",
-                    height: "100vh",
-                    zIndex: -1,
-                    opacity: 0.8,
-                    pointerEvents: "none"
-                }}
-            />
+            <div id="neural-canvas" className="neural-canvas" />
         );
     }
 }); 

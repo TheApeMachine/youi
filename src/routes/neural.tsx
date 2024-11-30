@@ -2,6 +2,7 @@ import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { NeuralCanvas } from "@/lib/ui/neural/NeuralCanvas";
 import { eventBus } from "@/lib/event";
+import "@/assets/neural.css";
 
 export const render = Component({
     effect: () => {
@@ -14,19 +15,13 @@ export const render = Component({
                 trigger: "timer",
                 originalEvent: null
             });
-        }, 2000);
+        }, 200);
     },
     render: () => {
         return (
             <div>
                 <NeuralCanvas />
-                <div style={{
-                    position: "relative",
-                    zIndex: 1,
-                    padding: "2rem",
-                    color: "white",
-                    textShadow: "0 0 10px rgba(0,0,0,0.5)"
-                }}>
+                <div className="neural-content">
                     <h1>Neural Canvas Demo</h1>
                     <p>Watch as the neural network responds to system events.</p>
                     <button
@@ -34,15 +29,7 @@ export const render = Component({
                         data-event="test"
                         data-effect="pulse"
                         data-topic="neural"
-                        style={{
-                            background: "rgba(0,255,136,0.2)",
-                            border: "1px solid #0f8",
-                            color: "#0f8",
-                            padding: "0.5rem 1rem",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            marginTop: "1rem"
-                        }}
+                        className="neural-button"
                     >
                         Trigger Event
                     </button>

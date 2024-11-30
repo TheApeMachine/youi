@@ -24,18 +24,18 @@ export const transform = {
                 from: field.join,
                 localField: field.on.split(",")[1],
                 foreignField: field.on.split(",")[0],
-                as: field.join
+                as: field.join.toLowerCase()
             }));
 
             return {
                 ...data,
                 items: await Promise.all(data.items.map(async (item: any) => {
                     const joinedData = await Promise.all(
-                        joinConfig.map(async (config: { from: string, localField: string, foreignField: string }) => {
+                        joinConfig.map(async (config: { from: string, localField: string, foreignField: string, as: string }) => {
                             const joined = await fetchCollection(config.from, {
                                 query: { [config.foreignField]: item[config.localField] }
                             });
-                            return { [config.from]: joined[0] };
+                            return { [config.as]: joined[0] || null };
                         })
                     );
                     return { ...item, ...Object.assign({}, ...joinedData) };

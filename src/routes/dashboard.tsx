@@ -53,8 +53,8 @@ export const render = Component({
         return (
             <div class="column width height gap pad">
                 <div class="row start gap">
-                    <aside class="column gap">
-                        <div class="column width bg-dark">
+                    <div class="column height gap">
+                        <div class="column width radius-xs bg-dark">
                             <nav class="column width">
                                 <a
                                     href="/dashboard/settings"
@@ -106,15 +106,15 @@ export const render = Component({
                                 </a>
                             </nav>
                         </div>
-                        <div class="column width center bg-dark">
+                        <div class="column width center radius-xs bg-dark">
                             <Donut />
                         </div>
-                    </aside>
-                    <div class="column gap front">
-                        <div class="column center width radius-xs bg-dark">
+                    </div>
+                    <div class="column height gap front">
+                        <div class="column space-between width radius-xs bg-dark">
                             <div class="profile-card"></div>
-                            <h3 class="lighter">{faker.person.fullName()}</h3>
-                            <div class="row stretch width">
+                            <h3 class="lighter">{user.name}</h3>
+                            <div class="row stretch width shrink self-end">
                                 <a
                                     href="/dashboard/profile"
                                     class="accent-button yellow"
@@ -139,7 +139,7 @@ export const render = Component({
                                 </a>
                             </div>
                         </div>
-                        <div class="column width height bg-dark">
+                        <div class="column width height radius-xs bg-dark">
                             <Bars />
                         </div>
                     </div>

@@ -131,6 +131,14 @@
     display: flex;
     flex-direction: column;
     flex: 1;
+
+    &.self-end {
+        align-self: flex-end;
+    }
+
+    &.space-between {
+        justify-content: space-between;
+    }
 }
 
 .grow {

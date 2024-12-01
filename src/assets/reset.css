@@ -1,30 +1,22 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Knewave&family=Londrina+Solid:wght@100;300;400;900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=csv");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Oswald:wght@200..700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=cards");
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons+Two+Tone");
 
-/* 1. Use a more-intuitive box-sizing model */
-*,
 *::before,
 *::after {
     box-sizing: border-box;
     border: none;
 }
 
-/* 2. Remove default margin */
 * {
     margin: 0;
     font-family: "Inter", sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
-    /* 3. Add accessible line-height */
     line-height: calc(1em + 0.5rem);
 }
 
 body {
-    /* 4. Improve text rendering */
     -webkit-font-smoothing: antialiased;
 }
 
@@ -33,7 +25,6 @@ body {
     outline: none;
 }
 
-/* 5. Improve media defaults */
 img,
 picture,
 video,
@@ -43,7 +34,6 @@ svg {
     max-width: 100%;
 }
 
-/* 6. Inherit fonts for form controls */
 input,
 button,
 textarea,
@@ -51,7 +41,6 @@ select {
     font: inherit;
 }
 
-/* 7. Avoid text overflows */
 p,
 h1,
 h2,
@@ -62,7 +51,6 @@ h6 {
     overflow-wrap: break-word;
 }
 
-/* 8. Improve line wrapping */
 p {
     text-wrap: pretty;
 }
@@ -74,29 +62,46 @@ h4,
 h5,
 h6 {
     text-wrap: balance;
+    font-family: "Oswald", sans-serif;
+    font-optical-sizing: auto;
     font-weight: 400;
+    font-style: normal;
+}
+
+h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+}
+
+h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
 }
 
 h3 {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 500;
 }
 
-/*
-  9. Create a root stacking context
-*/
+h4 {
+    font-size: 1.25rem;
+    font-weight: 400;
+}
+
+h5 {
+    font-size: 1.125rem;
+    font-weight: 300;
+}
+
+h6 {
+    font-size: 1rem;
+    font-weight: 200;
+}
+
 #app {
     isolation: isolate;
 }
 
-.material-icons {
-    font-size: 24px;
-}
-
 .material-symbols-rounded {
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 700,
-        'GRAD' 200,
-        'opsz' 48
+    font-variation-settings: "FILL" 0, "wght" 700, "GRAD" 200, "opsz" 48;
 }

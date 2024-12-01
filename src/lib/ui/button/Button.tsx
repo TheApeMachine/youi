@@ -3,18 +3,19 @@ import { Component } from "@/lib/ui/Component";
 import { Player } from "../animoji/Player";
 
 type ButtonProps = {
-    variant: "menu" | "button" | "icon" | "animoji";
+    variant: "menu" | "button" | "icon" | "animoji" | "brand";
     className?: string;
     icon?: string;
     label?: string;
     href?: string;
-    effect?: string;
     trigger?: string;
+    event?: string;
+    effect?: string;
     children?: Node | Node[];
 };
 
 export const Button = Component({
-    effect: () => { },
+    effect: () => {},
     render: ({
         variant,
         icon,
@@ -66,15 +67,32 @@ export const Button = Component({
                         {children ?? ""}
                     </button>
                 );
+            case "brand":
+                return (
+                    <button
+                        class="brand"
+                        data-trigger={trigger}
+                        data-event={event}
+                        data-effect={effect}
+                    >
+                        {icon && (
+                            <span class="material-symbols-rounded">{icon}</span>
+                        )}
+                        {children ?? ""}
+                    </button>
+                );
             case "icon":
                 return (
                     <button
                         data-trigger={trigger}
-                        data-event="menu"
+                        data-event={event}
                         data-effect={effect}
                         class="icon"
                     >
-                        <span class="material-icons" data-trigger="click">
+                        <span
+                            class="material-symbols-rounded"
+                            data-trigger="click"
+                        >
                             {icon}
                         </span>
                     </button>
@@ -87,10 +105,12 @@ export const Button = Component({
                         data-event="menu"
                         data-effect="open"
                     >
-                        <span class={`material-icons ${className}`}>{icon}</span>
+                        <span class={`material-icons ${className}`}>
+                            {icon}
+                        </span>
                         <Player animoji={icon} />
                     </div>
-                )
+                );
         }
     }
 });

@@ -3,10 +3,11 @@ import { Component } from "@/lib/ui/Component";
 import { stateManager } from "@/lib/state";
 import { AuthService } from "@/lib/auth";
 import { Button } from "../button/Button";
+import { Avatar } from "../profile/Avatar";
+import { DynamicIsland } from "../DynamicIsland";
 
 export const Header = Component({
     render: async () => {
-        const user = stateManager.getState("authUser");
         const isAuthenticated = await AuthService.isAuthenticated();
 
         if (!isAuthenticated) {
@@ -14,25 +15,30 @@ export const Header = Component({
         }
 
         return (
-            <header class="row space-between pad bg-dark shadow-page topbar">
+            <header class="column center bg">
                 <div class="row start">
-                    <Button variant="animoji" icon="rocket" className="icon xl" />
+                    <Button
+                        variant="animoji"
+                        icon="rocket"
+                        className="icon xl"
+                    />
                 </div>
                 <div class="row end gap">
-                    {user?.picture ? (
-                        <img
-                            src={user.picture}
-                            alt="avatar"
-                            class="ring-purple"
-                            data-trigger="click"
-                            data-event="menu"
-                            data-effect="submenu"
-                        />
-                    ) : (
-                        <span class="material-icons">person</span>
-                    )}
+                    <DynamicIsland
+                        header={
+                            <Button
+                                variant="icon"
+                                icon="search"
+                                trigger="click"
+                                event="search"
+                            />
+                        }
+                    />
+
+                    <Avatar />
                     <Button variant="icon" icon="notifications" />
                 </div>
+                <span class="material-symbols-rounded fg">arrow_drop_down</span>
             </header>
         );
     }

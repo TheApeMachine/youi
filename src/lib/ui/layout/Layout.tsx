@@ -9,6 +9,7 @@ import { Toaster } from "../toast/Toaster";
 import "@dotlottie/player-component";
 import { Header } from "./Header";
 import { Button } from "../button/Button";
+import { Flyout } from "../Flyout";
 
 gsap.registerPlugin(Flip);
 
@@ -43,62 +44,34 @@ export const Layout = Component<LayoutProps>({
                 }
             });
         });
-
-        if (window.location.pathname === "/dashboard") return;
-        const offset = 80;
-
-        gsap.set(".topbar", { marginTop: -offset });
-        gsap.set(".flyout", { marginRight: -offset });
-        let isAnimating = false;
-
-        const shouldOpen = (evt: MouseEvent) => {
-            const isCloseToTop = evt.clientY < offset / 4;
-            const isCloseToRight = evt.clientX > window.innerWidth - offset / 4;
-
-            if (isCloseToTop || !!(evt.target as HTMLElement)?.closest('.topbar')) {
-                return ".topbar"
-            } else if (isCloseToRight || !!(evt.target as HTMLElement)?.closest('.flyout')) {
-                return ".flyout"
-            }
-
-            return null;
-        };
-
-        window.addEventListener("mousemove", (evt: MouseEvent) => {
-            if (isAnimating) return;
-
-            const target = shouldOpen(evt);
-            isAnimating = true;
-
-            gsap.to(".topbar", {
-                marginTop: target === ".topbar" ? 0 : -offset,
-                duration: 0.5,
-                ease: "back.out(1.7)",
-                onComplete: () => { isAnimating = false; }
-            });
-
-            gsap.to(".flyout", {
-                marginRight: target === ".flyout" ? 0 : -offset,
-                duration: 0.5,
-                ease: "back.out(1.7)",
-                onComplete: () => { isAnimating = false; }
-            });
-        });
     },
     render: async () => (
         <div className="layout">
-            <Header />
-            <aside></aside>
-            <main id="app">
+            <Flyout variant="header" direction="down" />
+            <aside className="row center bg">
+                <span class="material-symbols-rounded color-fg">
+                    arrow_right
+                </span>
+            </aside>
+            <main id="app" className="column center">
                 <div className="reveal">
                     <div className="slides"></div>
                 </div>
+                <span class="material-symbols-rounded">arrow_drop_up</span>
             </main>
             <article class="row center shrink bg-darker flyout">
-                <span class="material-icons">chevron_left</span>
+                <span class="material-symbols-rounded">arrow_left</span>
                 <div class="column center pad gap height bg-dark">
-                    <Button variant="animoji" icon="videocam" className="icon" />
-                    <Button variant="animoji" icon="auto_awesome" className="icon" />
+                    <Button
+                        variant="animoji"
+                        icon="videocam"
+                        className="icon"
+                    />
+                    <Button
+                        variant="animoji"
+                        icon="auto_awesome"
+                        className="icon"
+                    />
                 </div>
             </article>
             <footer>

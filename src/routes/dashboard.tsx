@@ -85,19 +85,13 @@ export const render = Component({
                                     Events
                                     <span class="badge">3</span>
                                 </a>
-                                <a
-                                    href="/dashboard/logout"
-                                    class="badge-button"
-                                >
+                                <a href="/account" class="badge-button">
                                     <span class="material-symbols-rounded">
                                         settings
                                     </span>
                                     Account Settings
                                 </a>
-                                <a
-                                    href="/dashboard/logout"
-                                    class="badge-button"
-                                >
+                                <a href="/statistics" class="badge-button">
                                     <span class="material-symbols-rounded">
                                         monitoring
                                     </span>

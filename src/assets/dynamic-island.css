@@ -1,0 +1,29 @@
+div.dynamic-island {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+        "header header header"
+        "aside main article"
+        "footer footer footer";
+
+    > header {
+        grid-area: header;
+    }
+
+    > aside {
+        grid-area: aside;
+    }
+
+    > main {
+        grid-area: main;
+    }
+
+    > article {
+        grid-area: article;
+    }
+
+    > footer {
+        grid-area: footer;
+    }
+}

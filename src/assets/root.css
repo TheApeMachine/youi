@@ -1,4 +1,6 @@
 :root {
+    interpolate-size: allow-keywords;
+
     --xxl: 6rem;
     --xl: 3rem;
     --lg: 2rem;
@@ -6,6 +8,23 @@
     --md: 0.75rem;
     --sm: 0.5rem;
     --xs: 0.25rem;
+
+    --highlight: hsl(0, 0%, 96%);
+    --fg: hsl(0, 0%, 60%);
+    --muted: hsl(0, 0%, 20%);
+    --bg: hsl(225, 5%, 15%);
+
+    --brand: hsl(243, 75%, 59%);
+    --brand-light: hsl(234, 89%, 74%);
+    --brand-dark: hsl(244, 55%, 41%);
+
+    --danger: #dc2626;
+    --danger-light: #f87171;
+    --danger-dark: #991b1b;
+
+    --success: hsl(142, 76%, 36%);
+    --success-light: hsl(142, 69%, 58%);
+    --success-dark: hsl(143, 64%, 24%);
 
     --red: hsl(0, 100%, 80%);
     --yellow: hsl(62, 100%, 80%);
@@ -29,6 +48,10 @@
         rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
         rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
 
+    --ring-brand: 0 0 0 2px var(--brand);
+    --ring-brand-light: 0 0 0 2px var(--brand-light);
+    --ring-brand-dark: 0 0 0 2px var(--brand-dark);
+
     --ring: 0 0 0 4px var(--darker);
     --ring-light: 0 0 0 2px var(--light);
     --ring-dark: 0 0 0 2px var(--dark);
@@ -40,8 +63,8 @@
     --ring-purple: 0 0 0 4px var(--purple);
     --ring-double-purple: 0 0 0 8px var(--purple);
 
-    --transition-all: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition: all 0.2s cubic-bezier(0.64, 0, 0.78, 0);
+    --transition-time: 0.2s;
+    --transition: all var(--transition-time) cubic-bezier(0.64, 0, 0.78, 0);
 }
 
 [data-trigger="click"] {

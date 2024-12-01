@@ -19,13 +19,6 @@ interface NavigationProps {
 }
 
 type MenuState = "expanded" | "collapsed";
-type MenuStateKey =
-    | "topLevel"
-    | "submenu"
-    | "target"
-    | "buttonFace"
-    | "children"
-    | "closeIcon";
 
 const menuStates = {
     topLevel: { height: ["auto", 0], opacity: [1, 0] },
@@ -64,27 +57,13 @@ const animateMenu = (
 ) => {
     if (!elements.submenu) return;
 
-    console.log("Starting animation for state:", state);
-
     const flipState = Flip.getState(
         [elements.target, elements.submenu, ...elements.topLevel],
         { props: "all" }
     );
 
-    console.log("Got FLIP state:", flipState);
-
     const isExpanded = state === "expanded";
     const i = +isExpanded;
-
-    console.log("Target:", elements.target);
-    console.log("Submenu:", elements.submenu);
-    console.log("TopLevel:", elements.topLevel);
-    console.log("ButtonFace:", elements.target.querySelector(".button-face"));
-    console.log("Children:", elements.children);
-    console.log(
-        "CloseIcon:",
-        elements.target.querySelector(".material-icons.close")
-    );
 
     const elementMap: Record<
         keyof typeof menuStates,
@@ -100,7 +79,6 @@ const animateMenu = (
 
     Object.entries(menuStates).forEach(([key, props]) => {
         const element = elementMap[key as keyof typeof menuStates];
-        console.log(`Setting ${key} properties:`, props, "on:", element);
         gsap.set(
             element,
             Object.fromEntries(
@@ -115,13 +93,10 @@ const animateMenu = (
         elements.target.removeAttribute("data-expanded");
     }
 
-    console.log("Starting FLIP animation");
     const animation = Flip.from(flipState, {
         duration: 0.5,
-        ease: "power1.inOut",
-        onComplete: () => console.log("FLIP animation complete")
+        ease: "power1.inOut"
     });
-    console.log("FLIP animation created:", animation);
 
     return animation;
 };
@@ -166,7 +141,6 @@ export const Navigation = Component<NavigationProps>({
         });
 
         eventBus.subscribe("dialog", (e: EventPayload) => {
-            console.log("dialog", e);
             const dialog = document.querySelector(
                 "dialog.modal"
             ) as HTMLDialogElement;

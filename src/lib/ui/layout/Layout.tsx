@@ -8,6 +8,7 @@ import { Navigation } from "../menu/Navigation";
 import { Toaster } from "../toast/Toaster";
 import "@dotlottie/player-component";
 import { Header } from "./Header";
+import { Button } from "../button/Button";
 
 gsap.registerPlugin(Flip);
 
@@ -23,7 +24,6 @@ interface LayoutProps {}
 /* Layout Component - A wrapper component for page content */
 export const Layout = Component<LayoutProps>({
     effect: () => {
-        console.log("Layout effect");
         Reveal.initialize({
             hash: false,
             respondToHashChanges: false,
@@ -37,11 +37,51 @@ export const Layout = Component<LayoutProps>({
         }).then(() => {
             window.Reveal = Reveal;
             (Reveal as any).on("slidechanged", (event: RevealSlideEvent) => {
-                console.log("slidechanged", event);
                 const path = event.currentSlide?.dataset.path;
                 if (path && window.location.pathname !== path) {
                     history.pushState(null, "", path);
                 }
+            });
+        });
+
+        if (window.location.pathname === "/dashboard") return;
+        const offset = 80;
+
+        gsap.set(".topbar", { marginTop: -offset });
+        gsap.set(".flyout", { marginRight: -offset });
+        let isAnimating = false;
+
+        const shouldOpen = (evt: MouseEvent) => {
+            const isCloseToTop = evt.clientY < offset / 4;
+            const isCloseToRight = evt.clientX > window.innerWidth - offset / 4;
+
+            if (isCloseToTop || !!(evt.target as HTMLElement)?.closest('.topbar')) {
+                return ".topbar"
+            } else if (isCloseToRight || !!(evt.target as HTMLElement)?.closest('.flyout')) {
+                return ".flyout"
+            }
+
+            return null;
+        };
+
+        window.addEventListener("mousemove", (evt: MouseEvent) => {
+            if (isAnimating) return;
+
+            const target = shouldOpen(evt);
+            isAnimating = true;
+
+            gsap.to(".topbar", {
+                marginTop: target === ".topbar" ? 0 : -offset,
+                duration: 0.5,
+                ease: "back.out(1.7)",
+                onComplete: () => { isAnimating = false; }
+            });
+
+            gsap.to(".flyout", {
+                marginRight: target === ".flyout" ? 0 : -offset,
+                duration: 0.5,
+                ease: "back.out(1.7)",
+                onComplete: () => { isAnimating = false; }
             });
         });
     },
@@ -54,7 +94,13 @@ export const Layout = Component<LayoutProps>({
                     <div className="slides"></div>
                 </div>
             </main>
-            <article></article>
+            <article class="row center shrink bg-darker flyout">
+                <span class="material-icons">chevron_left</span>
+                <div class="column center pad gap height bg-dark">
+                    <Button variant="animoji" icon="videocam" className="icon" />
+                    <Button variant="animoji" icon="auto_awesome" className="icon" />
+                </div>
+            </article>
             <footer>
                 <p>
                     YouI &copy; 2024{" "}

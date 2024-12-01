@@ -17,7 +17,7 @@ export const Dialog = Component<DialogProps>({
         ) as HTMLDialogElement;
         if (!dialog) return;
 
-        eventBus.subscribe("menu", (event: EventPayload) => {
+        eventBus.subscribe("menu", (_: EventPayload) => {
             const state = Flip.getState(dialog);
             dialog.showModal();
             gsap.set(dialog, {

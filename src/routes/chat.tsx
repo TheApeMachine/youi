@@ -7,22 +7,21 @@ import { Input } from "@/lib/ui/chat/Input";
 import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
 import { eventBus, EventPayload } from "@/lib/event";
+import { Button } from "@/lib/ui/button/Button";
 
 export const render = Component({
     loader: () => {
         const authUser = stateManager.getState("authUser");
-        console.log("user", authUser);
         return {
             user: from("User").where({ Auth0UserId: authUser?.sub }).exec(),
             // You can add more queries here and they'll be cached automatically
             // messages: from("Message").where({ channelId: someId }).exec(),
         };
     },
-    effect: ({ data }) => {
-        // Now you have access to the loader data in effect
-        console.log("Loaded user data:", data.user);
-
+    effect: () => {
         eventBus.subscribe("group-select", (e: EventPayload) => {
+            if (!e.effect) return;
+
             console.log("group-select", e);
             from("User")
                 .whereArrayField("Groups", { _id: e.effect })
@@ -32,15 +31,10 @@ export const render = Component({
                     const groupMemberList = document.getElementById("group-members");
                     if (groupMemberList) {
                         groupMemberList.innerHTML = "";
-                        users.forEach((groupUser: any) => {
-                            const userItem = document.createElement("li");
-                            const img = document.createElement("img");
-                            const name = document.createElement("span");
-                            img.src = groupUser.ImageURL;
-                            name.textContent = groupUser.FirstName;
-                            userItem.appendChild(img);
-                            userItem.appendChild(name);
-                            groupMemberList.appendChild(userItem);
+                        users.forEach(async (groupUser: any) => {
+                            groupMemberList.appendChild(await jsx(
+                                Profile, { groupUser }
+                            ));
                         });
                     }
                 });
@@ -54,7 +48,7 @@ export const render = Component({
     render: ({ data }) => (
         <div class="row height pad-xl gap-xl">
             <div class="column start shrink height gap">
-                <div class="column height width">
+                <div class="column width scrollable">
                     <ul class="list">
                         {data.user[0].Groups.filter((group: any) => group.HasChat).map((group: any) => (
                             <li
@@ -66,20 +60,12 @@ export const render = Component({
                         ))}
                     </ul>
                 </div>
-                <div class="column height width">
+                <div class="column height width scrollable">
                     <ul class="list" id="group-members">
                     </ul>
                 </div>
             </div>
             <div class="column grow height pad-xl bg-dark radius shadow-page">
-                <div class="column stick-right">
-                    <span class="material-icons start-videocall pointer pad">
-                        videocam
-                    </span>
-                    <span class="material-icons start-videocall pointer pad">
-                        auto_awesome
-                    </span>
-                </div>
                 <div
                     id="messages-container"
                     class="column center grow height scroll"

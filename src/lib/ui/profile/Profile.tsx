@@ -1,17 +1,14 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { faker } from "@faker-js/faker";
 
 export const Profile = Component({
-    render: async () => (
-        <div class="row shrink pad-sm">
-            <div class="row start gap">
-                <div class="row left avatar-container">
-                    <img alt="avatar" src={faker.image.avatar()} />
-                    <div class="status online"></div>
-                </div>
-                <h4 class="lighter left">{faker.person.fullName()}</h4>
+    render: (props) => (
+        <li>
+            <div class="row left avatar-container">
+                <img alt="avatar" class="ring-darker" src={props.groupUser.ImageURL} />
+                <div class="status online"></div>
             </div>
-        </div>
+            <span>{props.groupUser.FirstName}</span>
+        </li>
     )
 });

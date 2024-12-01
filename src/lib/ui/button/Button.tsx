@@ -1,9 +1,10 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { eventBus } from "@/lib/event";
+import { Player } from "../animoji/Player";
 
 type ButtonProps = {
-    variant: "menu" | "button" | "icon";
+    variant: "menu" | "button" | "icon" | "animoji";
+    className?: string;
     icon?: string;
     label?: string;
     href?: string;
@@ -13,7 +14,7 @@ type ButtonProps = {
 };
 
 export const Button = Component({
-    effect: () => {},
+    effect: () => { },
     render: ({
         variant,
         icon,
@@ -21,7 +22,8 @@ export const Button = Component({
         href,
         effect,
         trigger,
-        children
+        children,
+        className
     }: ButtonProps) => {
         switch (variant) {
             case "menu":
@@ -77,6 +79,18 @@ export const Button = Component({
                         </span>
                     </button>
                 );
+            case "animoji":
+                return (
+                    <div
+                        class="animoji"
+                        data-trigger="click"
+                        data-event="menu"
+                        data-effect="open"
+                    >
+                        <span class={`material-icons ${className}`}>{icon}</span>
+                        <Player animoji={icon} />
+                    </div>
+                )
         }
     }
 });

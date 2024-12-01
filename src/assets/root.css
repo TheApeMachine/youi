@@ -53,6 +53,10 @@
     }
 }
 
+.scrollable {
+    overflow-y: auto;
+}
+
 .front {
     z-index: 100;
 }
@@ -176,6 +180,19 @@
 
 .text-center {
     text-align: center;
+}
+
+path.link {
+    color: var(--dark);
+    stroke: var(--dark);
+    stroke-width: 4px;
+    stroke-dasharray: 8, 6;
+    stroke-linecap: round;
+    stroke-dashoffset: 0;
+}
+
+.border-dark {
+    border: 1px solid var(--dark);
 }
 
 .border-top {

@@ -1,52 +1,106 @@
 import * as d3 from "d3";
 import { OrgChart } from "d3-org-chart";
+import { D3DragEvent, HierarchyNode } from 'd3';
 
+// Types for node data
+interface NodeData {
+    id: string;
+    parentId: string;
+    name: string;
+    position: string;
+    image: string;
+    _expanded?: boolean;
+    _highlighted?: boolean;
+    _upToTheRootHighlighted?: boolean;
+    _centered?: boolean;
+    _pagingButton?: boolean;
+    _pagingStep?: number;
+    _directSubordinates?: number;
+    _totalSubordinates?: number;
+    _directSubordinatesPaging?: number;
+}
+
+// Types for chart node
+interface ChartNode extends HierarchyNode<NodeData> {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+    firstCompact?: boolean;
+    compactEven?: boolean;
+    flexCompactDim?: [number, number];
+    firstCompactNode?: ChartNode;
+    row?: number;
+}
+
+// Types for drag events
+interface DragEvent {
+    x: number;
+    y: number;
+    dx: number;
+    dy: number;
+    subject: ChartNode;
+}
+
+// Types for DOM elements
+interface D3DOMElement extends Element {
+    classList: DOMTokenList;
+}
+
+// Types for chart state
+interface ChartState {
+    data: NodeData[];
+    nodeId: (d: NodeData) => string;
+    linksWrapper: d3.Selection<SVGGElement, unknown, null, undefined>;
+    nodesWrapper: d3.Selection<SVGGElement, unknown, null, undefined>;
+    ctx: CanvasRenderingContext2D;
+}
 
 export const orgchart = () => {
-    let chart = null;
-    let dragNode;
-    let dropNode;
+    let chart: OrgChart<NodeData> | null = null;
+    let dragNode: ChartNode | null = null;
+    let dropNode: ChartNode | null = null;
     let dragEnabled = false;
-    let dragStartX;
-    let dragStartY;
+    let dragStartX = 0;
+    let dragStartY = 0;
     let isDragStarting = false;
-    let undoActions = [];
-    let redoActions = [];
+    let undoActions: Array<{ id: string; parentId: string }> = [];
+    let redoActions: Array<{ id: string; parentId: string }> = [];
 
     // This is the data used - https://github.com/bumbeishvili/sample-data/blob/main/data-oracle.csv
     d3.csv(
         'https://raw.githubusercontent.com/bumbeishvili/sample-data/main/data-oracle.csv'
     ).then((data) => {
         console.log(data);
-        chart = new OrgChart()
-            .nodeHeight((d) => 85 + 25)
-            .nodeWidth((d) => 220 + 2)
-            .childrenMargin((d) => 50)
-            .compactMarginBetween((d) => 35)
-            .compactMarginPair((d) => 30)
-            .neighbourMargin((a, b) => 20)
-            .nodeContent(function (d, i, arr, state) {
+        chart = new OrgChart<NodeData>()
+            .nodeHeight(() => 85 + 25)
+            .nodeWidth(() => 220 + 2)
+            .childrenMargin(() => 50)
+            .compactMarginBetween(() => 35)
+            .compactMarginPair(() => 30)
+            .neighbourMargin(() => 20)
+            .setActiveNodeCentered(true)
+            .nodeContent(function (d) {
                 return generateContent(d);
             })
-            .nodeEnter(function (node) {
+            .nodeEnter(function (this: D3DOMElement, node: ChartNode) {
                 d3.select(this).call(
-                    d3
-                        .drag()
-                        .filter(function (x, node) {
+                    d3.drag()
+                        .filter(function (this: D3DOMElement, x: any, node: ChartNode) {
                             return dragEnabled && this.classList.contains('draggable');
                         })
-                        .on('start', function (d, node) {
-                            onDragStart(this, d, node);
+                        .on('start', function(this: D3DOMElement, event: D3DragEvent<D3DOMElement, ChartNode, unknown>) {
+                            onDragStart(this, event, event.subject);
                         })
-                        .on('drag', function (dragEvent, node) {
-                            onDrag(this, dragEvent);
+                        .on('drag', function(this: D3DOMElement, event: D3DragEvent<D3DOMElement, ChartNode, unknown>) {
+                            onDrag(this, event);
                         })
-                        .on('end', function (d) {
-                            onDragEnd(this, d);
+                        .on('end', function(this: D3DOMElement, event: D3DragEvent<D3DOMElement, ChartNode, unknown>) {
+                            onDragEnd(this, event);
                         })
                 );
             })
-            .nodeUpdate(function (d) {
+            .nodeUpdate(function (this: D3DOMElement, d: ChartNode) {
                 if (d.id === '102' || d.id === '120' || d.id === '124') {
                     d3.select(this).classed('droppable', false);
                 } else {
@@ -63,46 +117,49 @@ export const orgchart = () => {
             .data(data)
             .render();
 
-        chart.onExpandOrCollapse((event, node) => {
-            console.log("expand or collapse", event, node);
-            chart.fit();
-        });
+        // chart.onExpandOrCollapse((event, node) => {
+        //     chart.fit();
+        // });
     });
 
-    function onDragStart(element, dragEvent, node) {
+    // Event handler functions with proper types
+    function onDragStart(
+        element: D3DOMElement, 
+        event: D3DragEvent<D3DOMElement, ChartNode, unknown>, 
+        node: ChartNode
+    ): void {
         dragNode = node;
-        const width = dragEvent.subject.width;
+        const width = event.subject.width;
         const half = width / 2;
-        const x = dragEvent.x - half;
+        const x = event.x - half;
         dragStartX = x;
-        dragStartY = parseFloat(dragEvent.y);
+        dragStartY = event.y;
         isDragStarting = true;
 
         d3.select(element).classed('dragging', true);
     }
 
-    function onDrag(element, dragEvent) {
-        if (!dragNode) {
-            return;
-        }
+    function onDrag(element: D3DOMElement, event: D3DragEvent<D3DOMElement, ChartNode, unknown>): void {
+        if (!dragNode || !chart) return;
 
-        const state = chart.getChartState();
+        const state = chart.getChartState() as ChartState;
         const g = d3.select(element);
 
-        // This condition is designed to run at the start of a drag only
         if (isDragStarting) {
             isDragStarting = false;
-            document
-                .querySelector('.chart-container')
-                .classList.add('dragging-active');
+            const container = document.querySelector('.chart-container');
+            if (container) {
+                container.classList.add('dragging-active');
+            }
 
             // This sets the Z-Index above all other nodes, by moving the dragged node to be the last-child.
             g.raise();
 
-            const descendants = dragEvent.subject.descendants();
-            const linksToRemove = [...(descendants || []), dragEvent.subject];
+            const subject = event.subject as ChartNode;
+            const descendants = subject.descendants();
+            const linksToRemove = [...(descendants || []), subject];
             const nodesToRemove = descendants.filter(
-                (x) => x.data.id !== dragEvent.subject.id
+                (x) => x.data.id !== subject.id
             );
 
             // Remove all links associated with the dragging node
@@ -122,14 +179,14 @@ export const orgchart = () => {
 
         dropNode = null;
         const cP = {
-            width: dragEvent.subject.width,
-            height: dragEvent.subject.height,
-            left: dragEvent.x,
-            right: dragEvent.x + dragEvent.subject.width,
-            top: dragEvent.y,
-            bottom: dragEvent.y + dragEvent.subject.height,
-            midX: dragEvent.x + dragEvent.subject.width / 2,
-            midY: dragEvent.y + dragEvent.subject.height / 2,
+            width: subject.width,
+            height: subject.height,
+            left: event.x,
+            right: event.x + subject.width,
+            top: event.y,
+            bottom: event.y + subject.height,
+            midX: event.x + subject.width / 2,
+            midY: event.y + subject.height / 2,
         };
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -137,7 +194,7 @@ export const orgchart = () => {
         allNodes.select('rect').attr('fill', 'none');
 
         allNodes
-            .filter(function (d2, i) {
+            .filter(function (d2) {
                 const cPInner = {
                     left: d2.x,
                     right: d2.x + d2.width,
@@ -159,19 +216,18 @@ export const orgchart = () => {
             .select('rect')
             .attr('fill', '#e4e1e1');
 
-        dragStartX += parseFloat(dragEvent.dx);
-        dragStartY += parseFloat(dragEvent.dy);
+        dragStartX += parseFloat(event.dx);
+        dragStartY += parseFloat(event.dy);
         g.attr('transform', 'translate(' + dragStartX + ',' + dragStartY + ')');
     }
 
-    function onDragEnd(element, dragEvent) {
-        document
-            .querySelector('.chart-container')
-            .classList.remove('dragging-active');
-
-        if (!dragNode) {
-            return;
+    function onDragEnd(element: D3DOMElement, event: D3DragEvent<D3DOMElement, ChartNode, unknown>): void {
+        const container = document.querySelector('.chart-container');
+        if (container) {
+            container.classList.remove('dragging-active');
         }
+
+        if (!dragNode || !chart) return;
 
         d3.select(element).classed('dragging', false);
 
@@ -180,7 +236,7 @@ export const orgchart = () => {
             return;
         }
 
-        if (dragEvent.subject.parent.id === dropNode.id) {
+        if (event.subject.parent.id === dropNode.id) {
             chart.render();
             return;
         }
@@ -188,13 +244,13 @@ export const orgchart = () => {
         d3.select(element).remove();
 
         const data = chart.getChartState().data;
-        const node = data?.find((x) => x.id === dragEvent.subject.id);
+        const node = data?.find((x) => x.id === event.subject.id);
         const oldParentId = node.parentId;
         node.parentId = dropNode.id;
 
         redoActions = [];
         undoActions.push({
-            id: dragEvent.subject.id,
+            id: event.subject.id,
             parentId: oldParentId,
         });
 
@@ -209,23 +265,20 @@ export const orgchart = () => {
         const imageDiffVert = 25 + 2;
         return `
       <div class="node-container" style='
-      width:${d.width}px;
+      width: ${d.width}px;
       height:${d.height}px;
       padding-top:${imageDiffVert - 2}px;
       padding-left:1px;
       padding-right:1px'>
-              <div class="content-container" style="font-family: 'Inter', sans-serif;  margin-left:-1px;width:${d.width - 2
-            }px;height:${d.height - imageDiffVert
-            }px;border-radius:0.25rem;border: ${d.data._highlighted || d.data._upToTheRootHighlighted
-                ? '5px solid #E27396"'
-                : '1px solid #E4E2E9"'
-            } >
+              <div class="content-container border-dark bg-light" style="margin-left:-1px; width: ${d.width - 2
+            }px; height: ${d.height - imageDiffVert
+            }px;">
                   <div style="display:flex;justify-content:flex-end;margin-top:5px;margin-right:8px">#${d.data.id
             }</div>
-                  <div  style="margin-top:${-imageDiffVert - 20
-            }px;margin-left:${15}px;border-radius:100px;width:50px;height:50px;" ></div>
+                  <div  style="margin-top: ${-imageDiffVert - 20
+            }px; margin-left: ${15}px; border-radius: 100px; width: 50px; height: 50px;" ></div>
                   <div style="margin-top:${-imageDiffVert - 20
-            }px;">   <img src=" ${d.data.image
+            }px;">   <img class="ring-darker" src=" ${d.data.image
             }" style="margin-left:${20}px;border-radius:100px;width:40px;height:40px;" /></div>
                   <div style="font-size:15px;color:#08011E;margin-left:20px;margin-top:10px">  ${d.data.name
             } </div>

@@ -26,14 +26,17 @@ body {
     z-index: 9999;
     position: relative;
 
-    .menu-icon {
+    .icon {
         position: absolute;
         cursor: pointer;
-        font-size: 3rem;
         color: var(--light);
         opacity: 1;
         transform-origin: center;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+        &.xl {
+            font-size: 3rem;
+        }
     }
 
     .player {
@@ -48,7 +51,7 @@ body {
     }
 
     &:hover {
-        .menu-icon {
+        .icon {
             opacity: 0;
             transform: rotate(45deg);
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -166,7 +169,6 @@ main {
     align-items: center;
     justify-content: center;
     background: var(--darker);
-    box-shadow: var(--shadow-page);
     position: relative;
     z-index: 1;
 }

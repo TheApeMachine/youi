@@ -38,9 +38,11 @@
         "yjs": "^13.6.20"
     },
     "devDependencies": {
+        "@cypress/webpack-preprocessor": "^6.0.2",
         "@faker-js/faker": "^9.2.0",
         "@tauri-apps/cli": "^2.1.0",
         "@types/auth0-js": "^9.21.6",
+        "@types/cypress": "^1.1.6",
         "@types/d3": "^7.4.3",
         "@types/d3-flextree": "^2.1.4",
         "@types/d3-org-chart": "^3.1.2",
@@ -54,10 +56,12 @@
         "@types/three": "^0.170.0",
         "@vitest/ui": "^2.1.6",
         "cypress": "^13.16.0",
+        "esbuild-darwin-64": "^0.15.15",
         "jsdom": "^25.0.1",
+        "ts-loader": "^9.5.1",
+        "ts-node": "^10.9.2",
         "typescript": "^5.7.2",
         "vite": "^5.4.11",
-        "vitest": "^2.1.6",
-        "esbuild-darwin-64": "^0.15.15"
+        "vitest": "^2.1.6"
     }
 }

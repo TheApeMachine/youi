@@ -46,11 +46,11 @@ export const NodeContent = Component<NodeContentProps>({
                 marginLeft: "-1px",
                 width: `${width - 2}px`,
                 height: `${height - imageDiffVert}px`,
-                borderRadius: "10px",
+                borderRadius: "var(--xs)",
                 border:
                     data._highlighted || data._upToTheRootHighlighted
-                        ? "5px solid #E27396"
-                        : "1px solid #E4E2E9"
+                        ? "5px solid var(--red)"
+                        : "1px solid var(--dark)"
             });
         }
 
@@ -97,7 +97,7 @@ export const NodeContent = Component<NodeContentProps>({
                 <div class="id-container">#{data.id}</div>
                 <div class="image-container"></div>
                 <div class="image-wrapper" style={{ marginTop: "-45px" }}>
-                    <img src={data.image} />
+                    <img class="ring-darker" src={data.image} />
                 </div>
                 <div class="name-container">{data.name}</div>
                 <div class="position-container">{data.position}</div>

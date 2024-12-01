@@ -47,7 +47,7 @@ export const Component = Object.assign(
                         };
 
                         const renderedElement = await config.render(propsWithData);
-                        
+
                         // Set up effect after render if needed
                         const rootElement = renderedElement instanceof DocumentFragment
                             ? renderedElement.firstElementChild as HTMLElement

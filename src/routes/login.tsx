@@ -1,22 +1,27 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { AuthService } from "@/lib/auth";
-import "@/assets/login.css";
-import { eventBus } from "@/lib/event";
+import { eventBus, EventPayload } from "@/lib/event";
 import { createRouter } from "@/lib/router";
-
+import { Flex } from "@/lib/ui/Flex";
+import { Form } from "@/lib/ui/form/Form";
+import { TextField } from "@/lib/ui/form/TextField";
+import { Button } from "@/lib/ui/button/Button";
+import { Text } from "@/lib/ui/Text";
 export const render = Component({
     effect: () => {
-        const form = document.querySelector("form");
-        const errorMessage = document.querySelector(".callout.error");
-        const errorMessageText = document.querySelector(".message h6");
-        const loadingSpinner = document.querySelector(".loading-spinner");
-
         createRouter().then(({ navigateTo }) => {
+            eventBus.subscribe("login", async (payload: EventPayload) => {
+                const { email, password } = payload.data as {
+                    email: string;
+                    password: string;
+                };
+                await AuthService.login(email, password);
+            });
+
             eventBus.subscribe(
                 "stateChange",
                 async (payload: { key: string; value: any }) => {
-                    console.log("login.stateChange", payload);
                     if (payload.key === "auth") {
                         await AuthService.getUserInfo(
                             payload.value.accessToken
@@ -25,156 +30,66 @@ export const render = Component({
                     }
                 }
             );
-
-            form?.addEventListener("submit", async (e: Event) => {
-                e.preventDefault();
-
-                const username = (
-                    document.querySelector("#username") as HTMLInputElement
-                ).value;
-                const password = (
-                    document.querySelector("#password") as HTMLInputElement
-                ).value;
-
-                if (!username || !password) {
-                    if (errorMessage instanceof HTMLElement) {
-                        errorMessage.textContent = "Please fill in all fields";
-                        errorMessage.style.opacity = "1";
-                    }
-                    return;
-                }
-
-                try {
-                    if (loadingSpinner instanceof HTMLElement) {
-                        loadingSpinner.style.display = "block";
-                    }
-                    if (errorMessage instanceof HTMLElement) {
-                        errorMessage.style.opacity = "0";
-                    }
-
-                    await AuthService.login(username, password);
-                } catch (error) {
-                    eventBus.publish(
-                        "status",
-                        new CustomEvent("status", {
-                            detail: {
-                                status: "error",
-                                variant: "error",
-                                title: "Login failed",
-                                message:
-                                    error instanceof Error
-                                        ? error.message
-                                        : "Login failed"
-                            }
-                        })
-                    );
-                    if (
-                        errorMessage instanceof HTMLElement &&
-                        errorMessageText instanceof HTMLElement
-                    ) {
-                        errorMessageText.textContent =
-                            error instanceof Error
-                                ? error.message
-                                : "Login failed";
-                        errorMessage.style.opacity = "1";
-                    }
-                } finally {
-                    if (loadingSpinner instanceof HTMLElement) {
-                        loadingSpinner.style.display = "none";
-                    }
-                }
-            });
-        });
-
-        document.querySelectorAll(".input-group input").forEach((input) => {
-            input.addEventListener("focus", () => {
-                const group = input.closest(".input-group");
-                if (group instanceof HTMLElement) {
-                    group.classList.add("focused");
-                }
-            });
-
-            input.addEventListener("blur", () => {
-                const group = input.closest(".input-group");
-                if (
-                    group instanceof HTMLElement &&
-                    !(input as HTMLInputElement).value
-                ) {
-                    group.classList.remove("focused");
-                }
-            });
         });
     },
     render: async () => (
-        <div class="row grow page">
-            <div class="login-container">
-                <div class="column pad gap radius-xs login-card">
-                    <div class="column gap brand">
-                        <h1>Fan App</h1>
-                        <p>Sign in to continue</p>
-                    </div>
+        <Flex fullHeight fullWidth>
+            <Flex direction="column" grow>
+                <Flex direction="column" gap="md" className="card-shadow">
+                    <Text variant="h1" color="brand">
+                        Fan App
+                    </Text>
+                    <p>Sign in to continue</p>
 
-                    <form class="column gap">
-                        <div class="row callout error">
-                            <div class="column message">
-                                <sub>ERROR</sub>
-                                <h6></h6>
-                            </div>
-                        </div>
+                    <Form event="login" effect="authenticate">
+                        <TextField
+                            label="Email"
+                            name="email"
+                            type="email"
+                            icon="person"
+                            required
+                            validationMessage="Please enter a valid email"
+                        />
+                        <TextField
+                            label="Password"
+                            name="password"
+                            type="password"
+                            icon="lock"
+                            required
+                            validationMessage="Password is required"
+                        />
+                        <Button variant="brand" type="submit" icon="key">
+                            <Text variant="h6">Sign in</Text>
+                        </Button>
+                    </Form>
 
-                        <div class="input-group">
-                            <input type="text" id="username" required />
-                            <label for="username">Username</label>
-                            <span class="material-icons">person</span>
-                        </div>
-
-                        <div class="input-group">
-                            <input type="password" id="password" required />
-                            <label for="password">Password</label>
-                            <span class="material-icons">lock</span>
-                        </div>
-
-                        <div class="row gap options">
-                            <label class="remember-me">
-                                <input type="checkbox" />
-                                <span>Remember me</span>
-                            </label>
-                            <a href="/forgot-password" class="forgot-password">
-                                Forgot password?
-                            </a>
-                        </div>
-
-                        <button type="submit" class="row center shrink button">
-                            <span>Sign In</span>
-                            <div class="loading-spinner"></div>
-                        </button>
-                    </form>
-
-                    <div class="social-login">
+                    <Flex direction="column" gap="md" fullWidth>
                         <p>Or sign in with</p>
-                        <div class="social-buttons">
-                            <button class="social-button google">
-                                <span class="material-icons">google</span>
-                            </button>
-                            <button class="social-button github">
-                                <span class="material-icons">code</span>
-                            </button>
-                            <button class="social-button twitter">
-                                <span class="material-icons">flutter_dash</span>
-                            </button>
-                        </div>
-                    </div>
+                        <Flex gap="md" fullWidth>
+                            <Button
+                                variant="icon"
+                                color="muted"
+                                icon="android"
+                            />
+                            <Button variant="icon" color="muted" icon="code" />
+                            <Button
+                                variant="icon"
+                                color="muted"
+                                icon="flutter_dash"
+                            />
+                        </Flex>
+                    </Flex>
 
-                    <div class="signup-link">
+                    <Flex direction="column">
                         <p>
                             Don't have an account? <a href="/signup">Sign up</a>
                         </p>
-                    </div>
-                </div>
-            </div>
-            <div class="column center random-image">
+                    </Flex>
+                </Flex>
+            </Flex>
+            <Flex direction="column" className="random-image" grow>
                 <img src="/public/logo.png" alt="logo" class="logo" />
-            </div>
-        </div>
+            </Flex>
+        </Flex>
     )
 });

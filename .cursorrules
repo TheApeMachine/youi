@@ -1,39 +1,81 @@
-<important>
-    1. We NEVER EVER use classes, only functional components.
-    2. There is NO React in this project, we use our own custom JSX implementation.
-    3. We use TypeScript.
-</important>
+/**
+ * Project Architecture Guidelines
+ * 
+ * This file defines the core architectural rules and patterns
+ * for AI assistance in this project.
+ */
 
-        ```
-    This is what a component looks like:
+export const ARCHITECTURE_RULES = {
+    components: {
+        type: 'functional-only',
+        framework: 'custom-jsx',
+        typescript: true,
+        pattern: `
+            import { jsx } from "@/lib/template";
+            import { Component } from "../Component";
 
-    import { jsx } from "@/lib/template";
-    import { Component } from "../Component";
-
-    export const Message = Component({
-        effect: () => { 
-            // Subscriptions go here
-            eventBus.subscribe("messaging", (message: EventPayload) => {
-                console.log(message.event, message.topic, message.effect, message.trigger, message.originalEvent);
+            export const ExampleComponent = Component({
+                effect?: () => {
+                    // Optional: Side effects (subscriptions, etc)
+                    eventBus.subscribe("eventName", (payload: EventPayload) => {
+                        // Handle event
+                    });
+                },
+                render: (props) => {
+                    return <div>{/* content */}</div>;
+                }
             });
+        `
+    },
+
+    eventHandling: {
+        pattern: 'declarative',
+        implementation: {
+            trigger: 'data-trigger',
+            event: 'data-event',
+            effect: 'data-effect',
+            topic: 'data-topic'
         },
-        render: ({ message }) => {
-            return <div>{message.content}</div>;
-        }
-    });
+        example: `
+            <button
+                data-trigger="click"
+                data-event="eventName"
+                data-effect="effectName"
+                data-topic="topicName"
+            >
+                Action
+            </button>
+        `
+    },
 
-    The effect function is optional, it's used for side effects like subscriptions.
-    It means that it runs after the component is fully rendered.
-```
-        ```
-    We do not define event listeners everywhere, instead we have a number of ways we can handle events:
-
-    <button
-        data-trigger="click"
-        data-event="messaging"
-        data-effect="sendMessage"
-        data-topic="sometopic"
-    > 
-        Send Message
-    </button>
-```
+    aiGuidelines: {
+        changeManagement: [
+            'Make minimal, targeted changes',
+            'Prefer small, precise updates over large refactors',
+            'Break large changes into smaller steps'
+        ],
+        decisionMaking: [
+            'Never make assumptions about implementation',
+            'Ask clarifying questions when context is missing',
+            'Base decisions on concrete evidence only',
+            'State limitations explicitly when unsure'
+        ],
+        codeQuality: [
+            'Maintain consistent TypeScript types',
+            'Follow existing patterns',
+            'Document non-obvious logic',
+            'Consider performance implications'
+        ],
+        contextRequirements: [
+            'Request file structure when needed',
+            'Verify dependencies before suggesting solutions',
+            'Understand event bus architecture'
+        ],
+        errorHandling: [
+            'Consider all error cases',
+            'Implement appropriate type checking',
+            'Provide meaningful error messages',
+            'Handle edge cases appropriately'
+        ]
+    }
+};

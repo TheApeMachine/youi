@@ -1,0 +1,70 @@
+#toaster {
+    position: fixed;
+    bottom: var(--unit);
+    right: var(--unit);
+    display: flex;
+    flex-direction: column;
+    gap: var(--unit);
+    height: 120px;
+    perspective: 1000px;
+
+    .toast {
+        position: absolute;
+        width: 320px;
+        height: 120px;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        background: hsla(228, 6%, 15%, 0.95);
+        border: 1px solid hsla(228, 6%, 40%, 0.2);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border-radius: var(--xs);
+        padding: var(--unit);
+        isolation: isolate;
+        z-index: 9999;
+
+        &.error {
+            border-left: 4px solid var(--red);
+
+            h3 {
+                color: var(--red);
+            }
+        }
+
+        &.success {
+            border-left: 4px solid var(--green);
+
+            h3 {
+                color: var(--green);
+            }
+        }
+
+        &.warning {
+            border-left: 4px solid var(--yellow);
+
+            h3 {
+                color: var(--yellow);
+            }
+        }
+
+        &.info {
+            border-left: 4px solid var(--blue);
+
+            h3 {
+                color: var(--blue);
+            }
+        }
+
+        h3 {
+            margin-bottom: var(--xs);
+        }
+
+        p {
+            color: var(--light);
+        }
+    }
+}

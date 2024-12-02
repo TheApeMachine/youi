@@ -20,6 +20,18 @@ export type User = {
     email_verified?: boolean;
 };
 
+// Add after the type definitions, before auth initialization
+const handleAuthError = (error: Auth0Error, defaultMessage: string) => {
+    const message = error.description ?? defaultMessage;
+    eventBus.publish("status", {
+        status: "error",
+        variant: "error",
+        title: "Error",
+        message
+    });
+    return new Error(message);
+};
+
 // Initialize Auth0 client
 export const auth = new auth0.Authentication({
     domain: import.meta.env.VITE_AUTH0_DOMAIN,
@@ -39,13 +51,7 @@ export const AuthService = {
                 password
             }, (error: Auth0Error | null, result?: Token) => {
                 if (error) {
-                    eventBus.publish("status", {
-                        status: "error",
-                        variant: "error",
-                        title: "Login failed",
-                        message: error.description || "Login failed"
-                    });
-                    return reject(error);
+                    return reject(handleAuthError(error, "Login failed"));
                 }
                 if (result) {
                     console.log("login", result);
@@ -67,13 +73,7 @@ export const AuthService = {
         return new Promise((resolve, reject) => {
             auth.userInfo(accessToken, (error: Auth0Error | null, result?: Auth0UserProfile) => {
                 if (error) {
-                    eventBus.publish("status", {
-                        status: "error",
-                        variant: "error",
-                        title: "Error",
-                        message: error.description || "Error fetching user info"
-                    });
-                    return reject(error);
+                    return reject(handleAuthError(error, "Error fetching user info"));
                 }
 
                 if (result) {

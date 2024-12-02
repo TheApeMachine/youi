@@ -1,37 +1,175 @@
-.modal {
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out,
-        backdrop-filter 0.3s ease-out;
-    border: none;
-    border-radius: 8px;
-    padding: 2rem;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(0);
+::backdrop {
+    background-image: linear-gradient(
+        45deg,
+        magenta,
+        rebeccapurple,
+        dodgerblue,
+        green
+    );
+    opacity: 0.75;
 }
 
-.modal::backdrop {
-    background: rgba(0, 0, 0, 0);
-    transition: background 0.3s ease-out;
-}
+dialog {
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: var(--xs);
+        width: 100%;
+        height: 32px;
+        border-top-left-radius: var(--xs);
+        border-top-right-radius: var(--xs);
 
-/* Styles for when dialog is opened */
-.modal[open] {
+        .close-button {
+            color: var(--light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: font-size, color 0.2s ease-in-out;
+
+            &:hover {
+                color: var(--white);
+                font-size: 1.75rem;
+            }
+        }
+    }
+
+    main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        padding: var(--unit);
+    }
+
+    footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 32px;
+        border-bottom-left-radius: var(--xs);
+        border-bottom-right-radius: var(--xs);
+    }
+
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%);
     opacity: 1;
-    transform: translateY(0);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border: none;
+    border-radius: var(--xs);
+    background: hsla(228, 6%, 15%, 0.95);
     backdrop-filter: blur(10px);
-}
+    box-shadow: var(--shadow-page);
 
-.modal[open]::backdrop {
-    background: rgba(0, 0, 0, 0.5);
-}
+    &::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+    }
 
-/* Closing animation */
-.modal.closing {
-    opacity: 0;
-    transform: translateY(-20px);
-}
+    nav {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
 
-.modal.closing::backdrop {
-    background: rgba(0, 0, 0, 0);
+        a,
+        button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            padding: 1rem;
+            border-radius: var(--xs);
+            background: hsla(228, 6%, 30%, 0.5);
+            border: 1px solid hsla(228, 6%, 40%, 0.2);
+            overflow: hidden;
+            cursor: pointer;
+
+            > a {
+                height: 0;
+                opacity: 0;
+            }
+
+            .button-face {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                pointer-events: none;
+                overflow: visible;
+                position: relative;
+            }
+
+            .button-submenu {
+                display: flex;
+                flex-direction: row;
+                gap: 1rem;
+                height: 0;
+                width: 0;
+                opacity: 0;
+            }
+
+            &:hover {
+                transform: translateY(-2px);
+                background: hsla(228, 6%, 40%, 0.8);
+                border-color: var(--pink);
+
+                .button-face {
+                    .material-icons {
+                        color: var(--pink);
+                        transform: translateY(-4px);
+                    }
+
+                    h4 {
+                        color: var(--pink);
+                        opacity: 1;
+                    }
+                }
+            }
+
+            .material-icons {
+                font-size: 2rem;
+                color: var(--white);
+                pointer-events: none;
+
+                &.close {
+                    font-size: 0;
+                    opacity: 0;
+                }
+            }
+
+            h4 {
+                color: var(--white);
+                font-weight: 500;
+                pointer-events: none;
+                flex: 1;
+            }
+
+            &[data-expanded="true"] {
+                pointer-events: none;
+
+                .material-icons.close {
+                    pointer-events: all;
+                }
+            }
+        }
+    }
+
+    &:not([open]) {
+        display: none;
+    }
+
+    &[open] {
+        display: flex;
+    }
 }

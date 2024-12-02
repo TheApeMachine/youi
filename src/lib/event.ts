@@ -17,16 +17,24 @@ export interface EventPayload {
 const EventBus = () => {
     const listeners: Record<string, Set<Function>> = {};
 
+    const executeCallback = (callback: Function, payload: unknown) => {
+        try {
+            callback(payload);
+        } catch (err) {
+            console.error(`Error in event listener:`, err);
+        }
+    };
+
     const subscribe = (event: string, callback: Function, condition: (payload: any) => boolean = () => true) => {
         if (!listeners[event]) {
             listeners[event] = new Set();
         }
-        // Add the condition wrapper around the callback
-        listeners[event].add((payload: unknown) => {
+        const wrappedCallback = (payload: unknown) => {
             if (condition(payload)) {
                 callback(payload);
             }
-        });
+        };
+        listeners[event].add(wrappedCallback);
     };
 
     const publish = (event: string, payload: any) => {
@@ -34,17 +42,10 @@ const EventBus = () => {
             console.warn(`No listeners for event: ${event}`);
             return;
         }
-
-        listeners[event].forEach(callback => {
-            try {
-                callback(payload);
-            } catch (err) {
-                console.error(`Error in event listener for event: ${event}`, err);
-            }
-        });
+        listeners[event].forEach(callback => executeCallback(callback, payload));
     };
 
-    // Subscribe to state change events and update the stateManager accordingly
+    // Initialize state change subscription
     subscribe("stateChange", (data: { key: string; value: any }) => {
         console.log("stateChange", data);
         stateManager.setState(data);
@@ -57,82 +58,77 @@ export const eventBus = EventBus();
 
 // EventManager for handling DOM events and event delegation
 export const EventManager = () => {
-    // Define proper types for our event handlers
     type EventHandler = (event: Event) => void;
     type WheelHandler = (event: WheelEvent) => void;
     type DragHandler = (event: DragEvent) => void;
 
-    const handleWheel: WheelHandler = (event) => {
-        handleEvent(event);
+    const createEventPayload = (target: HTMLElement, event: Event) => ({
+        effect: target.dataset.effect,
+        topic: target.dataset.topic,
+        originalEvent: event,
+        meta: {
+            timeStamp: Date.now(),
+            target: target.tagName,
+            initiator: "EventManager"
+        }
+    });
+
+    const handleEvent = (event: Event) => {
+        const target = event.target as HTMLElement;
+        if (target?.dataset?.event) {
+            eventBus.publish(target.dataset.event, createEventPayload(target, event));
+        }
     };
 
-    const handleDrag: DragHandler = (event) => {
-        handleEvent(event);
-    };
-
-    // Event handlers mapping
-    const handlers: Record<string, EventHandler | WheelHandler | DragHandler> = {
-        click: (event: Event) => handleClick(event),
-        wheel: handleWheel,
-        drag: handleDrag
-    };
-
-    const init = () => {
-        // Initialize event listeners for click, wheel, and drag events globally
-        (["click", "wheel", "drag"] as const).forEach(eventType => {
-            document.addEventListener(eventType, handlers[eventType] as EventListener);
+    const handleNavigationClick = (link: HTMLAnchorElement, event: Event) => {
+        event.preventDefault();
+        eventBus.publish('navigate', {
+            url: link.getAttribute('href'),
+            originalEvent: event
         });
     };
 
-    // Handle click events with delegation logic to find the correct element with 'data-event' attribute
+    const findEventElement = (target: HTMLElement): HTMLElement | null => {
+        let element: HTMLElement | null = target;
+        while (element && !element.hasAttribute("data-event")) {
+            element = element.parentElement;
+        }
+        return element;
+    };
+
     const handleClick = (event: Event) => {
         if (!(event.target instanceof HTMLElement)) return;
 
         const link = event.target.closest('a');
         if (link?.href?.startsWith(window.location.origin)) {
-            event.preventDefault();
-            eventBus.publish('navigate', {
-                url: link.getAttribute('href'),
-                originalEvent: event
-            });
+            handleNavigationClick(link, event);
             return;
         }
 
-        let element = event.target;
-        while (element && !element.hasAttribute("data-event")) {
-            element = element.parentElement as HTMLElement;
-        }
-
-        if (element) {
+        const eventElement = findEventElement(event.target);
+        if (eventElement) {
             handleEvent(event);
         }
     };
 
-    // Generic handleEvent function to publish event data through EventBus
-    const handleEvent = (event: Event) => {
-        const target = event.target as HTMLElement;
-        if (target?.dataset?.event) {
-            // Enhanced payload to include more metadata for debugging and analytics
-            eventBus.publish(target.dataset.event, {
-                effect: target.dataset.effect,
-                topic: target.dataset.topic,
-                originalEvent: event,
-                meta: {
-                    timeStamp: Date.now(),
-                    target: target.tagName,
-                    initiator: "EventManager"
-                }
-            });
-        }
+    const handlers: Record<string, EventHandler | WheelHandler | DragHandler> = {
+        click: handleClick,
+        wheel: handleEvent,
+        drag: handleEvent,
+        submit: handleEvent
     };
 
-    // Add an event listener dynamically
+    const init = () => {
+        (["click", "wheel", "drag"] as const).forEach(eventType => {
+            document.addEventListener(eventType, handlers[eventType] as EventListener);
+        });
+    };
+
     const addEvent = (eventType: string, handler: EventHandler) => {
         handlers[eventType] = handler;
         document.addEventListener(eventType, handler);
     };
 
-    // Remove an event listener dynamically
     const removeEvent = (eventType: string) => {
         const handler = handlers[eventType];
         if (handler) {
@@ -141,29 +137,23 @@ export const EventManager = () => {
         }
     };
 
-    // Scoped Event Listener - Add listener to a specific element (not the whole document)
     const addScopedEventListener = (scope: HTMLElement, eventType: string, handler: EventHandler) => {
         scope.addEventListener(eventType, handler);
     };
 
-    // Component-level lifecycle management for adding/removing event listeners
-    const manageComponentLifecycle = (element: HTMLElement, mountCallback: Function, unmountCallback: Function) => {
-        // Observer to detect addition/removal
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((node) => {
-                    if (node === element) {
-                        mountCallback();
-                    }
-                });
-                mutation.removedNodes.forEach((node) => {
-                    if (node === element) {
-                        unmountCallback();
-                    }
-                });
-            });
-        });
+    const handleMutationNode = (node: Node, element: HTMLElement, callback: Function) => {
+        if (node === element) callback();
+    };
 
+    const handleMutation = (mutation: MutationRecord, element: HTMLElement, mountCallback: Function, unmountCallback: Function) => {
+        mutation.addedNodes.forEach(node => handleMutationNode(node, element, mountCallback));
+        mutation.removedNodes.forEach(node => handleMutationNode(node, element, unmountCallback));
+    };
+
+    const manageComponentLifecycle = (element: HTMLElement, mountCallback: Function, unmountCallback: Function) => {
+        const observer = new MutationObserver(mutations =>
+            mutations.forEach(mutation => handleMutation(mutation, element, mountCallback, unmountCallback))
+        );
         observer.observe(document.body, { childList: true, subtree: true });
     };
 

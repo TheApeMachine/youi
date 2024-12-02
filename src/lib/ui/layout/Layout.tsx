@@ -1,17 +1,13 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import Reveal from "reveal.js";
-import gsap from "gsap";
-import Flip from "gsap/Flip";
 import { Dialog } from "../dialog/Dialog";
 import { Navigation } from "../menu/Navigation";
 import { Toaster } from "../toast/Toaster";
 import "@dotlottie/player-component";
-import { Header } from "./Header";
-import { Button } from "../button/Button";
 import { Flyout } from "../Flyout";
-
-gsap.registerPlugin(Flip);
+import { navigation } from "./navigation";
+import { AuthService } from "@/lib/auth";
 
 interface RevealSlideEvent {
     currentSlide: HTMLElement;
@@ -20,10 +16,7 @@ interface RevealSlideEvent {
     indexv: number;
 }
 
-interface LayoutProps {}
-
-/* Layout Component - A wrapper component for page content */
-export const Layout = Component<LayoutProps>({
+export const Layout = Component({
     effect: () => {
         Reveal.initialize({
             hash: false,
@@ -46,89 +39,38 @@ export const Layout = Component<LayoutProps>({
         });
     },
     render: async () => (
-        <div className="layout">
-            <Flyout variant="header" direction="down" />
-            <aside className="row center bg">
-                <span class="material-symbols-rounded color-fg">
-                    arrow_right
-                </span>
-            </aside>
-            <main id="app" className="column center">
-                <div className="reveal">
-                    <div className="slides"></div>
+        <div class="layout">
+            {AuthService.isAuthenticated().then(
+                (isAuthenticated) =>
+                    isAuthenticated && (
+                        <Flyout variant="header" direction="down" />
+                    )
+            )}
+            {AuthService.isAuthenticated().then(
+                (isAuthenticated) =>
+                    isAuthenticated && (
+                        <Flyout variant="aside" direction="right" />
+                    )
+            )}
+            <main id="app">
+                <div class="reveal">
+                    <div class="slides"></div>
                 </div>
-                <span class="material-symbols-rounded">arrow_drop_up</span>
             </main>
-            <article class="row center shrink bg-darker flyout">
-                <span class="material-symbols-rounded">arrow_left</span>
-                <div class="column center pad gap height bg-dark">
-                    <Button
-                        variant="animoji"
-                        icon="videocam"
-                        className="icon"
-                    />
-                    <Button
-                        variant="animoji"
-                        icon="auto_awesome"
-                        className="icon"
-                    />
-                </div>
-            </article>
-            <footer>
-                <p>
-                    YouI &copy; 2024{" "}
-                    <a href="https://theapemachine.com" target="_blank">
-                        The Ape Machine
-                    </a>
-                </p>
-            </footer>
+            {AuthService.isAuthenticated().then(
+                (isAuthenticated) =>
+                    isAuthenticated && (
+                        <Flyout variant="article" direction="left" />
+                    )
+            )}
+            {AuthService.isAuthenticated().then(
+                (isAuthenticated) =>
+                    isAuthenticated && (
+                        <Flyout variant="footer" direction="up" />
+                    )
+            )}
             <Dialog>
-                <Navigation
-                    items={[
-                        {
-                            href: "/dashboard",
-                            icon: "dashboard",
-                            label: "Dashboard"
-                        },
-                        {
-                            href: "/orgchart",
-                            icon: "lan",
-                            label: "Orgchart"
-                        },
-                        {
-                            href: "/chat",
-                            icon: "chat",
-                            label: "Chat"
-                        },
-                        {
-                            href: "/admin",
-                            icon: "settings",
-                            label: "Admin",
-                            submenu: [
-                                {
-                                    href: "/admin/tenants",
-                                    icon: "apartment",
-                                    label: "Tenants"
-                                },
-                                {
-                                    href: "/admin/users",
-                                    icon: "people",
-                                    label: "Users"
-                                },
-                                {
-                                    href: "/admin/timeline",
-                                    icon: "timeline",
-                                    label: "Timeline"
-                                },
-                                {
-                                    href: "/admin/feedback",
-                                    icon: "feedback",
-                                    label: "Feedback"
-                                }
-                            ]
-                        }
-                    ]}
-                />
+                <Navigation items={navigation} />
             </Dialog>
             <Toaster />
         </div>

@@ -75,113 +75,84 @@ type Props = HTMLAttributes & {
     [K in keyof EventHandlers as `on${Capitalize<K>}`]?: EventHandlers[K];
 };
 
-/*
-jsx is a function that takes a tag, props, and children and returns a Node.
-@param tag The tag to render.
-@param props The props to render.
-@param children The children to render.
-@returns A Node containing the rendered tag, props, and children.
-*/
-export function jsx(
-    tag: JSXElementType,
-    props: Props | null,
-    ...children: (Node | string | Array<Node | string>)[]
-) {
-    // Handle Fragments
-    if (tag === Fragment) {
-        const fragment = document.createDocumentFragment();
-        children.flat().forEach(async child => {
-            if (child instanceof Promise) {
-                const resolved = await child;
-                fragment.appendChild(resolved instanceof Node ? resolved : document.createTextNode(String(resolved)))
-            } else {
-                fragment.appendChild(
-                    child instanceof Node ? child : document.createTextNode(String(child))
-                );
-            }
-        });
-        return fragment;
-    }
-
-    // Handle function components
-    if (typeof tag === 'function') {
-        const componentProps = props ? { ...props } : {};
-        if (children.length > 0) {
-            componentProps.children = children.length === 1 ? children[0] : children;
+const handleElementProps = (element: Element, props: Props, isSVG: boolean) => {
+    Object.entries(props).forEach(([name, value]) => {
+        if (name === 'className') {
+            isSVG ? element.setAttributeNS(null, 'class', String(value))
+                : element.setAttribute('class', String(value));
+            return;
         }
-        return tag(componentProps);
-    }
 
-    // Check if element is SVG
-    const isSVG = tag === 'svg' || tag === 'path' || tag === 'circle' || tag === 'line' ||
-        tag === 'marker' || tag === 'defs' || tag === 'clippath' || tag === 'g';
+        if (name.startsWith('on') && typeof value === 'function') {
+            element.addEventListener(name.slice(2).toLowerCase(), value as EventListener);
+            return;
+        }
 
-    // Create the element with proper namespace
-    const element = isSVG
-        ? document.createElementNS('http://www.w3.org/2000/svg', tag)
-        : document.createElement(tag);
+        if (name === 'ref') {
+            if (typeof value === 'function') value(element);
+            else if (typeof value === 'object' && value !== null) value.current = element;
+            return;
+        }
 
-    if (props) {
-        // Handle prop spreading for HTML/SVG elements
-        Object.entries(props).forEach(([name, value]) => {
-            if (name === 'className') {
-                // Handle class for both HTML and SVG
-                isSVG
-                    ? element.setAttributeNS(null, 'class', String(value))
-                    : element.setAttribute('class', String(value));
-            } else if (name.startsWith('on') && typeof value === 'function') {
-                element.addEventListener(name.slice(2).toLowerCase(), value as EventListener);
-            } else if (name === 'ref') {
-                if (typeof value === 'function') {
-                    value(element);
-                } else if (typeof value === 'object' && value !== null) {
-                    value.current = element;
-                }
-            } else if (typeof value === 'boolean') {
-                if (value) {
-                    element.setAttribute(name, '');
-                } else {
-                    element.removeAttribute(name);
-                }
-            } else {
-                // Set attributes with proper namespace for SVG elements
-                isSVG
-                    ? element.setAttributeNS(null, name, String(value))
-                    : element.setAttribute(name, String(value));
-            }
-        });
-    }
+        if (typeof value === 'boolean') {
+            value ? element.setAttribute(name, '') : element.removeAttribute(name);
+            return;
+        }
 
-    // Flatten and append children
+        isSVG ? element.setAttributeNS(null, name, String(value))
+            : element.setAttribute(name, String(value));
+    });
+}
+
+const handleFragment = (children: any[]) => {
+    const fragment = document.createDocumentFragment();
     children.flat().forEach(async child => {
         if (child instanceof Promise) {
-            const resolvedChild = await child;
-            if (resolvedChild instanceof Node) {
-                element.appendChild(resolvedChild);
-            } else {
-                element.appendChild(document.createTextNode(String(resolvedChild)));
-            }
-        } else if (Array.isArray(child)) {
-            child.forEach(async subChild => {
-                if (subChild instanceof Promise) {
-                    const resolved = await subChild;
-                    element.appendChild(
-                        resolved instanceof Node ? resolved : document.createTextNode(String(resolved))
-                    );
-                } else if (subChild instanceof Node) {
-                    element.appendChild(subChild);
-                } else {
-                    element.appendChild(document.createTextNode(String(subChild)));
-                }
-            });
-        } else if (child instanceof Node) {
-            element.appendChild(child);
+            const resolved = await child;
+            fragment.appendChild(resolved instanceof Node ? resolved : document.createTextNode(String(resolved)))
         } else {
-            element.appendChild(document.createTextNode(String(child)));
+            fragment.appendChild(
+                child instanceof Node ? child : document.createTextNode(String(child))
+            );
         }
     });
+    return fragment;
+}
 
-    // Handle transitions
+const appendChild = async (element: Element, child: any) => {
+    // Skip falsy values but keep 0
+    if (child === false || child === null || child === undefined) return;
+
+    if (child instanceof Promise) {
+        const resolved = await child;
+        // Skip falsy resolved values but keep 0
+        if (resolved === false || resolved === null || resolved === undefined) return;
+
+        element.appendChild(
+            resolved instanceof Node ? resolved : document.createTextNode(String(resolved))
+        );
+    } else if (child instanceof Node) {
+        element.appendChild(child);
+    } else {
+        element.appendChild(document.createTextNode(String(child)));
+    }
+};
+
+const handleChildren = async (element: Element, children: any[]) => {
+    // Wait for all children to resolve in order
+    for (const child of children.flat()) {
+        if (Array.isArray(child)) {
+            // Handle nested arrays in order
+            for (const subChild of child) {
+                await appendChild(element, subChild);
+            }
+        } else {
+            await appendChild(element, child);
+        }
+    }
+};
+
+const handleTransitions = (element: Element, props: Props | null) => {
     if (props?.transitionEnter || props?.transitionExit) {
         Transition(
             element,
@@ -191,6 +162,60 @@ export function jsx(
             }
         );
     }
+}
+
+const handleSVG = (tag: string): { element: Element, isSVG: boolean } => {
+    // Check if element is SVG
+    const isSVG = tag === 'svg' || tag === 'path' || tag === 'circle' || tag === 'line' ||
+        tag === 'marker' || tag === 'defs' || tag === 'clippath' || tag === 'g';
+
+    // Create the element with proper namespace
+    return {
+        element: isSVG
+            ? document.createElementNS('http://www.w3.org/2000/svg', tag)
+            : document.createElement(tag),
+        isSVG
+    };
+}
+
+const handleComponent = (tag: Function, props: Props | null, children: any[]) => {
+    const componentProps = props ? { ...props } : {};
+    if (children.length > 0) {
+        componentProps.children = children.length === 1 ? children[0] : children;
+    }
+    return tag(componentProps);
+}
+
+/*
+jsx is a function that takes a tag, props, and children and returns a Node.
+@param tag The tag to render.
+@param props The props to render.
+@param children The children to render.
+@returns A Node containing the rendered tag, props, and children.
+*/
+export const jsx = async (
+    tag: JSXElementType,
+    props: Props | null,
+    ...children: (Node | string | boolean | null | undefined | Array<Node | string | boolean | null | undefined>)[]
+) => {
+    // Handle Fragments
+    if (tag === Fragment) {
+        return handleFragment(children);
+    }
+
+    // Handle function components
+    if (typeof tag === 'function') {
+        return handleComponent(tag, props, children);
+    }
+
+    const { element, isSVG } = handleSVG(tag);
+
+    if (props) {
+        handleElementProps(element, props, isSVG);
+    }
+
+    await handleChildren(element, children);
+    handleTransitions(element, props);
 
     return element;
 }

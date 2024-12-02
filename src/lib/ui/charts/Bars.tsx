@@ -37,7 +37,8 @@ export const Bars = Component({
             right: "10%",
             top: "10%",
             bottom: "10%",
-            containLabel: true
+            containLabel: true,
+            show: false
         };
 
         const series: echarts.BarSeriesOption[] = [
@@ -51,7 +52,7 @@ export const Bars = Component({
                 name,
                 type: "bar",
                 stack: "total",
-                barWidth: "60%",
+                barWidth: "100%",
                 label: {
                     show: true,
                     formatter: (params: any) =>
@@ -63,21 +64,40 @@ export const Bars = Component({
             };
         });
 
-        const color = ["#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de"];
+        const color = [
+            "rgba(84, 112, 198, 0.8)", // #5470c6 with 0.8 opacity
+            "rgba(145, 204, 117, 0.8)", // #91cc75 with 0.8 opacity
+            "rgba(250, 200, 88, 0.8)", // #fac858 with 0.8 opacity
+            "rgba(238, 102, 102, 0.8)", // #ee6666 with 0.8 opacity
+            "rgba(115, 192, 222, 0.8)" // #73c0de with 0.8 opacity
+        ];
 
         option = {
             grid,
             yAxis: {
                 type: "value",
                 axisLabel: {
-                    formatter: "{value}%"
+                    show: false
+                },
+                splitLine: {
+                    show: false
+                },
+                axisLine: {
+                    show: false
+                },
+                axisTick: {
+                    show: false
                 }
             },
             xAxis: {
                 type: "category",
-                data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                splitLine: {
+                    show: false
+                }
             },
             series,
+            color,
             graphic: {
                 elements: []
             }

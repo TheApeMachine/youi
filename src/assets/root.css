@@ -43,6 +43,8 @@
         rgba(0, 0, 0, 0.06) 0px 2.6px 8px, rgba(0, 0, 0, 0.05) 0px 5.7px 12px,
         rgba(0, 0, 0, 0.04) 0px 15px 15px;
 
+    --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+
     --shadow-tilt: rgba(0, 0, 0, 0.45) 0px 25px 20px -20px;
     --shadow-tile: rgba(0, 0, 0, 0.4) 0px 2px 4px,
         rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
@@ -51,20 +53,24 @@
     --ring-brand: 0 0 0 2px var(--brand);
     --ring-brand-light: 0 0 0 2px var(--brand-light);
     --ring-brand-dark: 0 0 0 2px var(--brand-dark);
+    --ring-muted: 0 0 0 2px var(--muted);
 
-    --ring: 0 0 0 4px var(--darker);
+    --ring: 0 0 0 2px var(--darker);
     --ring-light: 0 0 0 2px var(--light);
     --ring-dark: 0 0 0 2px var(--dark);
     --ring-darker: 0 0 0 2px var(--darker);
-    --ring-blue: 0 0 0 4px var(--blue);
-    --ring-green: 0 0 0 4px var(--green);
-    --ring-red: 0 0 0 4px var(--red);
-    --ring-yellow: 0 0 0 4px var(--yellow);
-    --ring-purple: 0 0 0 4px var(--purple);
-    --ring-double-purple: 0 0 0 8px var(--purple);
+    --ring-blue: 0 0 0 2px var(--blue);
+    --ring-success: 0 0 0 2px var(--success);
+    --ring-danger: 0 0 0 2px var(--danger);
+    --ring-warning: 0 0 0 2px var(--warning);
+    --ring-purple: 0 0 0 2px var(--purple);
+    --ring-double-purple: 0 0 0 4px var(--purple);
 
     --transition-time: 0.2s;
-    --transition: all var(--transition-time) cubic-bezier(0.64, 0, 0.78, 0);
+    --transition-time-long: 0.5s;
+    --transition: all var(--transition-time) ease;
+    --appear: appear var(--transition-time-long)
+        cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 [data-trigger="click"] {
@@ -80,295 +86,37 @@
     overflow-y: auto;
 }
 
-.front {
-    z-index: 100;
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand) var(--bg);
 }
 
-.nopointer {
-    pointer-events: none;
+*::-webkit-scrollbar {
+    height: var(--xs);
+    width: var(--xs);
 }
-
-.width {
-    width: 100%;
-}
-
-.height {
-    height: 100%;
-}
-
-.pad-xl {
-    padding: var(--xl);
-}
-
-.pad-lg {
-    padding: var(--lg);
-}
-
-.pad {
-    padding: var(--unit);
-}
-
-.pad-md {
-    padding: var(--md);
-}
-
-.pad-sm {
-    padding: var(--sm);
-}
-
-.pad-xs {
-    padding: var(--xs);
-}
-
-.gap {
-    gap: var(--unit);
-}
-
-.gap-xl {
-    gap: var(--xl);
-}
-
-.gap-md {
-    gap: var(--md);
-}
-
-.gap-sm {
-    gap: var(--sm);
-}
-
-.row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-
-    &.space-between {
-        justify-content: space-between;
-    }
-
-    &.end {
-        justify-content: flex-end;
-    }
-
-    &.start {
-        justify-content: flex-start;
-    }
-
-    &.stretch {
-        align-items: stretch;
-    }
-}
-
-.column {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-
-    &.self-end {
-        align-self: flex-end;
-    }
-
-    &.space-between {
-        justify-content: space-between;
-    }
-}
-
-.grow {
-    flex: 1;
-}
-
-.shrink {
-    flex: 0;
-}
-
-.start {
-    align-items: flex-start;
-    justify-content: flex-start;
-}
-
-.left {
-    align-items: flex-start;
-    justify-content: flex-start;
-    text-align: left;
-}
-
-.center {
-    align-items: center;
-    justify-content: center;
-}
-
-.pull-up {
-    transform: translateY(-50%);
-}
-
-.text-center {
-    text-align: center;
-}
-
-path.link {
-    color: var(--dark);
-    stroke: var(--dark);
-    stroke-width: 4px;
-    stroke-dasharray: 8, 6;
-    stroke-linecap: round;
-    stroke-dashoffset: 0;
-}
-
-.border-dark {
-    border: 1px solid var(--dark);
-}
-
-.border-top {
-    border-top: 1px solid var(--darker);
-}
-
-.border-bottom {
-    border-bottom: 1px solid var(--light);
-}
-
-.border-right {
-    border-right: 1px solid var(--darker);
-}
-
-.bg-lighter {
-    background: var(--lighter);
-    color: var(--dark);
-}
-
-.bg-dark {
-    background: var(--dark);
-    color: var(--lighter);
-}
-
-.bg-darker {
-    background: var(--darker);
-    color: var(--light);
-}
-
-.dark {
-    color: var(--dark);
-}
-
-.light {
-    color: var(--light);
-}
-
-.lighter {
-    color: var(--lighter);
-}
-
-.darker {
-    color: var(--darker);
-}
-
-.green {
-    color: var(--green);
-}
-
-.red {
-    color: var(--red);
-}
-
-.yellow {
-    color: var(--yellow);
-}
-
-.blue {
-    color: var(--blue);
-}
-
-.purple {
-    color: var(--purple);
-}
-
-.pink {
-    color: var(--pink);
-}
-
-.pointer {
-    cursor: pointer;
-}
-
-.ring {
-    box-shadow: var(--ring);
-}
-
-.ring-light {
-    box-shadow: var(--ring-light);
-}
-
-.ring-dark {
-    box-shadow: var(--ring-dark);
-}
-
-.ring-darker {
-    box-shadow: var(--ring-darker);
-}
-
-.ring-purple {
-    box-shadow: var(--ring-purple);
-}
-
-.ring-double-purple {
-    box-shadow: var(--ring-double-purple);
-    outline: 8px solid var(--darker);
-    outline-offset: 6px;
-}
-
-.nobreak {
-    white-space: nowrap;
-}
-
-.radius {
-    border-radius: var(--unit);
-}
-
-.radius-sm {
-    border-radius: var(--sm);
-}
-
-.radius-xs {
+*::-webkit-scrollbar-track {
     border-radius: var(--xs);
+    background-color: var(--bg);
 }
 
-.radius-top {
-    border-top-left-radius: var(--unit);
-    border-top-right-radius: var(--unit);
+*::-webkit-scrollbar-track:hover {
+    background-color: var(--muted);
 }
 
-.radius-top-sm {
-    border-top-left-radius: var(--sm);
-    border-top-right-radius: var(--sm);
+*::-webkit-scrollbar-track:active {
+    background-color: var(--muted);
 }
 
-.radius-bottom-sm {
-    border-bottom-left-radius: var(--sm);
-    border-bottom-right-radius: var(--sm);
+*::-webkit-scrollbar-thumb {
+    border-radius: var(--xs);
+    background-color: var(--brand);
 }
 
-.radius-bottom-xs {
-    border-bottom-left-radius: var(--xs);
-    border-bottom-right-radius: var(--xs);
+*::-webkit-scrollbar-thumb:hover {
+    background-color: var(--brand);
 }
 
-.shadow-page {
-    box-shadow: var(--shadow-page);
-}
-
-.shadow-tilt {
-    box-shadow: var(--shadow-tilt);
-}
-
-.shadow-tile {
-    box-shadow: var(--shadow-tile);
-}
-
-.stick-right {
-    position: absolute;
-    right: 0;
-    top: 0;
-}
-
-.pulse {
-    animation: sonarOuter 1.5s infinite;
+*::-webkit-scrollbar-thumb:active {
+    background-color: var(--brand);
 }

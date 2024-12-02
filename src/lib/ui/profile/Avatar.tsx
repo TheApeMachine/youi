@@ -10,7 +10,7 @@ export const Avatar = Component({
             <img
                 src={authUser?.picture}
                 alt="avatar"
-                class="ring-purple"
+                class="avatar"
                 data-trigger="click"
                 data-event="menu"
                 data-effect="submenu"

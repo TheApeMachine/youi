@@ -1,9 +1,13 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { Player } from "../animoji/Player";
+import { Color, Background } from "../types";
 
 type ButtonProps = {
-    variant: "menu" | "button" | "icon" | "animoji" | "brand";
+    variant: "brand" | "icon" | "animoji";
+    color?: Color;
+    background?: Background;
+    type?: "button" | "submit" | "reset";
     className?: string;
     icon?: string;
     label?: string;
@@ -18,58 +22,22 @@ export const Button = Component({
     effect: () => {},
     render: ({
         variant,
+        color = "fg",
+        background = "transparent",
+        type = "button",
         icon,
-        label,
-        href,
         effect,
         trigger,
+        event,
         children,
         className
     }: ButtonProps) => {
         switch (variant) {
-            case "menu":
-                return (
-                    <a
-                        href={href}
-                        class="menu-button"
-                        data-trigger="click"
-                        data-event="menu"
-                        data-effect={variant === "menu" ? "submenu" : "close"}
-                        data-topic={href}
-                    >
-                        <div class="button-face">
-                            <span class="material-icons">{icon}</span>
-                            <h4>{label}</h4>
-                        </div>
-                        {children ?? ""}
-                    </a>
-                );
-            case "button":
-                return (
-                    <button
-                        data-trigger="click"
-                        data-event="menu"
-                        data-effect="submenu"
-                        data-topic={href}
-                    >
-                        <div class="button-face">
-                            <span class="material-icons">{icon}</span>
-                            <h4>{label}</h4>
-                            <span
-                                class="material-icons close"
-                                data-trigger="click"
-                                data-event="menu"
-                                data-effect="close"
-                            >
-                                arrow_back
-                            </span>
-                        </div>
-                        {children ?? ""}
-                    </button>
-                );
             case "brand":
                 return (
                     <button
+                        type={type}
+                        style={`gap: var(--xs); color: var(--highlight)`}
                         class="brand"
                         data-trigger={trigger}
                         data-event={event}
@@ -81,22 +49,6 @@ export const Button = Component({
                         {children ?? ""}
                     </button>
                 );
-            case "icon":
-                return (
-                    <button
-                        data-trigger={trigger}
-                        data-event={event}
-                        data-effect={effect}
-                        class="icon"
-                    >
-                        <span
-                            class="material-symbols-rounded"
-                            data-trigger="click"
-                        >
-                            {icon}
-                        </span>
-                    </button>
-                );
             case "animoji":
                 return (
                     <div
@@ -105,11 +57,29 @@ export const Button = Component({
                         data-event="menu"
                         data-effect="open"
                     >
-                        <span class={`material-icons ${className}`}>
+                        <span class={`material-symbols-rounded ${className}`}>
                             {icon}
                         </span>
                         <Player animoji={icon} />
                     </div>
+                );
+            default:
+                return (
+                    <button
+                        data-trigger={trigger}
+                        data-event={event}
+                        data-effect={effect}
+                        style={`color: var(--${color}); background-color: var(--${background}, transparent)`}
+                        class={`icon`}
+                    >
+                        <span
+                            class="material-symbols-rounded"
+                            data-trigger="click"
+                        >
+                            {icon}
+                        </span>
+                        {children}
+                    </button>
                 );
         }
     }

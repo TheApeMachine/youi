@@ -6,7 +6,12 @@ import { Calendar } from "@/lib/ui/calendar/Calendar";
 import { stateManager } from "@/lib/state";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
-
+import { Flex } from "@/lib/ui/Flex";
+import { Icon } from "@/lib/ui/Icon";
+import { Link } from "@/lib/ui/Link";
+import { Badge } from "@/lib/ui/Badge";
+import { Text } from "@/lib/ui/Text";
+import { List } from "@/lib/ui/List";
 gsap.registerPlugin(Flip);
 
 export const render = Component({
@@ -26,12 +31,16 @@ export const render = Component({
             height: "+=128px"
         });
 
+        gsap.set("header", {
+            marginTop: 0
+        });
+
         // Set new position and size
         gsap.set(headerAvatar, {
             width: "128px",
             height: "128px",
             position: "absolute",
-            top: "32px", // Adjust based on your layout
+            top: "32px",
             left: "50%",
             xPercent: -50,
             zIndex: 99999
@@ -50,95 +59,151 @@ export const render = Component({
         const user = stateManager.getState("authUser");
 
         return (
-            <div class="column width height gap pad">
-                <div class="row start gap">
-                    <div class="column height gap">
-                        <div class="column width radius-xs bg-dark">
-                            <nav class="column width">
-                                <a
-                                    href="/dashboard/settings"
-                                    class="badge-button"
-                                >
-                                    <span class="material-symbols-rounded">
-                                        mail
-                                    </span>
-                                    Messages
-                                    <span class="badge">3</span>
-                                </a>
-                                <a
-                                    href="/dashboard/profile"
-                                    class="badge-button"
-                                >
-                                    <span class="material-symbols-rounded">
-                                        send
-                                    </span>
-                                    Invitations
-                                    <span class="badge">3</span>
-                                </a>
-                                <a
-                                    href="/dashboard/logout"
-                                    class="badge-button"
-                                >
-                                    <span class="material-symbols-rounded">
-                                        calendar_month
-                                    </span>
-                                    Events
-                                    <span class="badge">3</span>
-                                </a>
-                                <a href="/account" class="badge-button">
-                                    <span class="material-symbols-rounded">
-                                        settings
-                                    </span>
-                                    Account Settings
-                                </a>
-                                <a href="/statistics" class="badge-button">
-                                    <span class="material-symbols-rounded">
-                                        monitoring
-                                    </span>
-                                    Statistics
-                                </a>
-                            </nav>
-                        </div>
-                        <div class="column width center radius-xs bg-dark">
+            <Flex background="bg" fullHeight fullWidth>
+                <Flex
+                    align="start"
+                    background="bg"
+                    gap="md"
+                    fullWidth
+                    fullHeight
+                >
+                    <Flex
+                        direction="column"
+                        gap="md"
+                        background="bg"
+                        fullWidth
+                        fullHeight
+                    >
+                        <Flex
+                            direction="column"
+                            radius="xs"
+                            fullWidth
+                            fullHeight
+                        >
+                            <List
+                                items={[
+                                    <Link href="/dashboard/settings">
+                                        <Icon icon="mail" />
+                                        Messages
+                                        <Badge color="brand-light">
+                                            <Text
+                                                variant="h6"
+                                                color="highlight"
+                                            >
+                                                3
+                                            </Text>
+                                        </Badge>
+                                    </Link>,
+                                    <Link href="/dashboard/profile">
+                                        <Icon icon="send" />
+                                        Invitations
+                                        <Badge color="brand-light">
+                                            <Text
+                                                variant="h6"
+                                                color="highlight"
+                                            >
+                                                3
+                                            </Text>
+                                        </Badge>
+                                    </Link>,
+                                    <Link href="/dashboard/logout">
+                                        <Icon icon="calendar_month" />
+                                        Events
+                                        <Badge color="brand-light">
+                                            <Text
+                                                variant="h6"
+                                                color="highlight"
+                                            >
+                                                3
+                                            </Text>
+                                        </Badge>
+                                    </Link>,
+                                    <Link href="/account">
+                                        <Icon icon="settings" />
+                                        Account Settings
+                                    </Link>,
+                                    <Link href="/statistics">
+                                        <Icon icon="monitoring" />
+                                        Statistics
+                                    </Link>
+                                ]}
+                            />
+                        </Flex>
+                        <Flex
+                            direction="column"
+                            radius="xs"
+                            fullWidth
+                            fullHeight
+                        >
                             <Donut />
-                        </div>
-                    </div>
-                    <div class="column height gap front">
-                        <div class="column space-between width radius-xs bg-dark">
+                        </Flex>
+                    </Flex>
+                    <Flex
+                        direction="column"
+                        gap="md"
+                        background="bg"
+                        fullWidth
+                        fullHeight
+                    >
+                        <Flex
+                            direction="column"
+                            justify="space-between"
+                            gap="md"
+                            radius="xs"
+                            fullWidth
+                            fullHeight
+                        >
                             <div class="profile-card"></div>
-                            <h3 class="lighter">{user.name}</h3>
-                            <div class="row stretch width shrink self-end">
-                                <a
+                            <Text variant="h3" color="highlight">
+                                {user.name}
+                            </Text>
+                            <Flex
+                                align="stretch"
+                                justifySelf="end"
+                                grow={false}
+                                fullWidth
+                            >
+                                <Link
                                     href="/dashboard/profile"
-                                    class="accent-button yellow"
+                                    className="accent-button yellow"
                                 >
-                                    <span class="material-icons">forum</span> 6
-                                </a>
-                                <a
+                                    <Icon icon="forum" /> 6
+                                </Link>
+                                <Link
                                     href="/dashboard/profile"
-                                    class="accent-button green"
+                                    className="accent-button green"
                                 >
-                                    <span class="material-icons">
-                                        visibility
-                                    </span>{" "}
+                                    <Icon icon="visibility" />
                                     14
-                                </a>
-                                <a
+                                </Link>
+                                <Link
                                     href="/dashboard/profile"
-                                    class="accent-button red"
+                                    className="accent-button red"
                                 >
-                                    <span class="material-icons">favorite</span>{" "}
+                                    <Icon icon="favorite" />
                                     22
-                                </a>
-                            </div>
-                        </div>
-                        <div class="column width height radius-xs bg-dark">
-                            <Bars />
-                        </div>
-                    </div>
-                    <Calendar />
-                </div>
-            </div>
+                                </Link>
+                            </Flex>
+                        </Flex>
+                        <Flex
+                            direction="column"
+                            radius="xs"
+                            fullWidth
+                            fullHeight
+                        >
+                            <Flex grow={false} fullWidth>
+                                <Text variant="h4">Activity</Text>
+                            </Flex>
+                            <Flex fullWidth fullHeight>
+                                <Bars />
+                            </Flex>
+                        </Flex>
+                    </Flex>
+                    <Flex direction="column" radius="xs" fullWidth fullHeight>
+                        <Calendar />
+                    </Flex>
+                </Flex>
+            </Flex>
         );
     }
 });

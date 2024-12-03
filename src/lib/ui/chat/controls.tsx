@@ -39,7 +39,6 @@ export const Controls = Component<ControlsProps>({
 
         // Subscribe to button events
         eventBus.subscribe(`${variant}Event`, (payload: any) => {
-            console.log(`${variant}Event`, payload);
             if (payload.variant !== variant) return;
 
             if (variant === "leave") {

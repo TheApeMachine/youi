@@ -16,7 +16,6 @@ export const Form = Component({
         if (!form) return;
 
         form.addEventListener("submit", async (e) => {
-            console.log("submit");
             e.preventDefault();
             const form = e.target as HTMLFormElement;
 

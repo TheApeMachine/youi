@@ -6,10 +6,7 @@ import { faker } from "@faker-js/faker";
 export const Ringer = Component({
     effect: () => {
         eventBus.subscribe("call", (payload: EventPayload) => {
-            console.log("call");
-
             if (payload.effect === "hangup") {
-                console.log("hangup");
                 document.querySelector(".incoming")?.remove();
             }
         });

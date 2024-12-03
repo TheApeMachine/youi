@@ -17,6 +17,28 @@ export const Dialog = Component<DialogProps>({
         ) as HTMLDialogElement;
         if (!dialog) return;
 
+        eventBus.subscribe("dialog", (event: EventPayload) => {
+            if (event.effect === "open") {
+                const state = Flip.getState(dialog);
+                dialog.showModal();
+                gsap.set(dialog, {
+                    opacity: 1,
+                    transform: "translate(-50%, -50%)"
+                });
+                Flip.from(state, { duration: 0.5, ease: "power1.inOut" });
+            } else if (event.effect === "close") {
+                const state = Flip.getState(dialog);
+                Flip.from(state, {
+                    duration: 0.5,
+                    ease: "power1.inOut",
+                    onComplete: () => {
+                        dialog.close();
+                    }
+                });
+            }
+        });
+
+        // Also handle menu events for backward compatibility
         eventBus.subscribe("menu", (_: EventPayload) => {
             const state = Flip.getState(dialog);
             dialog.showModal();
@@ -25,12 +47,6 @@ export const Dialog = Component<DialogProps>({
                 transform: "translate(-50%, -50%)"
             });
             Flip.from(state, { duration: 0.5, ease: "power1.inOut" });
-        });
-
-        eventBus.subscribe("dialog", (event: EventPayload) => {
-            if (event.effect === "close") {
-                dialog.close();
-            }
         });
     },
     render: async ({ children }) => (

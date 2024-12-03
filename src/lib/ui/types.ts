@@ -3,3 +3,5 @@ export type Color = "highlight" | "fg" | "bg" | "muted" | "brand" | "brand-light
 export type Background = "transparent" | Color;
 
 export type Unit = "unit" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | undefined;
+
+export type Radius = "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "bottom-xs" | "top-xs";

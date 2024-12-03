@@ -30,7 +30,6 @@ export const Timeline = Component({
 
             // Position active post centered in viewport
             const activePostY = centerY - postHeight / 2;
-            console.log(activePostY + currentProgress * postHeight);
 
             gsap.to(posts, {
                 z: 0,

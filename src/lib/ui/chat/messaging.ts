@@ -18,7 +18,6 @@ export const messaging = (
     const threads = ydoc.getMap<Thread>("threads");
 
     eventBus.subscribe("send-message", (event: CustomEvent) => {
-        console.log("send-message", event);
         if (event.detail) {
             if (!provider?.wsconnected) {
                 const event = new CustomEvent("status", {

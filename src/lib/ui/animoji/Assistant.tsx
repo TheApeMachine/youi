@@ -60,7 +60,6 @@ export const AnimojiAssistant = Component({
 
         setState("idle");
         startCycling();
-        console.log("AnimojiAssistant connected and initialized");
 
         const createPlayer = (animoji: Animoji) => {
             const player = document.createElement("dotlottie-player") as any;
@@ -74,7 +73,6 @@ export const AnimojiAssistant = Component({
             player.addEventListener("error", (e: any) =>
                 console.error("Lottie player error:", e)
             );
-            console.log(`Created player with src: ${src}`);
             return player;
         };
 
@@ -103,9 +101,6 @@ export const AnimojiAssistant = Component({
                     currentPlayer = nextPlayer;
                     isTransitioning = false;
                     lastSwitchTime = Date.now();
-                    console.log(
-                        `Transitioned to ${currentState} animation at index ${currentIndex}`
-                    );
                 }
             });
 
@@ -125,7 +120,6 @@ export const AnimojiAssistant = Component({
         };
 
         const setState = (newState: keyof typeof AnimojiStates | "chat") => {
-            console.log(`Setting state to ${newState}`);
             if (currentState !== newState && !isTransitioning) {
                 if (newState === "chat") {
                     enterChatMode();

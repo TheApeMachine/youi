@@ -4,17 +4,16 @@ import { Player } from "../animoji/Player";
 import { Color, Background } from "../types";
 
 type ButtonProps = {
-    variant: "brand" | "icon" | "animoji";
+    variant: "brand" | "icon" | "animoji" | "button" | "text";
     color?: Color;
     background?: Background;
     type?: "button" | "submit" | "reset";
     className?: string;
     icon?: string;
-    label?: string;
-    href?: string;
     trigger?: string;
     event?: string;
     effect?: string;
+    "data-topic"?: string;
     children?: Node | Node[];
 };
 
@@ -29,6 +28,7 @@ export const Button = Component({
         effect,
         trigger,
         event,
+        "data-topic": topic,
         children,
         className
     }: ButtonProps) => {
@@ -42,6 +42,7 @@ export const Button = Component({
                         data-trigger={trigger}
                         data-event={event}
                         data-effect={effect}
+                        data-topic={topic}
                     >
                         {icon && (
                             <span class="material-symbols-rounded">{icon}</span>
@@ -54,7 +55,7 @@ export const Button = Component({
                     <div
                         class="animoji"
                         data-trigger="click"
-                        data-event="menu"
+                        data-event="dialog"
                         data-effect="open"
                     >
                         <span class={`material-symbols-rounded ${className}`}>
@@ -63,21 +64,37 @@ export const Button = Component({
                         <Player animoji={icon} />
                     </div>
                 );
+            case "text":
+                return (
+                    <button
+                        data-trigger={trigger}
+                        data-event={event}
+                        data-effect={effect}
+                        data-topic={topic}
+                        style={`color: var(--${color}); background-color: var(--${background}, transparent)`}
+                        class={`text ${className ?? ""}`}
+                    >
+                        {children}
+                    </button>
+                );
             default:
                 return (
                     <button
                         data-trigger={trigger}
                         data-event={event}
                         data-effect={effect}
+                        data-topic={topic}
                         style={`color: var(--${color}); background-color: var(--${background}, transparent)`}
-                        class={`icon`}
+                        class={`icon ${className ?? ""}`}
                     >
-                        <span
-                            class="material-symbols-rounded"
-                            data-trigger="click"
-                        >
-                            {icon}
-                        </span>
+                        {icon && (
+                            <span
+                                class="material-symbols-rounded"
+                                data-trigger="click"
+                            >
+                                {icon}
+                            </span>
+                        )}
                         {children}
                     </button>
                 );

@@ -1,9 +1,9 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { Unit, Color } from "@/lib/ui/types";
+import { Unit, Color, Radius } from "@/lib/ui/types";
 
 interface FlexProps {
-    children: Node | Node[];
+    children?: Node | Node[];
     direction?: "row" | "column";
     grow?: boolean;
     align?: "start" | "center" | "end" | "stretch";
@@ -12,11 +12,15 @@ interface FlexProps {
     shrink?: boolean;
     gap?: Unit;
     pad?: Unit;
-    radius?: Unit;
+    radius?: Radius;
     background?: Color;
     fullWidth?: boolean;
     fullHeight?: boolean;
     className?: string;
+    id?: string;
+    scrollable?: boolean;
+    border?: string;
+    contentEditable?: boolean;
 }
 
 export const Flex = Component({
@@ -34,8 +38,17 @@ export const Flex = Component({
         radius,
         fullWidth = false,
         fullHeight = false,
-        className = ""
+        className = "",
+        id = window.crypto.randomUUID(),
+        scrollable = false,
+        border = "",
+        contentEditable = false
     }: FlexProps) => {
+        const radiusStyle = radius ?
+            radius.startsWith('bottom-') ? `border-bottom-left-radius: var(--${radius.replace('bottom-', '')}); border-bottom-right-radius: var(--${radius.replace('bottom-', '')})` :
+                radius.startsWith('top-') ? `border-top-left-radius: var(--${radius.replace('top-', '')}); border-top-right-radius: var(--${radius.replace('top-', '')})` :
+                    `border-radius: var(--${radius})` : '';
+
         const style = [
             "display: flex",
             `flex-direction: ${direction}`,
@@ -48,15 +61,17 @@ export const Flex = Component({
             fullHeight && "height: 100%",
             gap && `gap: var(--${gap})`,
             pad && `padding: var(--${pad})`,
-            radius && `border-radius: var(--${radius})`,
-            background && `background: var(--${background})`
+            radiusStyle,
+            background && `background: var(--${background})`,
+            scrollable && "overflow-y: auto",
+            border && `border: ${border}`,
         ]
             .filter(Boolean)
             .join(";");
 
         return (
-            <div style={style} class={className}>
-                {children}
+            <div style={style} class={className} id={id} contentEditable={contentEditable}>
+                {children && children}
             </div>
         );
     }

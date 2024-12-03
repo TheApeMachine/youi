@@ -24,7 +24,6 @@ export type User = {
 const handleAuthError = (error: Auth0Error, defaultMessage: string) => {
     const message = error.description ?? defaultMessage;
     eventBus.publish("status", {
-        status: "error",
         variant: "error",
         title: "Error",
         message
@@ -92,13 +91,6 @@ export const AuthService = {
 
     isAuthenticated: async (): Promise<boolean> => {
         const auth = stateManager.getState('auth');
-        console.log("isAuthenticated check", {
-            auth,
-            hasToken: !!auth?.accessToken,
-            timestamp: auth?.timestamp,
-            expiresIn: auth?.expiresIn
-        });
-
         if (!auth?.accessToken) {
             return false;
         }
@@ -132,10 +124,9 @@ export const AuthService = {
         });
 
         eventBus.publish("status", {
-            status: "success",
             variant: "success",
-            title: "Logged out",
+            title: "Logged out", 
             message: "You have been logged out successfully"
         });
     }
-}; 
+};

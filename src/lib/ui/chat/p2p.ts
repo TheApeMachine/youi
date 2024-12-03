@@ -69,7 +69,6 @@ export const P2P = () => {
     }
 
     const handleDisconnect = (): void => {
-        console.log("Disconnected from provider");
         connectionAttempts++;
         if (connectionAttempts >= MAX_CONNECTION_ATTEMPTS) {
             const event = new CustomEvent("status", {

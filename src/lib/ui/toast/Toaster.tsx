@@ -3,6 +3,12 @@ import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import gsap from "gsap";
 
+type ToastEvent = {
+    variant: "error" | "success" | "warning" | "info";
+    title: string;
+    message: string;
+};
+
 export const Toaster = Component({
     effect: () => {
         const toaster = document.getElementById("toaster");
@@ -80,53 +86,64 @@ export const Toaster = Component({
             };
         };
 
-        const makeToast = (
+        const makeToast = async (
             variant: "error" | "success" | "warning" | "info",
             title: string,
             message: string
         ) => {
             const id = Date.now().toString();
-            const toast = jsx(
+            
+            // Create toast element using async jsx
+            const toastTitle = await jsx("h3", {}, title);
+            const toastMessage = await jsx("p", {}, message);
+            const toast = await jsx(
                 "div",
                 { class: `toast ${variant}`, "data-id": id },
-                [jsx("h3", {}, title), jsx("p", {}, message)]
+                [toastTitle, toastMessage]
             );
 
-            toaster?.appendChild(toast);
+            if (toaster && toast instanceof Node) {
+                toaster.appendChild(toast);
 
-            gsap.to(".toast", {
-                y: (i) => i * -20,
-                z: (i) => i * -100,
-                opacity: (i) => Math.max(0.95 - i * 0.2, 0.3),
-                duration: 0.3
-            });
+                gsap.to(".toast", {
+                    y: (i) => i * -20,
+                    z: (i) => i * -100,
+                    opacity: (i) => Math.max(0.95 - i * 0.2, 0.3),
+                    duration: 0.3
+                });
 
-            if (!isHovering) {
-                startRemovalTimer(toast, id);
+                if (!isHovering) {
+                    startRemovalTimer(toast as HTMLElement, id);
+                }
             }
         };
 
-        eventBus.subscribe("status", (event: CustomEvent) => {
-            const { variant, title, message } = event.detail;
-            makeToast(variant, title, message);
+        eventBus.subscribe("status", async (event: ToastEvent | CustomEvent) => {
+            // Handle both plain objects and CustomEvents
+            const detail = (event instanceof CustomEvent) ? event.detail : event;
+            const { variant, title, message } = detail;
+            
+            try {
+                await makeToast(variant, title, message);
+            } catch (err) {
+                console.error("Error creating toast:", err);
+            }
         });
 
         window.addEventListener("keyup", (event) => {
             if (event.key === "Escape") {
                 eventBus.publish(
                     "status",
-                    new CustomEvent("status", {
-                        detail: {
-                            variant: ["success", "error", "warning", "info"][
-                                Math.floor(Math.random() * 4)
-                            ],
-                            title: "Test Title",
-                            message: "This is my test message"
-                        }
-                    })
+                    {
+                        variant: ["success", "error", "warning", "info"][
+                            Math.floor(Math.random() * 4)
+                        ] as "success" | "error" | "warning" | "info",
+                        title: "Test Title",
+                        message: "This is my test message"
+                    }
                 );
             }
         });
     },
-    render: () => <div id="toaster"></div>
+    render: () => jsx("div", { id: "toaster" })
 });

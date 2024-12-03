@@ -13,7 +13,6 @@ const StateManager = () => {
     const registry: Record<string, any> = {};
 
     const getState = (key: string) => {
-        console.debug("lib.StateManager.get", "key", key);
         const stateValue = state[key];
         const registryValue = stateValue === undefined ? registry[key] : undefined;
 
@@ -21,8 +20,6 @@ const StateManager = () => {
     };
 
     const setState = (stateFragment: Record<string, any>) => {
-        console.debug("lib.StateManager.set", "stateFragment", stateFragment);
-
         // If it's a key-value pair format
         if ('key' in stateFragment && 'value' in stateFragment) {
             state[stateFragment.key] = stateFragment.value;
@@ -35,12 +32,10 @@ const StateManager = () => {
     };
 
     const register = (key: string, value: any) => {
-        console.debug("lib.StateManager.register", "key", key, "value", value);
         registry[key] = value;
     };
 
     const persist = async () => {
-        console.debug("lib.StateManager.persist", "state", state);
         try {
             await localforage.setItem('state', state);
         } catch (error) {
@@ -49,10 +44,8 @@ const StateManager = () => {
     };
 
     const init = async (): Promise<void> => {
-        console.debug("lib.StateManager.init");
         try {
             const value = await localforage.getItem('state');
-            console.log("Loaded state from storage:", value);
             if (value) {
                 Object.assign(state, value);
             }

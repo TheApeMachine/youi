@@ -73,7 +73,6 @@ export const THead = Component({
         };
 
         eventBus.subscribe("collectionData", (payload: any) => {
-            console.log("collectionData", payload);
             if (!payload.value || payload.value.length === 0) return;
 
             const thead = document.querySelector("thead");

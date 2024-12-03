@@ -8,6 +8,9 @@ import { EmojiNode, registerEmojiPlugin } from "@/lib/plugins/EmojiPlugin";
 import { eventBus } from "@/lib/event";
 import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
+import { Flex } from "../Flex";
+import { Icon } from "../Icon";
+import { Button } from "../button/Button";
 
 interface InputProps { }
 
@@ -81,33 +84,17 @@ export const Input = Component<InputProps>({
         });
     },
     render: () => (
-        <div class="column">
-            <div class="row grow center pad-xs">
-                <div
-                    id="lexical-editor"
-                    class="row grow width"
-                    contenteditable
-                ></div>
-                <span
-                    id="send-button"
-                    data-trigger="click"
-                    data-effect="send-message"
-                    class="material-icons send-button pointer pad pink"
-                >
-                    send
-                </span>
-            </div>
-            <div class="row width left border-top radius-bottom-xs bg-darker">
-                <span class="material-icons action-button pointer pad">
-                    add_photo_alternate
-                </span>
-                <span class="material-icons action-button pointer pad">
-                    mic
-                </span>
-                <span class="material-icons action-button pointer pad">
-                    mood
-                </span>
-            </div>
-        </div>
+        <Flex direction="column" background="muted" pad="md" fullWidth radius="bottom-xs" shrink>
+            <Flex justify="space-between" gap="md" fullWidth>
+                <Flex id="lexical-editor" background="bg" radius="xs" pad="md" fullWidth contentEditable>
+                </Flex>
+                <Button variant="icon" icon="send" />
+            </Flex>
+            <Flex justify="start" gap="sm" fullWidth>
+                <Button variant="icon" icon="add_photo_alternate" />
+                <Button variant="icon" icon="mic" />
+                <Button variant="icon" icon="mood" />
+            </Flex>
+        </Flex>
     )
 });

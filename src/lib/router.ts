@@ -15,7 +15,7 @@ export interface Route {
 }
 
 // List of routes that don't require authentication
-const publicPaths = ['/login', '/404', '/signup', '/forgot-password'];
+const publicPaths = ['/login', '/404', '/forgot-password'];
 
 // Function to load and discover all route files dynamically
 async function discoverRoutes(): Promise<Route[]> {
@@ -47,6 +47,7 @@ async function discoverRoutes(): Promise<Route[]> {
 }
 
 let currentPath = '';
+let isNavigating = false;
 
 export const createRouter = async () => {
     // Wait for state to be initialized first
@@ -67,25 +68,37 @@ export const createRouter = async () => {
 
     // Initialize Reveal.js with hash: false to prevent default hash navigation
     const reveal = (window as any).Reveal;
-    if (reveal) {
-        reveal.configure({
-            hash: false,
-            // Prevent auto-sliding
-            autoSlide: 0,
-            // Disable the help overlay
-            help: false
+    if (reveal && !reveal.isReady()) {
+        await new Promise<void>((resolve) => {
+            reveal.initialize({
+                hash: false,
+                autoSlide: 0,
+                help: false,
+                ready: () => resolve()
+            });
         });
     }
 
     eventBus.subscribe('navigate', async (data: { url: string }) => {
-        history.pushState(null, "", data.url);
-        await router();
+        if (!isNavigating) {
+            isNavigating = true;
+            history.pushState(null, "", data.url);
+            await router();
+            isNavigating = false;
+        }
+    });
+
+    // Subscribe to auth state changes
+    eventBus.subscribe('stateChange', async (data: { key: string, value: any }) => {
+        if (data.key === 'auth') {
+            await router();
+        }
     });
 
     const router = async () => {
         const path = window.location.pathname;
 
-        if (path !== currentPath) {
+        if (path !== currentPath || !document.querySelector(`section[data-path="${path}"]`)) {
             currentPath = path;
             const { route, params } = matchRoute(path, routes);
 
@@ -100,7 +113,7 @@ export const createRouter = async () => {
                     const { route: loginRoute, params: loginParams } = matchRoute('/login', routes);
                     try {
                         const content = await loginRoute.view(loginParams);
-                        updateSlides(content, '/login');
+                        await updateSlides(content, '/login');
                     } catch (error: any) {
                         handleRoutingError(error);
                     }
@@ -110,45 +123,42 @@ export const createRouter = async () => {
 
             try {
                 const content = await route.view(params);
-                updateSlides(content, path);
+                await updateSlides(content, path);
             } catch (error: any) {
                 handleRoutingError(error);
             }
         }
     };
 
-    const updateSlides = (content: Node | string, path: string) => {
-        // Create new slide section
-        const slideSection = document.createElement('section');
-        slideSection.dataset.path = path;
-        if (content instanceof Node) {
-            slideSection.appendChild(content);
-        } else {
-            slideSection.innerHTML = String(content);
-        }
-
-        // Find if we already have a slide with this path
-        const existingSlide = slidesContainer.querySelector(`section[data-path="${path}"]`);
-        if (existingSlide) {
-            // If slide exists, navigate to it
-            const slideIndex = Array.from(slidesContainer.children).indexOf(existingSlide);
-            if (reveal && reveal.isReady()) {
-                reveal.slide(slideIndex);
+    const updateSlides = async (content: Node | string, path: string) => {
+        await new Promise<void>((resolve) => {
+            // Create new slide section
+            const slideSection = document.createElement('section');
+            slideSection.dataset.path = path;
+            if (content instanceof Node) {
+                slideSection.appendChild(content);
+            } else {
+                slideSection.innerHTML = String(content);
             }
-        } else {
-            // Add new slide and navigate to it
+
+            // Clear all existing slides first
+            while (slidesContainer.firstChild) {
+                slidesContainer.removeChild(slidesContainer.firstChild);
+            }
+
+            // Add the new slide
             slidesContainer.appendChild(slideSection);
+
+            // Ensure Reveal.js is synced
             if (reveal && reveal.isReady()) {
                 reveal.sync();
-                reveal.slide(slidesContainer.children.length - 1);
+                reveal.slide(0);
+                // Wait for any transitions to complete
+                setTimeout(resolve, 300);
+            } else {
+                resolve();
             }
-        }
-
-        // Optional: Clean up old slides
-        const maxSlidesToKeep = 5;
-        while (slidesContainer.children.length > maxSlidesToKeep) {
-            slidesContainer.removeChild(slidesContainer.firstChild!);
-        }
+        });
     };
 
     const handleRoutingError = async (error: Error) => {
@@ -156,14 +166,29 @@ export const createRouter = async () => {
         const errorElement = await ErrorBoundary({ error: error });
         const errorSection = document.createElement('section');
         errorSection.appendChild(errorElement);
+
+        // Clear existing slides and show error
+        while (slidesContainer.firstChild) {
+            slidesContainer.removeChild(slidesContainer.firstChild);
+        }
         slidesContainer.appendChild(errorSection);
+
+        if (reveal && reveal.isReady()) {
+            reveal.sync();
+            reveal.slide(0);
+        }
     };
 
     // Initial route
     await router();
 
     window.addEventListener("popstate", () => {
-        router();
+        if (!isNavigating) {
+            isNavigating = true;
+            router().then(() => {
+                isNavigating = false;
+            });
+        }
     });
 
     return { router, navigateTo: createNavigateTo(router) };
@@ -171,9 +196,11 @@ export const createRouter = async () => {
 
 export const createNavigateTo = (router: () => Promise<void>) => {
     return async (url: string) => {
-        if (url !== currentPath) {
+        if (url !== currentPath && !isNavigating) {
+            isNavigating = true;
             history.pushState(null, "", url);
             await router();
+            isNavigating = false;
         }
     };
 };

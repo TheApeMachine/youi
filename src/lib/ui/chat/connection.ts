@@ -50,7 +50,6 @@ export const Connection = (
         };
 
         const onDisconnected = () => {
-            console.log("Connection disconnected");
             connection.removeEventListener(
                 window.JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
                 onConnectionSuccess

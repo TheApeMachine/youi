@@ -71,7 +71,6 @@ export const orgchart = () => {
     d3.csv(
         'https://raw.githubusercontent.com/bumbeishvili/sample-data/main/data-oracle.csv'
     ).then((data) => {
-        console.log(data);
         chart = new OrgChart<NodeData>()
             .nodeHeight(() => 85 + 25)
             .nodeWidth(() => 220 + 2)

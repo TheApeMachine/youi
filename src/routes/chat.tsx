@@ -7,6 +7,8 @@ import { Input } from "@/lib/ui/chat/Input";
 import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
 import { eventBus, EventPayload } from "@/lib/event";
+import { Flex } from "@/lib/ui/Flex";
+import { List } from "@/lib/ui/List";
 import { Button } from "@/lib/ui/button/Button";
 
 export const render = Component({
@@ -14,20 +16,16 @@ export const render = Component({
         const authUser = stateManager.getState("authUser");
         return {
             user: from("User").where({ Auth0UserId: authUser?.sub }).exec(),
-            // You can add more queries here and they'll be cached automatically
-            // messages: from("Message").where({ channelId: someId }).exec(),
         };
     },
     effect: () => {
         eventBus.subscribe("group-select", (e: EventPayload) => {
             if (!e.effect) return;
 
-            console.log("group-select", e);
             from("User")
                 .whereArrayField("Groups", { _id: e.effect })
                 .exec()
                 .then(users => {
-                    console.log("Found users:", users);
                     const groupMemberList = document.getElementById("group-members");
                     if (groupMemberList) {
                         groupMemberList.innerHTML = "";
@@ -46,35 +44,42 @@ export const render = Component({
         messaging(provider, ydoc);
     },
     render: ({ data }) => (
-        <div class="row height pad-xl gap-xl">
-            <div class="column start shrink height gap">
-                <div class="column width scrollable">
-                    <ul class="list">
-                        {data.user[0].Groups.filter((group: any) => group.HasChat).map((group: any) => (
-                            <li
-                                data-trigger="click"
-                                data-event="group-select"
-                                data-effect={group._id}>
+        <Flex background="bg" pad="md" fullWidth fullHeight>
+            {/* Left Sidebar */}
+            <Flex direction="column" align="start" background="muted" radius="xs" pad="md">
+                <Flex direction="column" fullWidth>
+                    <List items={data.user[0].Groups
+                        .filter((group: any) => group.HasChat)
+                        .map((group: any) => (
+                            <Button
+                                variant="text"
+                                color="fg"
+                                trigger="click"
+                                event="group-select"
+                                effect={group._id}
+                            >
                                 {group.GroupName}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div class="column height width scrollable">
-                    <ul class="list" id="group-members">
-                    </ul>
-                </div>
-            </div>
-            <div class="column grow height pad-xl bg-dark radius shadow-page">
-                <div
+                            </Button>
+                        ))} />
+                </Flex>
+                <Flex direction="column" fullWidth className="scrollable">
+                    <List id="group-members" />
+                </Flex>
+            </Flex>
+
+            <Flex direction="column" fullWidth fullHeight background="muted" radius="xs">
+                <Flex
                     id="messages-container"
-                    class="column center grow height scroll"
+                    direction="column"
+                    pad="md"
+                    fullWidth
+                    fullHeight
+                    scrollable
                 >
-                </div>
-                <div class="column shrink radius-xs ring-darker shadow-tile">
-                    <Input />
-                </div>
-            </div>
-        </div>
+                    {/* Messages go here */}
+                </Flex>
+                <Input />
+            </Flex>
+        </Flex>
     )
 });

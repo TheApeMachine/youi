@@ -47,7 +47,6 @@ const EventBus = () => {
 
     // Initialize state change subscription
     subscribe("stateChange", (data: { key: string; value: any }) => {
-        console.log("stateChange", data);
         stateManager.setState(data);
     });
 

@@ -1,9 +1,11 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
+import { Text } from "@/lib/ui/Text";
 import { Button } from "../button/Button";
 import gsap from "gsap";
 import Flip from "gsap/Flip";
 import { eventBus, EventPayload } from "@/lib/event";
+import { Icon } from "../Icon";
 
 gsap.registerPlugin(Flip);
 
@@ -93,12 +95,10 @@ const animateMenu = (
         elements.target.removeAttribute("data-expanded");
     }
 
-    const animation = Flip.from(flipState, {
+    return Flip.from(flipState, {
         duration: 0.5,
         ease: "power1.inOut"
     });
-
-    return animation;
 };
 
 export const Navigation = Component<NavigationProps>({
@@ -107,11 +107,27 @@ export const Navigation = Component<NavigationProps>({
             const target = e.originalEvent?.target as HTMLElement;
             if (!target) return;
 
-            const effect = e.effect;
             const nav = target.closest("nav");
             if (!nav) return;
 
-            if (effect === "close") {
+            // Handle submenu buttons
+            if (target.closest("[data-effect='submenu']")) {
+                const targetButton = target.closest("[data-effect='submenu']") as HTMLElement;
+                const elements = {
+                    target: targetButton,
+                    submenu: targetButton.querySelector(".button-submenu"),
+                    topLevel: Array.from(nav.querySelectorAll("a")).filter(
+                        (a) => a != targetButton
+                    ),
+                    children: targetButton.querySelectorAll("a")
+                };
+
+                animateMenu(elements, "expanded");
+                return;
+            }
+
+            // Handle close button
+            if (target.closest(".close")) {
                 const expandedButton = nav.querySelector(
                     "[data-expanded='true']"
                 );
@@ -127,27 +143,6 @@ export const Navigation = Component<NavigationProps>({
                 animateMenu(elements, "collapsed");
                 return;
             }
-
-            const elements = {
-                target,
-                submenu: target.querySelector(".button-submenu"),
-                topLevel: Array.from(nav.querySelectorAll("a")).filter(
-                    (a) => a != target
-                ),
-                children: target.querySelectorAll("a")
-            };
-
-            animateMenu(elements, "expanded");
-        });
-
-        eventBus.subscribe("dialog", (e: EventPayload) => {
-            const dialog = document.querySelector(
-                "dialog.modal"
-            ) as HTMLDialogElement;
-            if (e.effect === "close" && dialog) {
-                dialog.close();
-                dialog.style.display = "none";
-            }
         });
     },
     render: ({ items }) => {
@@ -156,11 +151,16 @@ export const Navigation = Component<NavigationProps>({
                 <Button
                     variant="button"
                     icon={item.icon}
-                    label={item.label}
-                    href={item.href}
                     data-trigger="click"
                     data-event="menu"
+                    data-effect="submenu"
+                    data-topic={item.href}
                 >
+                    <div className="button-face">
+                        <Icon icon={item.icon} />
+                        <Text variant="h4">{item.label}</Text>
+                        <Icon icon="arrow_back" />
+                    </div>
                     <div className="button-submenu">
                         {item.submenu.map(renderItem)}
                     </div>
@@ -169,8 +169,10 @@ export const Navigation = Component<NavigationProps>({
                 <Button
                     variant="menu"
                     icon={item.icon}
-                    label={item.label}
-                    href={item.href}
+                    data-trigger="click"
+                    data-event="menu"
+                    data-effect="menu"
+                    data-topic={item.href}
                 />
             );
 

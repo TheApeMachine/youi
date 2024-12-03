@@ -15,7 +15,6 @@ export const Transition = (
         // Apply enter animation when the element is added to the DOM
         if (enter) {
             onMount(targetElement, () => {
-                console.debug("transition", "onMount", targetElement);
                 enter(targetElement);
             });
         }
@@ -23,7 +22,6 @@ export const Transition = (
         // Apply exit animation when the element is removed from the DOM
         if (exit) {
             onUnmount(targetElement, () => {
-                console.debug("transition", "onUnmount", targetElement);
                 exit(targetElement);
             });
         }

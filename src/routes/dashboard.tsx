@@ -50,9 +50,7 @@ export const render = Component({
         Flip.from(state, {
             duration: 0.6,
             ease: "power2.inOut",
-            absolute: true,
-            scale: true,
-            spin: 0.5
+            absolute: true
         });
     },
     render: () => {
@@ -82,7 +80,7 @@ export const render = Component({
                         >
                             <List
                                 items={[
-                                    <Link href="/dashboard/settings">
+                                    <Link href="/chat">
                                         <Icon icon="mail" />
                                         Messages
                                         <Badge color="brand-light">

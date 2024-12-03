@@ -96,13 +96,8 @@ export const fetchCollection = async (
         ...notDeletedCondition
     };
 
-    const processedQuery = processQuery(query);
-    console.log("Processed query:", JSON.stringify(processedQuery, null, 2));
-
     const user = await ensureUser();
     const conn = user.mongoClient("mongodb-atlas").db("FanApp");
-
-    console.log("fetchCollection raw query:", JSON.stringify(processedQuery, null, 2));
 
     // If count is requested, return the total count
     if (count) {
@@ -154,7 +149,6 @@ export const fetchCollection = async (
     pipeline.push({ $skip: offset });
     pipeline.push({ $limit: limit });
 
-    console.log("Final pipeline:", JSON.stringify(pipeline, null, 2));
     const results = await conn.collection(name).aggregate(pipeline);
     return results.map((doc: any) => convertBinary(doc));
 };

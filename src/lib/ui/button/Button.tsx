@@ -14,7 +14,7 @@ type ButtonProps = {
     trigger?: string;
     event?: string;
     effect?: string;
-    "data-topic"?: string;
+    topic?: string;
     children?: Node | Node[];
 };
 
@@ -29,7 +29,7 @@ export const Button = Component({
         effect,
         trigger,
         event,
-        "data-topic": topic,
+        topic,
         children,
         className
     }: ButtonProps) => {

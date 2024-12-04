@@ -4,10 +4,24 @@ import * as echarts from "echarts";
 import { EChartsOption, GraphicComponentOption } from "echarts";
 
 export const Bars = Component({
+    render: () => <div id="bars-chart" class="chart-container"></div>,
     effect: () => {
-        const chartDom = document.getElementById("bars-chart")!;
-        const myChart = echarts.init(chartDom);
+        const chartDom = document.getElementById("bars-chart");
+        if (!chartDom) return;
 
+        // Only initialize if no instance exists
+        let myChart = echarts.getInstanceByDom(chartDom);
+        if (!myChart) {
+            myChart = echarts.init(chartDom);
+        }
+
+        // Add resize observer
+        const resizeObserver = new ResizeObserver(() => {
+            myChart?.resize();
+        });
+        resizeObserver.observe(chartDom);
+
+        // Chart configuration
         let option: EChartsOption & {
             graphic: {
                 elements: GraphicComponentOption[];
@@ -107,8 +121,8 @@ export const Bars = Component({
 
         // Cleanup
         return () => {
+            resizeObserver.disconnect();
             myChart.dispose();
         };
-    },
-    render: () => <div id="bars-chart" class="chart-container"></div>
+    }
 });

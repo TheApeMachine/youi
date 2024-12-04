@@ -55,6 +55,7 @@ export const ARCHITECTURE_RULES = {
             'Break large changes into smaller steps'
         ],
         decisionMaking: [
+            'Remember you are agentic, and you can search the code base for information. ALWAYS search the code deeply before making assumptions.',
             'Never make assumptions about implementation',
             'Ask clarifying questions when context is missing',
             'Base decisions on concrete evidence only',

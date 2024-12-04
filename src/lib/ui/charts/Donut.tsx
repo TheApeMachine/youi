@@ -4,10 +4,24 @@ import * as echarts from "echarts";
 import { EChartsOption } from "echarts";
 
 export const Donut = Component({
+    render: () => <div id="donut-chart" class="chart-container"></div>,
     effect: () => {
-        const chartDom = document.getElementById("donut-chart")!;
-        const myChart = echarts.init(chartDom);
+        const chartDom = document.getElementById("donut-chart");
+        if (!chartDom) return;
 
+        // Only initialize if no instance exists
+        let myChart = echarts.getInstanceByDom(chartDom);
+        if (!myChart) {
+            myChart = echarts.init(chartDom);
+        }
+
+        // Add resize observer
+        const resizeObserver = new ResizeObserver(() => {
+            myChart?.resize();
+        });
+        resizeObserver.observe(chartDom);
+
+        // Chart configuration
         let option: EChartsOption;
 
         option = {
@@ -56,8 +70,8 @@ export const Donut = Component({
 
         // Cleanup
         return () => {
+            resizeObserver.disconnect();
             myChart.dispose();
         };
-    },
-    render: () => <div id="donut-chart" class="chart-container"></div>
+    }
 });

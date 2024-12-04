@@ -25,7 +25,7 @@
 }
 
 .material-symbols-rounded {
-    font-family: "Material Symbols Rounded";
+    font-family: "Material Symbols Rounded", sans-serif;
     font-weight: normal;
     font-style: normal;
     font-size: 24px;
@@ -41,7 +41,8 @@
 }
 
 *::before,
-*::after {
+*::after,
+* {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
@@ -156,8 +157,4 @@ h6 {
 
 #app {
     isolation: isolate;
-}
-
-.material-symbols-rounded {
-    font-variation-settings: "FILL" 0, "wght" 700, "GRAD" 200, "opsz" 48;
 }

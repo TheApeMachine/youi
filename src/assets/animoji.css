@@ -15,6 +15,7 @@
         opacity: 1;
         transform-origin: center;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        pointer-events: none;
 
         &.xl {
             font-size: 3rem;
@@ -30,6 +31,7 @@
         transition: opacity 0.2s ease-in,
             transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         transition-delay: 0.1s;
+        pointer-events: none;
     }
 
     &:hover {

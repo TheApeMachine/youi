@@ -15,7 +15,7 @@ export const render = Component({
     loader: () => {
         const authUser = stateManager.getState("authUser");
         return {
-            user: from("User").where({ Auth0UserId: authUser?.sub }).exec(),
+            user: from("User").where({ Auth0UserId: authUser?.sub }).exec()
         };
     },
     effect: () => {
@@ -25,14 +25,15 @@ export const render = Component({
             from("User")
                 .whereArrayField("Groups", { _id: e.effect })
                 .exec()
-                .then(users => {
-                    const groupMemberList = document.getElementById("group-members");
+                .then((users) => {
+                    const groupMemberList =
+                        document.getElementById("group-members");
                     if (groupMemberList) {
                         groupMemberList.innerHTML = "";
                         users.forEach(async (groupUser: any) => {
-                            groupMemberList.appendChild(await jsx(
-                                Profile, { groupUser }
-                            ));
+                            groupMemberList.appendChild(
+                                await jsx(Profile, { groupUser })
+                            );
                         });
                     }
                 });
@@ -44,13 +45,19 @@ export const render = Component({
         messaging(provider, ydoc);
     },
     render: ({ data }) => (
-        <Flex background="bg" pad="md" fullWidth fullHeight>
-            {/* Left Sidebar */}
-            <Flex direction="column" align="start" background="muted" radius="xs" pad="md">
+        <Flex background="bg" pad="md" gap="unit" fullWidth fullHeight>
+            <Flex
+                direction="column"
+                align="start"
+                background="muted"
+                radius="xs"
+                shrink
+            >
                 <Flex direction="column" fullWidth>
-                    <List items={data.user[0].Groups
-                        .filter((group: any) => group.HasChat)
-                        .map((group: any) => (
+                    <List
+                        items={data.user[0].Groups.filter(
+                            (group: any) => group.HasChat
+                        ).map((group: any) => (
                             <Button
                                 variant="text"
                                 color="fg"
@@ -60,24 +67,33 @@ export const render = Component({
                             >
                                 {group.GroupName}
                             </Button>
-                        ))} />
+                        ))}
+                    />
                 </Flex>
                 <Flex direction="column" fullWidth className="scrollable">
                     <List id="group-members" />
                 </Flex>
             </Flex>
 
-            <Flex direction="column" fullWidth fullHeight background="muted" radius="xs">
+            <Flex
+                className="card-glass"
+                border="1px solid var(--muted)"
+                direction="column"
+                fullWidth
+                fullHeight
+                background="bg-glass"
+                radius="xs"
+            >
                 <Flex
                     id="messages-container"
+                    background="transparent"
                     direction="column"
-                    pad="md"
+                    gap="unit"
+                    pad="unit"
                     fullWidth
                     fullHeight
                     scrollable
-                >
-                    {/* Messages go here */}
-                </Flex>
+                ></Flex>
                 <Input />
             </Flex>
         </Flex>

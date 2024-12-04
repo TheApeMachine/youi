@@ -16,6 +16,10 @@ export interface EventPayload {
 // EventBus for handling publish/subscribe system
 const EventBus = () => {
     const listeners: Record<string, Set<Function>> = {};
+    const wrappedCallbacks = new WeakMap<Function, Function>();
+    const eventQueue: Array<{ event: string; payload: any; timestamp: number }> = [];
+    const MAX_QUEUE_SIZE = 100;
+    const MAX_EVENT_AGE_MS = 5000; // 5 seconds
 
     const executeCallback = (callback: Function, payload: unknown) => {
         try {
@@ -25,24 +29,64 @@ const EventBus = () => {
         }
     };
 
+    const cleanQueue = () => {
+        const now = Date.now();
+        const cutoffTime = now - MAX_EVENT_AGE_MS;
+        while (eventQueue.length > 0 && eventQueue[0].timestamp < cutoffTime) {
+            eventQueue.shift();
+        }
+    };
+
     const subscribe = (event: string, callback: Function, condition: (payload: any) => boolean = () => true) => {
         if (!listeners[event]) {
             listeners[event] = new Set();
+            const relevantEvents = eventQueue.filter(e => e.event === event);
+            relevantEvents.forEach(({ payload }) => {
+                if (condition(payload)) {
+                    callback(payload);
+                }
+            });
         }
         const wrappedCallback = (payload: unknown) => {
             if (condition(payload)) {
                 callback(payload);
             }
         };
+        wrappedCallbacks.set(callback, wrappedCallback);
         listeners[event].add(wrappedCallback);
     };
 
-    const publish = (event: string, payload: any) => {
-        if (!listeners[event] || listeners[event].size === 0) {
-            console.warn(`No listeners for event: ${event}`);
-            return;
+    const unsubscribe = (event: string, callback: Function) => {
+        if (listeners[event]) {
+            const wrappedCallback = wrappedCallbacks.get(callback);
+            if (wrappedCallback) {
+                listeners[event].delete(wrappedCallback);
+                wrappedCallbacks.delete(callback);
+            }
+            if (listeners[event].size === 0) {
+                delete listeners[event];
+            }
         }
-        listeners[event].forEach(callback => executeCallback(callback, payload));
+    };
+
+    const publish = (event: string, payload: any) => {
+        cleanQueue();
+
+        eventQueue.push({
+            event,
+            payload,
+            timestamp: Date.now()
+        });
+
+        if (eventQueue.length > MAX_QUEUE_SIZE) {
+            eventQueue.shift();
+        }
+
+        if (listeners[event]?.size > 0) {
+            listeners[event].forEach(callback => executeCallback(callback, payload));
+        } else {
+            console.warn(`No listeners for event: ${event}`);
+        }
     };
 
     // Initialize state change subscription
@@ -50,7 +94,7 @@ const EventBus = () => {
         stateManager.setState(data);
     });
 
-    return { subscribe, publish };
+    return { subscribe, publish, unsubscribe };
 };
 
 export const eventBus = EventBus();
@@ -60,10 +104,10 @@ export const EventManager = () => {
     type EventHandler = (event: Event) => void;
     type WheelHandler = (event: WheelEvent) => void;
     type DragHandler = (event: DragEvent) => void;
+    type MouseMoveHandler = (event: MouseEvent) => void;
 
     const createEventPayload = (target: HTMLElement, event: Event) => ({
-        effect: target.dataset.effect,
-        topic: target.dataset.topic,
+        ...target.dataset,
         originalEvent: event,
         meta: {
             timeStamp: Date.now(),
@@ -73,7 +117,22 @@ export const EventManager = () => {
     });
 
     const handleEvent = (event: Event) => {
-        const target = event.target as HTMLElement;
+        const target = event.target as HTMLElement | null;
+
+        // Special case for mousemove - always publish
+        if (event.type === 'mousemove') {
+            eventBus.publish('mousemove', {
+                originalEvent: event,
+                meta: {
+                    timeStamp: Date.now(),
+                    target: target?.tagName ?? 'unknown',
+                    initiator: "EventManager"
+                }
+            });
+            return;
+        }
+
+        // Original behavior for other events
         if (target?.dataset?.event) {
             eventBus.publish(target.dataset.event, createEventPayload(target, event));
         }
@@ -81,8 +140,9 @@ export const EventManager = () => {
 
     const handleNavigationClick = (link: HTMLAnchorElement, event: Event) => {
         event.preventDefault();
+        const url = new URL(link.href).pathname;
         eventBus.publish('navigate', {
-            url: link.getAttribute('href'),
+            url,
             originalEvent: event
         });
     };
@@ -110,15 +170,17 @@ export const EventManager = () => {
         }
     };
 
-    const handlers: Record<string, EventHandler | WheelHandler | DragHandler> = {
+    // Now declare handlers after all the functions are defined
+    const handlers: Record<string, EventHandler | WheelHandler | DragHandler | MouseMoveHandler> = {
         click: handleClick,
         wheel: handleEvent,
         drag: handleEvent,
-        submit: handleEvent
+        submit: handleEvent,
+        mousemove: handleEvent
     };
 
     const init = () => {
-        (["click", "wheel", "drag"] as const).forEach(eventType => {
+        (["click", "wheel", "drag", "mousemove"] as const).forEach(eventType => {
             document.addEventListener(eventType, handlers[eventType] as EventListener);
         });
     };
@@ -140,22 +202,96 @@ export const EventManager = () => {
         scope.addEventListener(eventType, handler);
     };
 
-    const handleMutationNode = (node: Node, element: HTMLElement, callback: Function) => {
-        if (node === element) callback();
+    const handleNodeAddition = (node: Node, element: HTMLElement, mountCallback: Function) => {
+        if (!node || !element) return;
+
+        if (node instanceof Element && (node === element || node.contains(element))) {
+            mountCallback();
+        }
     };
 
-    const handleMutation = (mutation: MutationRecord, element: HTMLElement, mountCallback: Function, unmountCallback: Function) => {
-        mutation.addedNodes.forEach(node => handleMutationNode(node, element, mountCallback));
-        mutation.removedNodes.forEach(node => handleMutationNode(node, element, unmountCallback));
+    const handleNodeRemoval = (node: Node, element: HTMLElement, unmountCallback: Function, scopedListeners: Record<string, EventHandler>) => {
+        if (!node || !element) return;
+
+        // Check if the removed node is or contains our element
+        const isRemoved = node === element ||
+            (node instanceof Element && node.contains(element)) ||
+            (element instanceof Element && element.contains(node));
+
+        if (isRemoved) {
+            unmountCallback();
+            Object.keys(scopedListeners).forEach(eventType => {
+                element.removeEventListener(eventType, scopedListeners[eventType]);
+            });
+        }
     };
 
-    const manageComponentLifecycle = (element: HTMLElement, mountCallback: Function, unmountCallback: Function) => {
+    const processMutation = (
+        mutation: MutationRecord,
+        element: HTMLElement,
+        mountCallback: Function,
+        unmountCallback: Function,
+        scopedListeners: Record<string, EventHandler>
+    ) => {
+        if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach(node => handleNodeAddition(node, element, mountCallback));
+            mutation.removedNodes.forEach(node => handleNodeRemoval(node, element, unmountCallback, scopedListeners));
+        }
+    };
+
+    const createObserver = (
+        element: HTMLElement,
+        mountCallback: Function,
+        unmountCallback: Function,
+        scopedListeners: Record<string, EventHandler>
+    ) => {
         const observer = new MutationObserver(mutations =>
-            mutations.forEach(mutation => handleMutation(mutation, element, mountCallback, unmountCallback))
+            mutations.forEach(mutation =>
+                processMutation(mutation, element, mountCallback, unmountCallback, scopedListeners)
+            )
         );
-        observer.observe(document.body, { childList: true, subtree: true });
+
+        // Check if element is already in the DOM
+        if (document.body.contains(element)) {
+            mountCallback();
+        }
+
+        return observer;
     };
 
-    return { init, addEvent, removeEvent, addScopedEventListener, manageComponentLifecycle };
+    const manageComponentLifecycle = (
+        element: HTMLElement,
+        mountCallback: Function,
+        unmountCallback: Function,
+        scopedListeners: Record<string, EventHandler> = {}
+    ) => {
+        const observer = createObserver(element, mountCallback, unmountCallback, scopedListeners);
+
+        // Observe the entire document for better removal detection
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true
+        });
+
+        // Initial mount check
+        if (document.documentElement.contains(element)) {
+            mountCallback();
+        }
+
+        return observer;
+    };
+
+    return {
+        init,
+        addEvent,
+        removeEvent,
+        addScopedEventListener,
+        manageComponentLifecycle,
+        handlers // Expose handlers for testing
+    };
+};
+
+export type EventManagerType = ReturnType<typeof EventManager> & {
+    handlers: Record<string, (event: Event) => void>;
 };
 

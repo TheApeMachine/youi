@@ -8,6 +8,7 @@ body,
     overflow: hidden;
     background: var(--bg);
     color: var(--fg);
+    perspective: 500px;
 }
 
 .layout {
@@ -17,49 +18,45 @@ body,
     grid-template-areas:
         "header header header"
         "aside main article"
-        "footer footer footer";
+        "aside footer footer";
     width: 100%;
     height: 100%;
     background: var(--bg);
-    perspective: 1000px;
+    perspective: 500px;
     isolation: isolate;
 
-    >header {
+    > header {
         grid-area: header;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-top: -48px;
     }
 
-    >aside {
+    > aside {
         grid-area: aside;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-left: -48px;
     }
 
-    >main {
+    > main {
         grid-area: main;
     }
 
-    >article {
+    > article {
         grid-area: article;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: -48px;
     }
 
-    >footer {
+    > footer {
         grid-area: footer;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-bottom: -38px;
     }
 }
 
@@ -79,7 +76,7 @@ body,
     background: var(--brand-light);
     color: var(--highlight);
 
-    >h6 {
+    > h6 {
         padding: 0;
         margin: 0;
         display: flex;
@@ -102,7 +99,7 @@ a {
     text-decoration: none;
     color: var(--highlight);
 
-    >span {
+    > span {
         color: var(--fg);
     }
 
@@ -123,7 +120,7 @@ button {
     transition: var(--transition);
     cursor: pointer;
 
-    >h6 {
+    > h6 {
         font: var(--font-family);
         font-weight: 400;
     }
@@ -132,6 +129,15 @@ button {
         background: var(--brand);
         border: none;
         color: var(--highlight);
+    }
+
+    &.keypad {
+        width: 100%;
+        height: 100%;
+        padding: var(--lg);
+        background: var(--bg);
+        border: 1px solid var(--muted);
+        color: var(--fg);
     }
 
     &.icon {
@@ -144,7 +150,7 @@ button {
     &:hover {
         background: var(--dark);
 
-        >* {
+        > * {
             transform: translateY(-2px);
         }
 
@@ -152,11 +158,18 @@ button {
             background: var(--brand-dark);
             box-shadow: var(--ring-brand);
         }
+
+        &.keypad {
+            background: var(--bg);
+            border: 1px solid var(--muted);
+            color: var(--fg);
+            box-shadow: var(--shadow-card);
+        }
     }
 }
 
 .input-group {
-    >label {
+    > label {
         align-self: flex-start;
         transform: translate(var(--xl), var(--lg));
         padding: 0 var(--xs);
@@ -166,14 +179,14 @@ button {
         z-index: 999;
     }
 
-    >div {
+    > div {
         transform: translateX(-0.75rem);
 
-        >span {
+        > span {
             transform: translateX(var(--lg));
         }
 
-        >input {
+        > input {
             padding-left: var(--xl);
 
             &::placeholder {
@@ -182,29 +195,28 @@ button {
         }
     }
 
-    >.error-message {
+    > .error-message {
         display: none;
         color: var(--danger);
     }
 
     &.focused {
-
-        >label,
-        >input:not(:placeholder-shown)+label {
+        > label,
+        > input:not(:placeholder-shown) + label {
             transform: translate(var(--md), var(--sm));
             color: var(--fg);
         }
     }
 
     &.error {
-        >div>input {
+        > div > input {
             border-color: var(--danger);
             box-shadow: var(--ring-danger);
         }
     }
 
     &.touched.error {
-        >.error-message {
+        > .error-message {
             display: block;
         }
     }
@@ -219,6 +231,10 @@ input {
     box-shadow: var(--ring-muted);
     color: var(--fg);
     transition: var(--transition-all);
+
+    &[type="checkbox"] {
+        box-shadow: none;
+    }
 }
 
 ul.list {
@@ -294,30 +310,46 @@ details {
     animation: var(--appear);
 }
 
-img.avatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid transparent;
-    box-shadow: var(--ring-purple);
-    scale: 1;
-    position: relative;
-    isolation: isolate;
-    z-index: 99999;
+.card-glass {
+    background: var(--bg-glass);
+    border: 1px solid var(--muted);
+    backdrop-filter: blur(var(--sm));
+    box-shadow: var(--shadow-card);
+}
 
-    &.xl {
-        width: 128px;
-        height: 128px;
+img {
+    &.logo {
+        width: 50%;
+        height: 50%;
+        object-fit: contain;
+        border-radius: 0;
+    }
+
+    &.avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid transparent;
+        box-shadow: var(--ring-purple);
+        scale: 1;
         position: relative;
         isolation: isolate;
         z-index: 99999;
-    }
 
-    &.ring-double-purple {
-        box-shadow: var(--ring-double-purple);
-        outline: 8px solid var(--bg);
-        outline-offset: 6px;
+        &.xl {
+            width: 128px;
+            height: 128px;
+            position: relative;
+            isolation: isolate;
+            z-index: 99999;
+        }
+
+        &.ring-double-purple {
+            box-shadow: var(--ring-double-purple);
+            outline: 8px solid var(--bg);
+            outline-offset: 6px;
+        }
     }
 }
 
@@ -351,8 +383,40 @@ img.avatar {
     &:hover {
         transform: translateY(-2px);
 
-        >span {
+        > span {
             scale: 1.2;
         }
     }
+}
+
+#lexical-editor {
+    --valid: hsl(140 80% 40%);
+    --invalid: hsl(10 80% 40%);
+    --input: hsl(0 0% 0%);
+
+    --is-valid: 0;
+    --is-invalid: 0;
+    background: linear-gradient(var(--input), var(--input)) padding-box,
+        linear-gradient(var(--invalid), var(--invalid))
+            calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
+        linear-gradient(var(--valid), var(--valid))
+            calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
+        var(--input);
+    border: 2px solid transparent;
+    padding: var(--unit) var(--xl);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    max-width: 100%;
+    width: 100cqi;
+    color: var(--fg);
+    border-radius: 100px;
+    outline: none;
+    font-weight: 200;
+    box-shadow: 0 1px hsl(0 0% 100% / 0.35) inset, 0 -1px hsl(0 0% 0% / 1) inset,
+        0 10px 20px -5px hsl(0 0% 0% / 1);
+}
+
+.button-submenu,
+.button-face {
+    display: none;
 }

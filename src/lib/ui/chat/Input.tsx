@@ -12,15 +12,18 @@ import { Flex } from "../Flex";
 import { Icon } from "../Icon";
 import { Button } from "../button/Button";
 
-interface InputProps { }
+interface InputProps {}
 
 export const Input = Component<InputProps>({
     effect: () => {
         const { user } = stateManager.getState("user");
         let userData: any | null = null;
-        from("User").where({ Auth0UserId: user?.sub }).exec().then((data) => {
-            userData = data[0];
-        });
+        from("User")
+            .where({ Auth0UserId: user?.sub })
+            .exec()
+            .then((data) => {
+                userData = data[0];
+            });
 
         const editorRef = document.getElementById(
             "lexical-editor"
@@ -84,13 +87,12 @@ export const Input = Component<InputProps>({
         });
     },
     render: () => (
-        <Flex direction="column" background="muted" pad="md" fullWidth radius="bottom-xs" shrink>
-            <Flex justify="space-between" gap="md" fullWidth>
-                <Flex id="lexical-editor" background="bg" radius="xs" pad="md" fullWidth contentEditable>
-                </Flex>
+        <Flex direction="column" fullWidth radius="bottom-xs" shrink>
+            <Flex justify="space-between" fullWidth>
+                <Flex id="lexical-editor" fullWidth contentEditable></Flex>
                 <Button variant="icon" icon="send" />
             </Flex>
-            <Flex justify="start" gap="sm" fullWidth>
+            <Flex justify="start" fullWidth>
                 <Button variant="icon" icon="add_photo_alternate" />
                 <Button variant="icon" icon="mic" />
                 <Button variant="icon" icon="mood" />

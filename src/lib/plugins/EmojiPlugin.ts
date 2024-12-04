@@ -1,4 +1,4 @@
-import { TextNode, $getSelection, $createTextNode, $isRangeSelection } from "lexical";
+import { TextNode, $getSelection, $createTextNode, $isRangeSelection, SerializedTextNode } from "lexical";
 
 // Simple emoji mapping
 const emojiMap: { [key: string]: string } = {
@@ -13,6 +13,11 @@ const emojiMap: { [key: string]: string } = {
     // Add more emojis as needed
 };
 
+interface SerializedEmojiNode extends SerializedTextNode {
+    type: 'emoji';
+    version: 1;
+}
+
 // Create a custom node for emojis
 export class EmojiNode extends TextNode {
     static getType(): string {
@@ -21,6 +26,25 @@ export class EmojiNode extends TextNode {
 
     static clone(node: EmojiNode): EmojiNode {
         return new EmojiNode(node.__text, node.__key);
+    }
+
+    // Update importJSON method
+    static importJSON(serializedNode: SerializedEmojiNode): EmojiNode {
+        const node = new EmojiNode(serializedNode.text);
+        node.setFormat(serializedNode.format);
+        node.setDetail(serializedNode.detail);
+        node.setMode(serializedNode.mode);
+        node.setStyle(serializedNode.style);
+        return node;
+    }
+
+    // Update exportJSON method
+    exportJSON(): SerializedEmojiNode {
+        return {
+            ...super.exportJSON(),
+            type: 'emoji',
+            version: 1,
+        };
     }
 
     createDOM(): HTMLElement {

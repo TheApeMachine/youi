@@ -1,6 +1,5 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import "@/assets/calendar.css";
 import { Flex } from "../Flex";
 import { Text } from "../Text";
 import { DateTime } from "luxon";

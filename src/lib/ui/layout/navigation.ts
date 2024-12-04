@@ -5,14 +5,29 @@ export const navigation = [
         label: "Dashboard"
     },
     {
-        href: "/orgchart",
+        href: "/organization",
         icon: "lan",
-        label: "Orgchart"
+        label: "Organization"
     },
     {
-        href: "/chat",
+        href: "/connect",
         icon: "chat",
-        label: "Chat"
+        label: "Connect"
+    },
+    {
+        href: "/events",
+        icon: "calendar_month",
+        label: "Events"
+    },
+    {
+        href: "/feedback",
+        icon: "communication",
+        label: "Feedback"
+    },
+    {
+        href: "/learn",
+        icon: "school",
+        label: "Learn"
     },
     {
         href: "/admin",

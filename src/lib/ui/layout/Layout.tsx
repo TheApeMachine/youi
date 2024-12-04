@@ -43,13 +43,13 @@ export const Layout = Component({
             {AuthService.isAuthenticated().then(
                 (isAuthenticated) =>
                     isAuthenticated && (
-                        <Flyout variant="header" direction="down" />
+                        <Flyout variant="header" direction="top" />
                     )
             )}
             {AuthService.isAuthenticated().then(
                 (isAuthenticated) =>
                     isAuthenticated && (
-                        <Flyout variant="aside" direction="right" />
+                        <Flyout variant="aside" direction="left" />
                     )
             )}
             <main id="app">
@@ -60,13 +60,13 @@ export const Layout = Component({
             {AuthService.isAuthenticated().then(
                 (isAuthenticated) =>
                     isAuthenticated && (
-                        <Flyout variant="article" direction="left" />
+                        <Flyout variant="article" direction="right" />
                     )
             )}
             {AuthService.isAuthenticated().then(
                 (isAuthenticated) =>
                     isAuthenticated && (
-                        <Flyout variant="footer" direction="up" />
+                        <Flyout variant="footer" direction="bottom" />
                     )
             )}
             <Dialog>

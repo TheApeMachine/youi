@@ -112,7 +112,9 @@ export const Navigation = Component<NavigationProps>({
 
             // Handle submenu buttons
             if (target.closest("[data-effect='submenu']")) {
-                const targetButton = target.closest("[data-effect='submenu']") as HTMLElement;
+                const targetButton = target.closest(
+                    "[data-effect='submenu']"
+                ) as HTMLElement;
                 const elements = {
                     target: targetButton,
                     submenu: targetButton.querySelector(".button-submenu"),
@@ -149,16 +151,15 @@ export const Navigation = Component<NavigationProps>({
         const renderItem = (item: NavigationItem) =>
             item.submenu ? (
                 <Button
-                    variant="button"
+                    variant="keypad"
                     icon={item.icon}
                     data-trigger="click"
                     data-event="menu"
                     data-effect="submenu"
-                    data-topic={item.href}
+                    data-url={item.href}
                 >
+                    <Text variant="h4">{item.label}</Text>
                     <div className="button-face">
-                        <Icon icon={item.icon} />
-                        <Text variant="h4">{item.label}</Text>
                         <Icon icon="arrow_back" />
                     </div>
                     <div className="button-submenu">
@@ -167,13 +168,14 @@ export const Navigation = Component<NavigationProps>({
                 </Button>
             ) : (
                 <Button
-                    variant="menu"
+                    variant="keypad"
                     icon={item.icon}
-                    data-trigger="click"
-                    data-event="menu"
-                    data-effect="menu"
-                    data-topic={item.href}
-                />
+                    trigger="click"
+                    event="navigate"
+                    data-url={item.href}
+                >
+                    <Text variant="h4">{item.label}</Text>
+                </Button>
             );
 
         return <nav>{items.map(renderItem)}</nav>;

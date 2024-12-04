@@ -8,7 +8,7 @@ export const createRef = (): Ref => ({ current: null });
 
 /** Configuration interface for Component */
 interface ComponentConfig<Props = any, LoaderData = any> {
-    loader?: () => Record<string, Promise<any>>;
+    loader?: (props: Props) => Record<string, Promise<any>>;
     loading?: () => Promise<Node | JSX.Element>;
     error?: (error: any) => Promise<Node | JSX.Element>;
     effect?: (props: Props & { data?: LoaderData }) => void;
@@ -34,7 +34,7 @@ export const Component = Object.assign(
                         }
 
                         // Execute the loader function to get the requests
-                        const requests = config.loader();
+                        const requests = config.loader(props);
                         const { state, results } = await loader(requests);
 
                         if (state === "error") {

@@ -2,7 +2,7 @@ import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { Color } from "@/lib/ui/types";
 interface TextProps {
-    variant?: "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+    variant?: "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "sub";
     color?: Color;
     children: string;
 }
@@ -22,6 +22,8 @@ export const Text = Component({
                 return <h5 style={`color: var(--${color})`}>{children}</h5>;
             case "h6":
                 return <h6 style={`color: var(--${color})`}>{children}</h6>;
+            case "sub":
+                return <sub style={`color: var(--${color})`}>{children}</sub>;
             default:
                 return <p style={`color: var(--${color})`}>{children}</p>;
         }

@@ -49,6 +49,7 @@
         "@types/drawflow": "^0.0.12",
         "@types/echarts": "^4.9.22",
         "@types/gsap": "^3.0.0",
+        "@types/jsdom": "^21.1.7",
         "@types/localforage": "^0.0.34",
         "@types/luxon": "^3.4.2",
         "@types/node": "^22.9.3",

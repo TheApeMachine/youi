@@ -52,7 +52,7 @@ let isNavigating = false;
 export const createRouter = async () => {
     // Wait for state to be initialized first
     await stateManager.init();
-    
+
     const routes = await discoverRoutes();
     const layout = await Layout({});
 
@@ -80,6 +80,7 @@ export const createRouter = async () => {
     }
 
     eventBus.subscribe('navigate', async (data: { url: string }) => {
+        console.log('navigate', data);
         if (!isNavigating) {
             isNavigating = true;
             history.pushState(null, "", data.url);
@@ -150,7 +151,7 @@ export const createRouter = async () => {
             slidesContainer.appendChild(slideSection);
 
             // Ensure Reveal.js is synced
-            if (reveal && reveal.isReady()) {
+            if (reveal?.isReady()) {
                 reveal.sync();
                 reveal.slide(0);
                 // Wait for any transitions to complete
@@ -173,7 +174,7 @@ export const createRouter = async () => {
         }
         slidesContainer.appendChild(errorSection);
 
-        if (reveal && reveal.isReady()) {
+        if (reveal?.isReady()) {
             reveal.sync();
             reveal.slide(0);
         }

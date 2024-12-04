@@ -6,9 +6,8 @@
     width: 720px;
     perspective: 500px;
 
-    .post {
+    > .post {
         z-index: -1;
-        transform-origin: center center;
     }
 }
 
@@ -19,7 +18,6 @@
     top: 50%;
     transform: translateY(-50%);
     overflow: hidden;
-    background: var(--lighter);
     border-radius: var(--md);
     z-index: 1;
 

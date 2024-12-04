@@ -6,9 +6,31 @@ import { ScrollTrigger } from "gsap/ScrollTrigger"; // Might be useful for more 
 import { Post } from "./Post";
 import { faker } from "@faker-js/faker";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+import { from } from "@/lib/mongo/query";
+import { Flex } from "../Flex";
 gsap.registerPlugin(Observer, MotionPathPlugin, ScrollTrigger);
 
+interface TimelineItem {
+    _id: string;
+    Text: string;
+    user?: {
+        ImageURL: string;
+        FirstName: string;
+    };
+    UserImgUrl?: string;
+    UserName?: string;
+}
+
 export const Timeline = Component({
+    loader: () => {
+        return {
+            items: from("Item")
+                .where({ Deleted: null })
+                .sortBy("Created", "desc")
+                .limit(10)
+                .exec()
+        };
+    },
     effect: () => {
         let progress = 0;
         const tl = gsap.timeline();
@@ -34,8 +56,9 @@ export const Timeline = Component({
             gsap.to(posts, {
                 z: 0,
                 duration,
-                y: (index, target, targets) => {
-                    // If the target
+                y: (index: number) => {
+                    const offset = index - currentProgress;
+                    return activePostY + offset * postHeight * 1.1;
                 },
                 opacity: 1,
                 ease: "power2.inOut"
@@ -75,26 +98,24 @@ export const Timeline = Component({
             Observer.getAll().forEach((observer) => observer.kill());
         };
     },
-    render: async () => {
-        const postData = Array.from({ length: 10 }).map((_, i) => ({
-            timestamp: Date.now() + i,
-            sender: faker.person.fullName(),
-            id: i // Add unique ID for better tracking
-        }));
-
-        const posts = postData.map((data) => (
-            <Post {...data} class="post" data-index={data.id} />
-        ));
-
-        const monoclePosts = postData.map((data) => (
-            <Post {...data} class="post monocle-post" data-index={data.id} />
-        ));
+    render: async ({ data }) => {
+        console.log("Timeline data:", data);
 
         return (
-            <div class="timeline column">
-                <div class="monocle">{monoclePosts}</div>
-                {posts}
-            </div>
+            <Flex direction="column" grow={false} className="timeline">
+                <Flex direction="column" className="monocle card-glass">
+                    {data.items.map((item: any) => (
+                        <Post
+                            item={item}
+                            class="post monocle-post"
+                            key={item._id}
+                        />
+                    ))}
+                </Flex>
+                {data.items.map((item: any) => (
+                    <Post item={item} class="post" key={item._id} />
+                ))}
+            </Flex>
         );
     }
 });

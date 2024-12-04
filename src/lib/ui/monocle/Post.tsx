@@ -1,20 +1,23 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { faker } from "@faker-js/faker";
 import { createEditor } from "lexical";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { EmojiNode, registerEmojiPlugin } from "@/lib/plugins/EmojiPlugin";
+import { Flex } from "../Flex";
+import { Image } from "../Image";
+import { Text } from "../Text";
+import { Icon } from "../Icon";
 
 export const Post = Component({
-    effect: ({ content, timestamp }) => {
+    effect: (item: any) => {
         // Create a unique ID for this post's content
-        const postId = `post-${timestamp}`;
+        const postId = `post-${item._id}`;
         const contentDiv = document.getElementById(postId) as HTMLElement;
-        if (!contentDiv || !content) return;
+        if (!contentDiv || !item.Text) return;
 
         // Create a read-only editor instance
         const editor = createEditor({
-            namespace: `post-${timestamp}`,
+            namespace: postId,
             nodes: [HeadingNode, QuoteNode, EmojiNode],
             editable: false,
             onError: (error) => {
@@ -27,30 +30,24 @@ export const Post = Component({
 
         // Set up the editor
         editor.setRootElement(contentDiv);
-        editor.setEditorState(editor.parseEditorState(content));
+        editor.setEditorState(editor.parseEditorState(item.Text));
     },
-    render: async ({ sender, timestamp }) => (
-        <div class="post column bg-lighter radius-sm ring-light">
-            <div class="row space-between pad-sm gap shrink border-bottom">
-                <img
-                    class="ring-dark"
-                    alt="avatar"
-                    src={faker.image.avatarGitHub()}
-                />
-                <div class="status online"></div>
-                <h4>{sender ?? faker.person.fullName()}</h4>
-            </div>
-            <div id={`post-${timestamp}`} class="post-content pad-sm grow">
-                Let's put some text
-            </div>
-            <div class="row space-between pad-sm gap shrink border-top left">
-                <span class="material-icons dark pointer width text-center">
-                    thumb_up
-                </span>
-                <span class="material-icons dark pointer width text-center">
-                    chat
-                </span>
-            </div>
-        </div>
+    render: async ({ item }) => (
+        <Flex
+            radius="xs"
+            direction="column"
+            textAlign="left"
+            className="post card-glass"
+        >
+            <Flex direction="column" textAlign="left">
+                <Image src={item.UserImgUrl} />
+                <Text variant="h4">{item.UserName}</Text>
+            </Flex>
+            <Flex>{item.Text}</Flex>
+            <Flex>
+                <Icon icon="thumb_up" />
+                <Icon icon="chat" />
+            </Flex>
+        </Flex>
     )
 });

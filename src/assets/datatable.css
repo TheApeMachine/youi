@@ -44,6 +44,7 @@ thead {
 }
 
 tbody {
+    overflow: scroll;
     tr {
         &:nth-child(odd) {
             background: var(--bg-glass-tint);

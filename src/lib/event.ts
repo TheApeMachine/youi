@@ -85,8 +85,6 @@ const EventBus = () => {
 
         if (listeners[event]?.size > 0) {
             listeners[event].forEach(callback => executeCallback(callback, payload));
-        } else {
-            console.warn(`No listeners for event: ${event}`);
         }
     };
 

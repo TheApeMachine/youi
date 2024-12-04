@@ -83,6 +83,7 @@ export const Flex = Component({
                 !className.includes("random-image") &&
                 `background: var(--${background})`,
             scrollable && "overflow-y: auto",
+            scrollable && "max-height: 100%",
             border && `border: ${border}`,
             gradient && `background-image: var(--gradient-${gradient})`,
             textAlign && `text-align: ${textAlign}`

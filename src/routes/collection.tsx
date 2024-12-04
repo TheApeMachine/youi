@@ -11,7 +11,10 @@ import { Checkbox } from "@/lib/ui/Checkbox";
 import { Button } from "@/lib/ui/button/Button";
 import { EventPayload, eventBus } from "@/lib/event";
 import gsap from "gsap";
+import { Flip } from "gsap/Flip";
 import { List } from "@/lib/ui/List";
+
+gsap.registerPlugin(Flip);
 
 interface CollectionProps {
     id: string;
@@ -97,7 +100,8 @@ export const render = Component({
         console.log("effect", props.data.data);
 
         eventBus.subscribe("datatable", async (payload: EventPayload) => {
-            console.log("datatable", payload);
+            const state = Flip.getState(document.querySelector("table"));
+
             if (payload.effect === "nested:drill") {
                 const target = payload.originalEvent?.target as HTMLElement;
                 if (!target) return;
@@ -111,50 +115,72 @@ export const render = Component({
                 const table = row.closest("table");
                 if (!table) return;
 
-                // Get the cell data directly from the data-value attribute
-                const cellData = JSON.parse(
-                    cell.getAttribute("data-value") || "null"
-                );
-                if (!cellData) return;
+                if (cell.dataset.isDrilling) {
+                    cell.removeAttribute("data-is-drilling");
+                    const nextRow = table.rows[row.rowIndex + 1];
+                    if (!nextRow) return;
 
-                // Insert a new row at the current row index, with a td that spans the entire table
-                const newRow = document.createElement("tr");
-                const newTd = document.createElement("td");
-                newTd.colSpan = table.querySelectorAll("td").length;
+                    nextRow.remove();
+                } else {
+                    cell.dataset.isDrilling = "true";
 
-                // If the cellData is an object, we should render a sub-table.
-                if (typeof cellData === "object" && !Array.isArray(cellData)) {
-                    const subTable = await renderTable(
-                        [cellData],
-                        Object.keys(cellData),
-                        props.id
+                    // Get the cell data directly from the data-value attribute
+                    const cellData = JSON.parse(
+                        cell.getAttribute("data-value") ?? "null"
                     );
-                    newTd.appendChild(subTable);
-                } else if (Array.isArray(cellData)) {
-                    if (cellData.some((item) => typeof item === "object")) {
-                        // Render a table for each object
-                        const subTables = await Promise.all(
-                            cellData.map(async (item) =>
-                                renderTable([item], Object.keys(item), props.id)
-                            )
+                    if (!cellData) return;
+
+                    // Insert a new row at the current row index, with a td that spans the entire table
+                    const newRow = document.createElement("tr");
+                    const newTd = document.createElement("td");
+                    newTd.colSpan = table.querySelectorAll("td").length;
+
+                    // If the cellData is an object, we should render a sub-table.
+                    if (
+                        typeof cellData === "object" &&
+                        !Array.isArray(cellData)
+                    ) {
+                        const subTable = await renderTable(
+                            [cellData],
+                            Object.keys(cellData),
+                            props.id
                         );
-                        for (const table of subTables) {
-                            newTd.appendChild(table);
+                        newTd.appendChild(subTable);
+                    } else if (Array.isArray(cellData)) {
+                        if (cellData.some((item) => typeof item === "object")) {
+                            // Render a table for each object
+                            const subTables = await Promise.all(
+                                cellData.map(async (item) =>
+                                    renderTable(
+                                        [item],
+                                        Object.keys(item),
+                                        props.id
+                                    )
+                                )
+                            );
+                            for (const table of subTables) {
+                                newTd.appendChild(table);
+                            }
+                        } else {
+                            // Render a simple list
+                            const items = await Promise.all(
+                                cellData.map((item) =>
+                                    jsx("span", null, String(item))
+                                )
+                            );
+                            const list = await jsx(List, { items });
+                            newTd.appendChild(list);
                         }
-                    } else {
-                        // Render a simple list
-                        const items = await Promise.all(
-                            cellData.map((item) =>
-                                jsx("span", null, String(item))
-                            )
-                        );
-                        const list = await jsx(List, { items });
-                        newTd.appendChild(list);
                     }
+
+                    newRow.appendChild(newTd);
+                    row.insertAdjacentElement("afterend", newRow);
                 }
 
-                newRow.appendChild(newTd);
-                row.insertAdjacentElement("afterend", newRow);
+                Flip.from(state, {
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
             }
         });
     },
@@ -164,7 +190,12 @@ export const render = Component({
         console.log("render", data, columns, id);
 
         return (
-            <Flex radius="xs" className="card-glass">
+            <Flex
+                direction="column"
+                radius="xs"
+                className="card-glass"
+                scrollable
+            >
                 {renderTable(tableData, columns, id)}
             </Flex>
         );

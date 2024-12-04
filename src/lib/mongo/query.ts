@@ -1,4 +1,4 @@
-import { ToBinary, FromBinary } from "./utils";
+import { ToBinary } from "./utils";
 
 import { fetchCollection, updateCollection } from "./client";
 

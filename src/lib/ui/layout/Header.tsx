@@ -79,7 +79,7 @@ export const Header = Component({
     render: () => {
         return (
             <header>
-                <Flex pad="md" justify="space-between" fullWidth>
+                <Flex pad="md" justify="space-between" background="muted" fullWidth>
                     <Flex grow={false}>
                         <Button
                             variant="animoji"

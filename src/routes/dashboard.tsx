@@ -57,11 +57,11 @@ export const render = Component({
         const user = stateManager.getState("authUser");
 
         return (
-            <Flex background="bg" fullHeight fullWidth>
+            <Flex background="bg" gap="unit" fullHeight fullWidth>
                 <Flex
                     align="start"
                     background="bg"
-                    gap="md"
+                    gap="lg"
                     fullWidth
                     fullHeight
                 >
@@ -148,6 +148,7 @@ export const render = Component({
                             justify="space-between"
                             gap="md"
                             radius="xs"
+                            background="muted"
                             fullWidth
                             fullHeight
                         >

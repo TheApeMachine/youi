@@ -28,7 +28,7 @@ export const Flyout = Component({
         if (!props?.variant || !props?.direction) return;
 
         const EDGE_THRESHOLD = 50;
-        const tl = gsap.timeline({ paused: true });
+        const tl = gsap.timeline({ paused: true, onComplete: () => { tl.pause() }, onReverseComplete: () => { tl.pause() } });
 
         const edgeZoneMap = {
             header: () => 0,
@@ -48,7 +48,7 @@ export const Flyout = Component({
         };
 
         const retractor = (rect: DOMRect) => {
-            if (tl.paused()) return; // Only play if the timeline is paused
+            if (!tl.paused() || !props.variant || (window.location.pathname.includes("dashboard") && props.variant === "header")) return;
             tl.to(`.layout > ${props.variant}`, {
                 [`margin${capitalizedDirection}`]:
                     -rect[lookupMap[props.variant] as keyof DOMRect] + 24,

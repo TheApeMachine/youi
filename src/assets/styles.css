@@ -5,6 +5,7 @@
 @import url(theme.css);
 @import url(animation.css);
 @import url(datatable.css);
+@import url(dashboard.css);
 @import url(skeleton.css);
 @import url(dialog.css);
 @import url(button.css);
@@ -59,4 +60,12 @@ img {
     height: 32px;
     object-fit: cover;
     border-radius: 50%;
+}
+
+button {
+    cursor: pointer;
+    
+    * {
+        pointer-events: none;
+    }
 }

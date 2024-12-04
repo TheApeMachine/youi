@@ -38,6 +38,7 @@ const EventBus = () => {
     };
 
     const subscribe = (event: string, callback: Function, condition: (payload: any) => boolean = () => true) => {
+        console.log("Subscribing to event:", event);
         if (!listeners[event]) {
             listeners[event] = new Set();
             const relevantEvents = eventQueue.filter(e => e.event === event);
@@ -134,6 +135,7 @@ export const EventManager = () => {
 
         // Original behavior for other events
         if (target?.dataset?.event) {
+            console.log("Publishing event:", target.dataset.event);
             eventBus.publish(target.dataset.event, createEventPayload(target, event));
         }
     };

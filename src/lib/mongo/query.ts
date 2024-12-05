@@ -130,8 +130,8 @@ export const from = (collection: string): QueryBuilder => {
         return Object.entries(data).reduce((acc, [key, value]) => {
             // Handle arrays
             if (Array.isArray(value)) {
-                return { 
-                    ...acc, 
+                return {
+                    ...acc,
                     [key]: value.map(item => {
                         if (isUUID(item)) return ToBinary(item);
                         if (typeof item === 'object') return convertToBinary(item);
@@ -159,37 +159,46 @@ export const from = (collection: string): QueryBuilder => {
         where: (conditions: Record<string, any>) => {
             // First handle array field queries
             const arrayProcessed = Object.entries(conditions).reduce((acc, [key, value]) => {
-                if (value && typeof value === 'object' && !('$elemMatch' in value)) {
-                    // Assume this is an array field query
+                console.log("here", acc, key, value)
+                // Handle $in operator specially
+                if (value && typeof value === 'object' && '$in' in value) {
+                    // Ensure we have an array
+                    const inArray = Array.isArray(value.$in) ? value.$in : [value.$in];
+                    acc[key] = { 
+                        $in: Array.isArray(inArray) ? inArray.map(v => 
+                            typeof v === 'string' && isUUID(v) ? ToBinary(v) : v
+                        ) : [inArray]
+                    };
+                    return acc;
+                }
+                // If it already has other MongoDB operators ($elemMatch, etc), leave it as is
+                else if (value && typeof value === 'object' && Object.keys(value).some(k => k.startsWith('$'))) {
+                    acc[key] = value;
+                }
+                // If it's an object without operators, wrap it in $elemMatch
+                else if (value && typeof value === 'object' && !Array.isArray(value)) {
                     acc[key] = { $elemMatch: value };
-                } else {
+                }
+                // Otherwise, keep as is
+                else {
                     acc[key] = value;
                 }
                 return acc;
             }, {} as Record<string, any>);
 
-            // Then handle binary conversion
+            // Then handle binary conversion (keeping the existing detailed logic)
             const processedConditions = Object.entries(arrayProcessed).reduce((acc, [key, value]) => {
-                if ((key === "_id" || key.endsWith("Id")) && isUUID(value)) {
+                if (isUUID(value)) {
                     return { ...acc, [key]: ToBinary(value) };
                 }
                 // If it's an $elemMatch, check its contents for IDs too
                 if (value && typeof value === 'object' && '$elemMatch' in value) {
-                    const processedElemMatch = Object.entries(value.$elemMatch).reduce((acc, [elemKey, elemValue]) => {
-                        if ((elemKey === "_id" || elemKey.endsWith("Id")) && isUUID(elemValue as string)) {
-                            return { 
-                                ...acc, 
-                                [elemKey]: { 
-                                    $binary: {
-                                        base64: ToBinary(elemValue as string),
-                                        subType: "03"
-                                    }
-                                }
-                            };
+                    return {
+                        ...acc,
+                        [key]: { 
+                            $elemMatch: convertToBinary(value.$elemMatch)
                         }
-                        return { ...acc, [elemKey]: elemValue };
-                    }, {});
-                    return { ...acc, [key]: { $elemMatch: processedElemMatch }};
+                    };
                 }
                 return { ...acc, [key]: value };
             }, {});
@@ -246,7 +255,7 @@ export const from = (collection: string): QueryBuilder => {
         set: async (data: Record<string, any>) => {
             const timestamp = new Date().toISOString();
             const processedData = convertToBinary(data);
-            
+
             // Convert field names to PascalCase
             const processedDataWithPascalCase = Object.entries(processedData).reduce((acc, [key, value]) => ({
                 ...acc,
@@ -260,9 +269,9 @@ export const from = (collection: string): QueryBuilder => {
                         ...processedDataWithPascalCase,
                         Updated: timestamp
                     },
-                    $setOnInsert: { 
+                    $setOnInsert: {
                         Created: timestamp,
-                        Deleted: null 
+                        Deleted: null
                     }
                 },
                 upsert: true
@@ -280,7 +289,7 @@ export const from = (collection: string): QueryBuilder => {
             await updateCollection(state.collection, {
                 query: processedWhere,
                 update: {
-                    $set: { 
+                    $set: {
                         Deleted: new Date().toISOString(),
                         Updated: new Date().toISOString()
                     }

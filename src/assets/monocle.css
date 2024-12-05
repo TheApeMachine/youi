@@ -6,7 +6,7 @@
     width: 720px;
     perspective: 500px;
 
-    > .post {
+    >.post {
         z-index: -1;
     }
 }
@@ -21,12 +21,14 @@
     border-radius: var(--md);
     z-index: 1;
 
-    > .post {
+    >.post {
+        display: none;
         z-index: 1;
     }
 }
 
 .post {
+    display: none;
     width: 720px;
     height: 480px;
 }

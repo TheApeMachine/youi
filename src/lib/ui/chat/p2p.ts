@@ -73,15 +73,13 @@ export const P2P = () => {
         if (connectionAttempts >= MAX_CONNECTION_ATTEMPTS) {
             const event = new CustomEvent("status", {
                 detail: {
-                    status: ConnectionState.FAILED,
+                    status: "error",
                     message: "failed to connect to provider"
                 }
             });
 
             eventBus.publish("status", event);
         }
-
-        connectionAttempts++;
 
         setTimeout(() => {
             provider?.disconnect();

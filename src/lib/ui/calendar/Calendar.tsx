@@ -31,6 +31,14 @@ interface CalendarEvent {
     Presence: Array<{ UserId: string; Present: boolean }>;
 }
 
+interface LoaderData {
+    calendarEvents: CalendarEvent[];
+    currentUser: {
+        user: User;
+        events: CalendarEvent[];
+    };
+}
+
 export const Calendar = Component({
     loader: () => {
         const user = stateManager.getState("user");
@@ -38,7 +46,6 @@ export const Calendar = Component({
         const startOfMonth = now.startOf('month').toISO();
         const endOfMonth = now.endOf('month').toISO();
 
-        // Always return an object with promises, even when user is not present
         return {
             calendarEvents: !user?.[0]
                 ? Promise.resolve([])
@@ -50,10 +57,14 @@ export const Calendar = Component({
                         },
                         Deleted: null
                     })
-                    .exec()
+                    .exec(),
+            currentUser: Promise.resolve({
+                user: user?.[0],
+                events: []
+            })
         };
     },
-    effect: ({ data }) => {
+    effect: ({ data }: { data: LoaderData }) => {
         if (!data.calendarEvents) return;
 
         let currentDate = DateTime.utc();
@@ -165,7 +176,7 @@ export const Calendar = Component({
                 });
         });
     },
-    render: async ({ data }) => {
+    render: async ({ data }: { data: LoaderData }) => {
         const now = DateTime.utc();
         const daysInMonth = now.daysInMonth ?? 31;
         const firstDayOfMonth = now.startOf('month');

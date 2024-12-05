@@ -44,7 +44,7 @@ export const render = Component({
 
         messaging(provider, ydoc);
     },
-    render: ({ data }) => (
+    render: ({ data }: { data: any }) => (
         <Flex background="bg" pad="md" gap="unit" fullWidth fullHeight>
             <Flex
                 direction="column"

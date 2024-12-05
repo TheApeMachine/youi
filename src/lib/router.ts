@@ -1,6 +1,6 @@
 import { Layout } from '@/lib/ui/layout/Layout';
 import { ErrorBoundary } from '@/lib/ui/error/ErrorBoundary';
-import { eventBus } from '@/lib/event';
+import { eventBus, EventPayload } from '@/lib/event';
 import { AuthService } from '@/lib/auth';
 import { stateManager } from '@/lib/state';
 
@@ -79,11 +79,11 @@ export const createRouter = async () => {
         });
     }
 
-    eventBus.subscribe('navigate', async (data: { url: string }) => {
+    eventBus.subscribe('navigate', async (data: EventPayload) => {
         console.log('navigate', data);
         if (!isNavigating) {
             isNavigating = true;
-            history.pushState(null, "", data.url);
+            history.pushState(null, "", data.effect);
             await router();
             isNavigating = false;
         }

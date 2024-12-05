@@ -131,10 +131,17 @@ export const EventManager = () => {
             return;
         }
 
-        // Original behavior for other events
+        // Check if target has data-event and verify trigger type matches
         if (target?.dataset?.event) {
-            console.log("Publishing event:", target.dataset.event);
-            eventBus.publish(target.dataset.event, createEventPayload(target, event));
+            const specifiedTrigger = target.dataset.trigger;
+            
+            // Only process if:
+            // 1. No trigger is specified (backwards compatibility)
+            // 2. The trigger matches the event type
+            if (!specifiedTrigger || specifiedTrigger === event.type) {
+                console.log("Publishing event:", target.dataset.event);
+                eventBus.publish(target.dataset.event, createEventPayload(target, event));
+            }
         }
     };
 

@@ -101,13 +101,13 @@ const animateMenu = (
     });
 };
 
-export const Navigation = Component<NavigationProps>({
+export const Navigation = Component({
     effect: () => {
         eventBus.subscribe("menu", (e: EventPayload) => {
             const target = e.originalEvent?.target as HTMLElement;
             if (!target) return;
 
-            const nav = target.closest("nav");
+            const nav = target.closest<HTMLElement>("nav");
             if (!nav) return;
 
             // Handle submenu buttons
@@ -147,16 +147,16 @@ export const Navigation = Component<NavigationProps>({
             }
         });
     },
-    render: ({ items }) => {
+    render: ({ items }: NavigationProps) => {
         const renderItem = (item: NavigationItem) =>
             item.submenu ? (
                 <Button
                     variant="keypad"
                     icon={item.icon}
-                    data-trigger="click"
-                    data-event="menu"
-                    data-effect="submenu"
-                    data-url={item.href}
+                    trigger="click"
+                    event="menu"
+                    effect="submenu"
+                    url={item.href}
                 >
                     <Text variant="h4">{item.label}</Text>
                     <div className="button-face">
@@ -172,7 +172,7 @@ export const Navigation = Component<NavigationProps>({
                     icon={item.icon}
                     trigger="click"
                     event="navigate"
-                    data-url={item.href}
+                    effect={item.href}
                 >
                     <Text variant="h4">{item.label}</Text>
                 </Button>

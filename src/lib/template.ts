@@ -44,11 +44,61 @@ sanitizeHTML is a function that takes a string and returns a sanitized string.
 @param str The string to sanitize.
 @returns A sanitized string.
 */
+/*
+sanitizeHTML is a function that takes a string and returns a sanitized string.
+@param str The string to sanitize.
+@returns A sanitized string.
+*/
 export const sanitizeHTML = (str: string): string => {
-    const temp = document.createElement('div');
-    temp.textContent = str;
-    return temp.innerHTML;
-}
+    // Create a DOMParser to parse HTML content
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(str, 'text/html');
+    
+    // Define allowed tags and attributes
+    const allowedTags = ['p', 'b', 'i', 'em', 'strong', 'a', 'br', 'ul', 'ol', 'li', 'div'];
+    const allowedAttributes = ['href', 'target'];
+    
+    // Recursive function to sanitize nodes
+    const sanitizeNode = (node: Node): Node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element;
+            
+            // Check if tag is allowed
+            if (!allowedTags.includes(element.tagName.toLowerCase())) {
+                return document.createTextNode(element.textContent || '');
+            }
+            
+            // Create new element with only allowed attributes
+            const cleanElement = document.createElement(element.tagName);
+            Array.from(element.attributes).forEach(attr => {
+                if (allowedAttributes.includes(attr.name)) {
+                    cleanElement.setAttribute(attr.name, attr.value);
+                }
+            });
+            
+            // Recursively sanitize children
+            Array.from(element.childNodes).forEach(child => {
+                cleanElement.appendChild(sanitizeNode(child));
+            });
+            
+            return cleanElement;
+        }
+        return node.cloneNode(true);
+    };
+    
+    // Sanitize body content
+    const sanitized = Array.from(doc.body.childNodes)
+        .map(node => sanitizeNode(node))
+        .map(node => {
+            if (node instanceof Element) {
+                return node.outerHTML;
+            }
+            return node.textContent || '';
+        })
+        .join('');
+    
+    return sanitized;
+};
 
 // Add Fragment type
 export const Fragment = Symbol('Fragment');

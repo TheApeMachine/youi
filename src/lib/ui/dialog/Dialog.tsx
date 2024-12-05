@@ -10,7 +10,7 @@ interface DialogProps {
     children?: Node | Node[];
 }
 
-export const Dialog = Component<DialogProps>({
+export const Dialog = Component({
     effect: () => {
         const dialog = document.querySelector(
             "dialog.modal"
@@ -25,8 +25,13 @@ export const Dialog = Component<DialogProps>({
                 dialog.close();
             }
         });
+
+        eventBus.subscribe("navigate", (event: EventPayload) => {
+            console.log(event);
+            dialog.close();
+        });
     },
-    render: async ({ children }) => (
+    render: async ({ children }: DialogProps) => (
         <dialog class="modal">
             <span
                 class="close-button material-symbols-rounded"

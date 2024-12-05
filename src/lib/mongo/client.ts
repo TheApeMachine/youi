@@ -167,13 +167,13 @@ export const fetchDocument = async (collectionName: string, id: string, pipeline
 
     // Update existing logic to include not-deleted condition
     const binaryId = ToBinary(id);
-    let result = await conn.collection(collectionName).findOne({ 
+    let result = await conn.collection(collectionName).findOne({
         _id: binaryId,
         Deleted: null
     });
 
     if (!result) {
-        result = await conn.collection(collectionName).findOne({ 
+        result = await conn.collection(collectionName).findOne({
             _id: id,
             Deleted: null
         });
@@ -194,7 +194,7 @@ export const updateCollection = async (
 ) => {
     const user = await ensureUser();
     const conn = user.mongoClient("mongodb-atlas").db("FanApp");
-    
+
     return conn.collection(name).updateOne(
         options.query,
         options.update,

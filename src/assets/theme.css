@@ -420,3 +420,10 @@ img {
 .button-face {
     display: none;
 }
+
+#messages-container {
+    &:before {
+        content: "";
+        background: var(--gradient-dark-vertical);
+    }
+}

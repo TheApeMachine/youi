@@ -1,4 +1,4 @@
-import { loader } from "../loader";
+import { loader } from "@/lib/loader";
 
 /** Ref type for referencing HTML elements */
 export type Ref = { current: HTMLElement | null };
@@ -11,8 +11,8 @@ interface ComponentConfig<Props = any, LoaderData = any> {
     loader?: (props: Props) => Record<string, Promise<any>>;
     loading?: () => Promise<Node | JSX.Element>;
     error?: (error: any) => Promise<Node | JSX.Element>;
-    effect?: (props: Props & { data?: LoaderData }) => void;
-    render: (props: Props & { data?: LoaderData }) => Promise<Node | JSX.Element> | Node | JSX.Element;
+    effect?: (context: Props & { rootElement: HTMLElement; data?: LoaderData }) => void | (() => void);
+    render: (props: Props) => Promise<Node | JSX.Element> | Node | JSX.Element;
 }
 
 /** Creator interface for Component */
@@ -25,7 +25,7 @@ type ComponentCreator = {
 /** Component utility */
 export const Component = Object.assign(
     <Props = any, LoaderData = Record<string, any>>(config: ComponentConfig<Props, LoaderData>) => {
-        return (Component as ComponentCreator).create<Props & { data?: LoaderData }>(
+        return (Component as ComponentCreator).create<Props>(
             async (props: Props): Promise<Node | JSX.Element> => {
                 try {
                     if (config.loader) {
@@ -33,7 +33,6 @@ export const Component = Object.assign(
                             return await config.loading();
                         }
 
-                        // Execute the loader function to get the requests
                         const requests = config.loader(props);
                         const { state, results } = await loader(requests);
 
@@ -46,17 +45,19 @@ export const Component = Object.assign(
                             data: results as LoaderData
                         };
 
-                        const renderedElement = await config.render(propsWithData);
+                        const result = await config.render(propsWithData);
 
-                        // Set up effect after render if needed
-                        const rootElement = renderedElement instanceof DocumentFragment
-                            ? renderedElement.firstElementChild as HTMLElement
-                            : renderedElement as HTMLElement;
+                        const rootElement = result instanceof DocumentFragment
+                            ? result.firstElementChild as HTMLElement
+                            : result as HTMLElement;
 
                         if (config.effect && rootElement) {
                             const observer = new MutationObserver((_, obs) => {
                                 if (rootElement.isConnected) {
-                                    config.effect!(propsWithData);
+                                    config.effect!({
+                                        ...propsWithData,
+                                        rootElement
+                                    });
                                     obs.disconnect();
                                 }
                             });
@@ -67,11 +68,10 @@ export const Component = Object.assign(
                             });
                         }
 
-                        return renderedElement;
+                        return result;
                     }
 
-                    const propsWithoutData = { ...props, data: undefined };
-                    const result = await config.render(propsWithoutData);
+                    const result = await config.render(props);
 
                     const rootElement = result instanceof DocumentFragment
                         ? result.firstElementChild as HTMLElement
@@ -80,7 +80,10 @@ export const Component = Object.assign(
                     if (config.effect && rootElement) {
                         const observer = new MutationObserver((_, obs) => {
                             if (rootElement.isConnected) {
-                                config.effect!(propsWithoutData);
+                                config.effect!({
+                                    ...props,
+                                    rootElement
+                                });
                                 obs.disconnect();
                             }
                         });
@@ -98,8 +101,7 @@ export const Component = Object.assign(
                         'An unknown error occurred';
 
                     if (config.error) {
-                        const errorElement = await config.error(error);
-                        return errorElement;
+                        return await config.error(error);
                     } else {
                         return document.createTextNode(`Error: ${errorMessage}`);
                     }
@@ -111,7 +113,7 @@ export const Component = Object.assign(
         create: <Props>(
             render: (props: Props) => Promise<Node | JSX.Element> | Node | JSX.Element
         ) => (props: Props): JSX.Element => {
-            return render(props);
+            return render(props) as JSX.Element;
         }
     }
 );

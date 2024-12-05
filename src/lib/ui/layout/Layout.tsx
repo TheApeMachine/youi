@@ -46,29 +46,11 @@ export const Layout = Component({
                         <Flyout variant="header" direction="top" />
                     )
             )}
-            {AuthService.isAuthenticated().then(
-                (isAuthenticated) =>
-                    isAuthenticated && (
-                        <Flyout variant="aside" direction="left" />
-                    )
-            )}
             <main id="app">
                 <div class="reveal">
                     <div class="slides"></div>
                 </div>
             </main>
-            {AuthService.isAuthenticated().then(
-                (isAuthenticated) =>
-                    isAuthenticated && (
-                        <Flyout variant="article" direction="right" />
-                    )
-            )}
-            {AuthService.isAuthenticated().then(
-                (isAuthenticated) =>
-                    isAuthenticated && (
-                        <Flyout variant="footer" direction="bottom" />
-                    )
-            )}
             <Dialog>
                 <Navigation items={navigation} />
             </Dialog>

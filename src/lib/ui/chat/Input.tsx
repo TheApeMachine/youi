@@ -9,12 +9,10 @@ import { eventBus } from "@/lib/event";
 import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
 import { Flex } from "../Flex";
-import { Icon } from "../Icon";
 import { Button } from "../button/Button";
+import { Popover } from "../Popover";
 
-interface InputProps {}
-
-export const Input = Component<InputProps>({
+export const Input = Component({
     effect: () => {
         const { user } = stateManager.getState("user");
         let userData: any | null = null;
@@ -89,13 +87,37 @@ export const Input = Component<InputProps>({
     render: () => (
         <Flex direction="column" fullWidth radius="bottom-xs" shrink>
             <Flex justify="space-between" fullWidth>
+                <Button
+                    variant="icon"
+                    pad="md"
+                    icon="add_photo_alternate"
+                    trigger="click"
+                    event="chat"
+                    effect="photo"
+                    className="photo"
+                />
+                <Button
+                    variant="icon"
+                    pad="md"
+                    icon="mic"
+                    trigger="click"
+                    event="chat"
+                    effect="mic"
+                    className="mic"
+                />
+                <Popover>
+                    <Button
+                        variant="icon"
+                        pad="md"
+                        icon="mood"
+                        trigger="click"
+                        event="chat"
+                        effect="mood"
+                        className="mood"
+                    />
+                </Popover>
                 <Flex id="lexical-editor" fullWidth contentEditable></Flex>
-                <Button variant="icon" icon="send" />
-            </Flex>
-            <Flex justify="start" fullWidth>
-                <Button variant="icon" icon="add_photo_alternate" />
-                <Button variant="icon" icon="mic" />
-                <Button variant="icon" icon="mood" />
+                <Button variant="icon" pad="md" icon="send" />
             </Flex>
         </Flex>
     )

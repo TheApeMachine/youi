@@ -31,3 +31,5 @@ declare namespace JSX {
     // Remove the FunctionElement type to prevent circular references
     type FunctionElement = () => Element | Element[];
 }
+
+declare const Fragment: unique symbol;

@@ -65,12 +65,11 @@ body,
 }
 
 .badge {
+    flex: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--xs);
-    min-width: var(--md);
-    min-height: var(--md);
+    padding: var(--sm);
     border: 1px solid var(--brand);
     border-radius: var(--xxl);
     background: var(--brand-light);
@@ -79,10 +78,7 @@ body,
     > h6 {
         padding: 0;
         margin: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        line-height: 1;
+        line-height: 0;
         font-family: var(--font-family);
         font-weight: 400;
         font-size: var(--md);
@@ -120,6 +116,50 @@ button {
     transition: var(--transition);
     cursor: pointer;
 
+    &.photo:hover {
+        color: var(--green) !important;
+    }
+
+    &.mic:hover {
+        color: var(--red) !important;
+    }
+
+    &.mood:hover {
+        color: var(--yellow) !important;
+    }
+
+    &:hover {
+        background: var(--dark);
+
+        > * {
+            transform: translateY(-2px);
+        }
+
+        &.brand {
+            background: var(--brand-dark);
+            box-shadow: var(--ring-brand);
+        }
+
+        &.keypad {
+            background: var(--bg);
+            border: 1px solid var(--muted);
+            color: var(--fg);
+            box-shadow: var(--shadow-card);
+        }
+
+        &.photo {
+            color: var(--green);
+        }
+
+        &.mic {
+            color: var(--red);
+        }
+
+        &.mood {
+            color: var(--yellow);
+        }
+    }
+
     > h6 {
         font: var(--font-family);
         font-weight: 400;
@@ -144,26 +184,6 @@ button {
         &.muted {
             background: var(--muted);
             color: var(--fg);
-        }
-    }
-
-    &:hover {
-        background: var(--dark);
-
-        > * {
-            transform: translateY(-2px);
-        }
-
-        &.brand {
-            background: var(--brand-dark);
-            box-shadow: var(--ring-brand);
-        }
-
-        &.keypad {
-            background: var(--bg);
-            border: 1px solid var(--muted);
-            color: var(--fg);
-            box-shadow: var(--shadow-card);
         }
     }
 }

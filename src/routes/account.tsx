@@ -8,8 +8,9 @@ import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
 import { CollapsibleField } from "@/lib/ui/form/CollapsibleField";
 import { Groups } from "@/features/Groups";
+import { Flex } from "@/lib/ui/Flex";
 
-export const Account = Component({
+export const render = Component({
     loader: () => {
         const authUser = stateManager.getState("authUser");
         return {
@@ -20,65 +21,58 @@ export const Account = Component({
         const user = data.user[0];
 
         return (
-            <div class="row grow page">
-                <div class="login-container">
-                    <div class="column pad gap radius-xs login-card">
-                        <div class="column gap brand">
-                            <h1>Account Settings</h1>
-                            <p>Update your profile information</p>
+            <Flex>
+                <Flex
+                    direction="column"
+                    background="bg-glass"
+                    className="card-glass"
+                >
+                    <Form>
+                        <FileField
+                            label="Profile Picture"
+                            name="picture"
+                            accept="image/*"
+                        />
+
+                        <div class="row gap">
+                            <TextField
+                                label="First Name"
+                                name="firstName"
+                                value={user?.FirstName}
+                                required
+                                icon="person"
+                            />
+                            <TextField
+                                label="Last Name"
+                                name="lastName"
+                                value={user?.LastName}
+                                required
+                                icon="person"
+                            />
                         </div>
 
-                        <div class="column width height scrollable">
-                            <Form>
-                                <FileField
-                                    label="Profile Picture"
-                                    name="picture"
-                                    accept="image/*"
-                                />
+                        <TextField
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={user?.Email}
+                            required
+                            icon="mail"
+                        />
 
-                                <div class="row gap">
-                                    <TextField
-                                        label="First Name"
-                                        name="firstName"
-                                        value={user?.FirstName}
-                                        required
-                                        icon="person"
-                                    />
-                                    <TextField
-                                        label="Last Name"
-                                        name="lastName"
-                                        value={user?.LastName}
-                                        required
-                                        icon="person"
-                                    />
-                                </div>
-
-                                <TextField
-                                    label="Email"
-                                    name="email"
-                                    type="email"
-                                    value={user?.Email}
-                                    required
-                                    icon="mail"
-                                />
-
-                                <Groups user={user} />
-                                <Button
-                                    variant="brand"
-                                    icon="check"
-                                    data-trigger="click"
-                                    data-event="form"
-                                    data-effect="submit"
-                                >
-                                    <span>save</span>
-                                </Button>
-                            </Form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        <Groups user={user} />
+                        <Button
+                            variant="brand"
+                            icon="check"
+                            data-trigger="click"
+                            data-event="form"
+                            data-effect="submit"
+                        >
+                            <span>save</span>
+                        </Button>
+                    </Form>
+                </Flex>
+            </Flex>
         );
     }
 });
-
-export const render = Account;

@@ -2,7 +2,7 @@ import { jsx } from "@/lib/template";
 import { Component } from "../Component";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
-import { createEditor, EditorState } from "lexical";
+import { createEditor } from "lexical";
 import { Reaction } from "./types";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { EmojiNode } from "@/lib/plugins/EmojiPlugin";
@@ -34,7 +34,10 @@ interface MessageProps {
 }
 
 export const Message = Component({
-    effect: (props: MessageProps) => {
+    effect: ({
+        rootElement,
+        ...props
+    }: MessageProps & { rootElement: HTMLElement }) => {
         const messageId = `message-${props.message.timestamp}`;
 
         // Wait for the content element to be available
@@ -67,7 +70,7 @@ export const Message = Component({
             }
         });
     },
-    render: async ({ message, isCurrentUser }: MessageProps) => (
+    render: async (props: MessageProps) => (
         <Flex
             direction="column"
             alignSelf="start"
@@ -75,13 +78,13 @@ export const Message = Component({
             gradient="dark"
             pad="md"
             radius="xs"
-            className={`message ${isCurrentUser ? "message-self" : ""}`}
+            className={`message ${props.isCurrentUser ? "message-self" : ""}`}
         >
             <Flex gap="unit" align="start" background="transparent">
                 <Image
-                    alt={message.senderName}
+                    alt={props.message.senderName}
                     className="avatar"
-                    src={message.senderAvatar ?? ""}
+                    src={props.message.senderAvatar ?? ""}
                 />
                 <Flex
                     direction="column"
@@ -94,9 +97,13 @@ export const Message = Component({
                         background="transparent"
                         align="center"
                     >
-                        <Text variant="h6">{message.senderName ?? ""}</Text>
+                        <Text variant="h6">
+                            {props.message.senderName ?? ""}
+                        </Text>
                         <Text variant="sub">
-                            {new Date(message.timestamp).toLocaleString() ?? ""}
+                            {new Date(
+                                props.message.timestamp
+                            ).toLocaleString() ?? ""}
                         </Text>
                     </Flex>
                     <Flex
@@ -106,7 +113,7 @@ export const Message = Component({
                         radius="xs"
                     >
                         <div
-                            id={`message-${message.timestamp}`}
+                            id={`message-${props.message.timestamp}`}
                             className="lexical-content"
                         />
                     </Flex>

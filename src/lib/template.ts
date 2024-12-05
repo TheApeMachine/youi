@@ -53,21 +53,21 @@ export const sanitizeHTML = (str: string): string => {
     // Create a DOMParser to parse HTML content
     const parser = new DOMParser();
     const doc = parser.parseFromString(str, 'text/html');
-    
+
     // Define allowed tags and attributes
     const allowedTags = ['p', 'b', 'i', 'em', 'strong', 'a', 'br', 'ul', 'ol', 'li', 'div'];
     const allowedAttributes = ['href', 'target'];
-    
+
     // Recursive function to sanitize nodes
     const sanitizeNode = (node: Node): Node => {
         if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as Element;
-            
+
             // Check if tag is allowed
             if (!allowedTags.includes(element.tagName.toLowerCase())) {
-                return document.createTextNode(element.textContent || '');
+                return document.createTextNode(element.textContent ?? '');
             }
-            
+
             // Create new element with only allowed attributes
             const cleanElement = document.createElement(element.tagName);
             Array.from(element.attributes).forEach(attr => {
@@ -75,17 +75,17 @@ export const sanitizeHTML = (str: string): string => {
                     cleanElement.setAttribute(attr.name, attr.value);
                 }
             });
-            
+
             // Recursively sanitize children
             Array.from(element.childNodes).forEach(child => {
                 cleanElement.appendChild(sanitizeNode(child));
             });
-            
+
             return cleanElement;
         }
         return node.cloneNode(true);
     };
-    
+
     // Sanitize body content
     const sanitized = Array.from(doc.body.childNodes)
         .map(node => sanitizeNode(node))
@@ -93,15 +93,16 @@ export const sanitizeHTML = (str: string): string => {
             if (node instanceof Element) {
                 return node.outerHTML;
             }
-            return node.textContent || '';
+            return node.textContent ?? '';
         })
         .join('');
-    
+
     return sanitized;
 };
 
-// Add Fragment type
+// Add Fragment type and export
 export const Fragment = Symbol('Fragment');
+export type FragmentType = typeof Fragment;
 
 type JSXElementType = string | Function | typeof Fragment;
 
@@ -154,20 +155,20 @@ const handleElementProps = (element: Element, props: Props, isSVG: boolean) => {
     });
 }
 
-const handleFragment = (children: any[]) => {
+const handleFragment = async (children: any[]) => {
     const fragment = document.createDocumentFragment();
-    children.flat().forEach(async child => {
+    for (const child of children.flat()) {
         if (child instanceof Promise) {
             const resolved = await child;
-            fragment.appendChild(resolved instanceof Node ? resolved : document.createTextNode(String(resolved)))
+            fragment.appendChild(resolved instanceof Node ? resolved : document.createTextNode(String(resolved)));
         } else {
             fragment.appendChild(
                 child instanceof Node ? child : document.createTextNode(String(child))
             );
         }
-    });
+    }
     return fragment;
-}
+};
 
 const appendChild = async (element: Element, child: any) => {
     // Skip falsy values but keep 0

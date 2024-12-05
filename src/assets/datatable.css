@@ -74,9 +74,17 @@ td {
     text-overflow: ellipsis;
     max-width: 0;
     color: var(--fg);
+
+    > button {
+        padding: 0;
+    }
 }
 
-tr:hover td {
+tr:hover td:not(.drill-cell) {
     background: var(--muted);
     color: var(--highlight);
+}
+
+.drill-cell {
+    background: transparent;
 }

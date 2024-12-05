@@ -43,21 +43,23 @@ export const Calendar = Component({
     loader: () => {
         const user = stateManager.getState("user");
         const now = DateTime.utc();
-        const startOfMonth = now.startOf('month').toISO();
-        const endOfMonth = now.endOf('month').toISO();
+        const startOfMonth = now.startOf("month").toISO();
+        const endOfMonth = now.endOf("month").toISO();
+
+        stateManager.setState({ currentCalendarDate: now });
 
         return {
             calendarEvents: !user?.[0]
                 ? Promise.resolve([])
                 : from("CalendarEvent")
-                    .where({
-                        StartDate: {
-                            $gte: startOfMonth,
-                            $lte: endOfMonth
-                        },
-                        Deleted: null
-                    })
-                    .exec(),
+                      .where({
+                          StartDate: {
+                              $gte: startOfMonth,
+                              $lte: endOfMonth
+                          },
+                          Deleted: null
+                      })
+                      .exec(),
             currentUser: Promise.resolve({
                 user: user?.[0],
                 events: []
@@ -67,61 +69,114 @@ export const Calendar = Component({
     effect: ({ data }: { data: LoaderData }) => {
         if (!data.calendarEvents) return;
 
-        let currentDate = DateTime.utc();
+        let currentDate =
+            stateManager.getState("currentCalendarDate") || DateTime.utc();
 
-        const updateCalendarDisplay = (date: DateTime, events: CalendarEvent[] = []) => {
+        const updateCalendarDisplay = (
+            date: DateTime,
+            events: CalendarEvent[] = []
+        ) => {
             // Update month/year display
-            const dateDisplay = document.querySelector('.calendar-date');
+            const dateDisplay = document.querySelector(".calendar-date");
             if (dateDisplay) {
-                dateDisplay.textContent = date.toLocal().toLocaleString(DateTime.DATE_FULL);
+                dateDisplay.textContent = date
+                    .toLocal()
+                    .toLocaleString(DateTime.DATE_FULL);
             }
 
-            // Update days
+            // Calculate calendar days
             const daysInMonth = date.daysInMonth ?? 31;
-            const firstDayOfMonth = date.startOf('month');
+            const firstDayOfMonth = date.startOf("month");
             const startingDayOfWeek = firstDayOfMonth.weekday;
+            const daysFromPrevMonth = startingDayOfWeek - 1;
+            const prevMonth = date.minus({ months: 1 });
+            const daysInPrevMonth = prevMonth.daysInMonth ?? 31;
 
-            const dayElements = document.querySelectorAll('.calendar-day');
+            const dayElements = document.querySelectorAll(".calendar-day");
             dayElements.forEach((element, index) => {
-                const dayNumber = Math.floor(index / 7) * 7 + (index % 7) - (startingDayOfWeek - 2);
-                const dayText = element.querySelector('.day-text');
+                const dayNumber = index + 1;
+                let displayDay;
+                let isCurrentMonth = true;
+                let currentDateToCheck;
+
+                if (dayNumber <= daysFromPrevMonth) {
+                    // Previous month days
+                    displayDay =
+                        daysInPrevMonth - (daysFromPrevMonth - dayNumber);
+                    isCurrentMonth = false;
+                    currentDateToCheck = prevMonth.set({ day: displayDay });
+                } else if (dayNumber > daysFromPrevMonth + daysInMonth) {
+                    // Next month days
+                    displayDay = dayNumber - (daysFromPrevMonth + daysInMonth);
+                    isCurrentMonth = false;
+                    currentDateToCheck = date
+                        .plus({ months: 1 })
+                        .set({ day: displayDay });
+                } else {
+                    // Current month days
+                    displayDay = dayNumber - daysFromPrevMonth;
+                    currentDateToCheck = date.set({ day: displayDay });
+                }
+
+                const dayText = element.querySelector(".day-text");
+                if (dayText) {
+                    dayText.textContent = displayDay.toString();
+                }
 
                 // Find events for this day
-                const currentDate = date.set({ day: Math.max(1, dayNumber) });
-                const dayEvents = events.filter(event => {
-                    const eventDate = DateTime.fromISO(event.StartDate).setZone('utc');
-                    return eventDate.hasSame(currentDate, 'day');
+                const dayEvents = events.filter((event) => {
+                    const eventDate = DateTime.fromISO(event.StartDate).setZone(
+                        "utc"
+                    );
+                    return eventDate.hasSame(currentDateToCheck, "day");
                 });
 
-                if (dayNumber > 0 && dayNumber <= daysInMonth) {
-                    if (dayText) {
-                        dayText.textContent = dayNumber.toString();
-                    }
-                    (element as HTMLElement).classList.remove('empty-day');
+                // Update styling
+                (element as HTMLElement).classList.remove("empty-day");
+                if (dayEvents.length > 0) {
+                    (element as HTMLElement).setAttribute(
+                        "data-events",
+                        dayEvents.length.toString()
+                    );
+                    (element as HTMLElement).style.position = "relative";
 
-                    // Add event indicators if there are events
-                    if (dayEvents.length > 0) {
-                        (element as HTMLElement).setAttribute('data-events', dayEvents.length.toString());
-                        (element as HTMLElement).style.position = 'relative';
-                        // Add event dots or count
-                        const eventIndicator = document.createElement('div');
-                        eventIndicator.className = 'event-indicator';
-                        eventIndicator.textContent = dayEvents.length.toString();
+                    // Add event dots or count
+                    const existingIndicator =
+                        element.querySelector(".event-indicator");
+                    if (existingIndicator) {
+                        existingIndicator.textContent =
+                            dayEvents.length.toString();
+                    } else {
+                        const eventIndicator = document.createElement("div");
+                        eventIndicator.className = "event-indicator";
+                        eventIndicator.textContent =
+                            dayEvents.length.toString();
                         (element as HTMLElement).appendChild(eventIndicator);
                     }
+                }
 
-                    // Highlight current day if it's today
-                    if (dayNumber === date.day && date.hasSame(DateTime.utc(), 'day')) {
-                        (element as HTMLElement).setAttribute('background', 'brand');
-                    } else {
-                        (element as HTMLElement).removeAttribute('background');
-                    }
+                // Update text color and background
+                const textElement = element.querySelector(
+                    ".day-text"
+                ) as HTMLElement;
+                if (textElement) {
+                    textElement.style.color = isCurrentMonth
+                        ? "var(--highlight)"
+                        : "var(--muted)";
+                }
+
+                // Highlight current day
+                const isCurrentDay =
+                    isCurrentMonth &&
+                    displayDay === date.day &&
+                    date.hasSame(DateTime.utc(), "day");
+                if (isCurrentDay) {
+                    (element as HTMLElement).setAttribute(
+                        "background",
+                        "brand"
+                    );
                 } else {
-                    if (dayText) {
-                        dayText.textContent = '';
-                    }
-                    (element as HTMLElement).classList.add('empty-day');
-                    (element as HTMLElement).removeAttribute('background');
+                    (element as HTMLElement).removeAttribute("background");
                 }
             });
         };
@@ -132,8 +187,9 @@ export const Calendar = Component({
         // Subscribe to navigation events
         eventBus.subscribe("prev_month", () => {
             currentDate = currentDate.minus({ months: 1 });
-            const startOfMonth = currentDate.startOf('month').toJSDate();
-            const endOfMonth = currentDate.endOf('month').toJSDate();
+            stateManager.setState({ currentCalendarDate: currentDate });
+            const startOfMonth = currentDate.startOf("month").toJSDate();
+            const endOfMonth = currentDate.endOf("month").toJSDate();
 
             from("CalendarEvent")
                 .where({
@@ -143,8 +199,17 @@ export const Calendar = Component({
                     },
                     Deleted: null,
                     $or: [
-                        { "User.Auth0UserId": data.currentUser.user.Auth0UserId },
-                        { "User.Groups._id": { $in: data.currentUser.user.Groups.map((g: Group) => g._id) } }
+                        {
+                            "User.Auth0UserId":
+                                data.currentUser.user.Auth0UserId
+                        },
+                        {
+                            "User.Groups._id": {
+                                $in: data.currentUser.user.Groups.map(
+                                    (g: Group) => g._id
+                                )
+                            }
+                        }
                     ]
                 })
                 .exec()
@@ -155,8 +220,9 @@ export const Calendar = Component({
 
         eventBus.subscribe("next_month", () => {
             currentDate = currentDate.plus({ months: 1 });
-            const startOfMonth = currentDate.startOf('month').toJSDate();
-            const endOfMonth = currentDate.endOf('month').toJSDate();
+            stateManager.setState({ currentCalendarDate: currentDate });
+            const startOfMonth = currentDate.startOf("month").toJSDate();
+            const endOfMonth = currentDate.endOf("month").toJSDate();
 
             from("CalendarEvent")
                 .where({
@@ -166,8 +232,17 @@ export const Calendar = Component({
                     },
                     Deleted: null,
                     $or: [
-                        { "User.Auth0UserId": data.currentUser.user.Auth0UserId },
-                        { "User.Groups._id": { $in: data.currentUser.user.Groups.map((g: Group) => g._id) } }
+                        {
+                            "User.Auth0UserId":
+                                data.currentUser.user.Auth0UserId
+                        },
+                        {
+                            "User.Groups._id": {
+                                $in: data.currentUser.user.Groups.map(
+                                    (g: Group) => g._id
+                                )
+                            }
+                        }
                     ]
                 })
                 .exec()
@@ -177,48 +252,112 @@ export const Calendar = Component({
         });
     },
     render: async ({ data }: { data: LoaderData }) => {
-        const now = DateTime.utc();
-        const daysInMonth = now.daysInMonth ?? 31;
-        const firstDayOfMonth = now.startOf('month');
+        const currentDate =
+            stateManager.getState("currentCalendarDate") || DateTime.utc();
+        const daysInMonth = currentDate.daysInMonth ?? 31;
+        const firstDayOfMonth = currentDate.startOf("month");
         const startingDayOfWeek = firstDayOfMonth.weekday;
 
-        const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        // Calculate days from previous month
+        const daysFromPrevMonth = startingDayOfWeek - 1;
+        const prevMonth = currentDate.minus({ months: 1 });
+        const daysInPrevMonth = prevMonth.daysInMonth ?? 31;
+
+        // Calculate days needed from next month
+        const totalDaysShown = 42; // 6 rows * 7 days
+        const daysFromNextMonth =
+            totalDaysShown - (daysFromPrevMonth + daysInMonth);
+
+        const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
         return (
             <Flex direction="column" fullWidth fullHeight>
-                <Flex background="brand" radius="top-xs" pad="sm" grow={false} fullWidth justify="space-between">
-                    <Button
-                        variant="text"
-                        trigger="click"
-                        event="prev_month"
-                    >
+                <Flex
+                    background="brand"
+                    radius="top-xs"
+                    pad="sm"
+                    grow={false}
+                    fullWidth
+                    justify="space-between"
+                >
+                    <Button variant="text" trigger="click" event="prev_month">
                         <Icon icon="arrow_left" />
                     </Button>
-                    <Text variant="h3" color="highlight" className="calendar-date">
-                        {now.toLocal().toLocaleString(DateTime.DATE_FULL)}
-                    </Text>
-                    <Button
-                        variant="text"
-                        trigger="click"
-                        event="next_month"
+                    <Text
+                        variant="h3"
+                        color="highlight"
+                        className="calendar-date"
                     >
+                        {currentDate
+                            .toLocal()
+                            .toLocaleString(DateTime.DATE_FULL)}
+                    </Text>
+                    <Button variant="text" trigger="click" event="next_month">
                         <Icon icon="arrow_right" />
                     </Button>
                 </Flex>
-                <Flex direction="column" fullWidth fullHeight pad="md" background="gradient-dark-vertical">
+                <Flex background="muted" grow={false} fullWidth>
+                    <Button variant="icon" trigger="click" event="month_view">
+                        <Icon icon="calendar_month" />
+                    </Button>
+                    <Button variant="icon" trigger="click" event="week_view">
+                        <Icon icon="event_note" />
+                    </Button>
+                    <Button variant="icon" trigger="click" event="day_view">
+                        <Icon icon="today" />
+                    </Button>
+                    <Button variant="text" trigger="click" event="add_event">
+                        <Text variant="p">Today</Text>
+                    </Button>
+                </Flex>
+                <Flex
+                    direction="column"
+                    fullWidth
+                    fullHeight
+                    pad="md"
+                    background="gradient-dark-vertical"
+                >
                     <Flex fullWidth grow={false}>
-                        {weekdays.map(day => (
+                        {weekdays.map((day) => (
                             <Flex justify="center" pad="sm">
                                 <Text variant="p">{day}</Text>
                             </Flex>
                         ))}
                     </Flex>
                     <Flex direction="column" fullWidth fullHeight>
-                        {Array.from({ length: Math.ceil((daysInMonth + startingDayOfWeek - 1) / 7) }, (_, weekIndex) => (
+                        {Array.from({ length: 6 }, (_, weekIndex) => (
                             <Flex fullWidth grow>
                                 {Array.from({ length: 7 }, (_, dayIndex) => {
-                                    const dayNumber = weekIndex * 7 + dayIndex - (startingDayOfWeek - 2);
-                                    const isCurrentDay = dayNumber === now.day;
+                                    const dayNumber =
+                                        weekIndex * 7 + dayIndex + 1;
+                                    let displayDay;
+                                    let isCurrentMonth = true;
+
+                                    if (dayNumber <= daysFromPrevMonth) {
+                                        // Previous month days
+                                        displayDay =
+                                            daysInPrevMonth -
+                                            (daysFromPrevMonth - dayNumber);
+                                        isCurrentMonth = false;
+                                    } else if (
+                                        dayNumber >
+                                        daysFromPrevMonth + daysInMonth
+                                    ) {
+                                        // Next month days
+                                        displayDay =
+                                            dayNumber -
+                                            (daysFromPrevMonth + daysInMonth);
+                                        isCurrentMonth = false;
+                                    } else {
+                                        // Current month days
+                                        displayDay =
+                                            dayNumber - daysFromPrevMonth;
+                                    }
+
+                                    const isCurrentDay =
+                                        displayDay === currentDate.day &&
+                                        isCurrentMonth;
+
                                     return (
                                         <Flex
                                             className="calendar-day"
@@ -226,13 +365,23 @@ export const Calendar = Component({
                                             align="center"
                                             pad="sm"
                                             radius="xs"
-                                            background={isCurrentDay ? "brand" : undefined}
+                                            background={
+                                                isCurrentDay
+                                                    ? "brand"
+                                                    : undefined
+                                            }
                                         >
-                                            {dayNumber > 0 && dayNumber <= daysInMonth && (
-                                                <Text variant="p" color="highlight" className="day-text">
-                                                    {dayNumber.toString()}
-                                                </Text>
-                                            )}
+                                            <Text
+                                                variant="p"
+                                                color={
+                                                    isCurrentMonth
+                                                        ? "highlight"
+                                                        : "muted"
+                                                }
+                                                className="day-text"
+                                            >
+                                                {displayDay.toString()}
+                                            </Text>
                                         </Flex>
                                     );
                                 })}

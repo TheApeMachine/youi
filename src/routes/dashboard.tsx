@@ -49,7 +49,7 @@ export const render = Component({
         // Animate from original state
         Flip.from(state, {
             duration: 0.6,
-            ease: "power2.inOut",
+            ease: "ease",
             absolute: true
         });
     },
@@ -62,6 +62,7 @@ export const render = Component({
                     align="start"
                     background="bg"
                     gap="lg"
+                    pad="lg"
                     fullWidth
                     fullHeight
                 >

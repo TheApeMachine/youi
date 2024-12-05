@@ -79,7 +79,12 @@ export const Header = Component({
     render: () => {
         return (
             <header>
-                <Flex pad="md" justify="space-between" background="muted" fullWidth>
+                <Flex
+                    pad="md"
+                    justify="space-between"
+                    background="muted"
+                    fullWidth
+                >
                     <Flex grow={false}>
                         <Button
                             variant="animoji"
@@ -95,7 +100,6 @@ export const Header = Component({
                         <Button variant="animoji" icon="notifications" />
                     </Flex>
                 </Flex>
-                <Icon icon="arrow_drop_down" />
             </header>
         );
     }

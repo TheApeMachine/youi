@@ -1,7 +1,7 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { Player } from "../animoji/Player";
-import { Color, Background } from "../types";
+import { Color, Background, Unit } from "../types";
 import { Icon } from "../Icon";
 
 type ButtonProps = {
@@ -16,10 +16,17 @@ type ButtonProps = {
     effect?: string;
     topic?: string;
     children?: Node | Node[];
+    popovertarget?: string;
+    pad?: Unit;
 };
 
 export const Button = Component({
-    effect: () => {},
+    effect: (props: ButtonProps & { rootElement: HTMLElement }) => {
+        if (props.popovertarget) {
+            console.log("popovertarget", props.popovertarget);
+            (props.rootElement as any).popovertarget = props.popovertarget;
+        }
+    },
     render: ({
         variant,
         color = "fg",
@@ -31,14 +38,19 @@ export const Button = Component({
         event,
         topic,
         children,
-        className
+        className,
+        pad
     }: ButtonProps) => {
+        const style = [pad && `padding: var(--${pad})`]
+            .filter(Boolean)
+            .join(";");
+
         switch (variant) {
             case "brand":
                 return (
                     <button
                         type={type}
-                        style={`gap: var(--xs); color: var(--highlight)`}
+                        style={`gap: var(--xs); color: var(--highlight); ${style}`}
                         class="brand"
                         data-trigger={trigger}
                         data-event={event}
@@ -56,9 +68,10 @@ export const Button = Component({
                         data-trigger="click"
                         data-event="dialog"
                         data-effect="open"
+                        style={style}
                     >
                         {icon && <Icon icon={icon} color={color} />}
-                        <Player animoji={icon} />
+                        {icon && <Player data={{ animoji: icon }} />}
                     </div>
                 );
             case "keypad":
@@ -69,6 +82,7 @@ export const Button = Component({
                         data-effect={effect}
                         data-topic={topic}
                         class={`keypad ${className ?? ""}`}
+                        style={style}
                     >
                         {icon && <Icon icon={icon} color={color} />}
                         {children}
@@ -81,7 +95,7 @@ export const Button = Component({
                         data-event={event}
                         data-effect={effect}
                         data-topic={topic}
-                        style={`color: var(--${color}); background-color: var(--${background}, transparent)`}
+                        style={`color: var(--${color}); background-color: var(--${background}, transparent); ${style}`}
                         class={`text ${className ?? ""}`}
                     >
                         {children}
@@ -94,7 +108,7 @@ export const Button = Component({
                         data-event={event}
                         data-effect={effect}
                         data-topic={topic}
-                        style={`color: var(--${color}); background-color: var(--${background}, transparent)`}
+                        style={`color: var(--${color}); background-color: var(--${background}, transparent); ${style}`}
                         class={`icon ${className ?? ""}`}
                     >
                         {icon && <Icon icon={icon} color={color} />}

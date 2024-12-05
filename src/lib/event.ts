@@ -134,7 +134,7 @@ export const EventManager = () => {
         // Check if target has data-event and verify trigger type matches
         if (target?.dataset?.event) {
             const specifiedTrigger = target.dataset.trigger;
-            
+
             // Only process if:
             // 1. No trigger is specified (backwards compatibility)
             // 2. The trigger matches the event type
@@ -149,7 +149,7 @@ export const EventManager = () => {
         event.preventDefault();
         const url = new URL(link.href).pathname;
         eventBus.publish('navigate', {
-            url,
+            effect: url,
             originalEvent: event
         });
     };

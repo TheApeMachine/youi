@@ -87,6 +87,13 @@ type QueryBuilder = {
     whereArrayField: (field: string, conditions: Record<string, any>) => QueryBuilder;
 };
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const isUUID = (value: any): boolean => {
+    if (typeof value !== 'string') return false;
+    return UUID_REGEX.test(value);
+};
+
 // Helper to ensure PascalCase
 const toPascalCase = (str: string) =>
     str.charAt(0).toUpperCase() + str.slice(1);
@@ -117,13 +124,6 @@ export const from = (collection: string): QueryBuilder => {
             };
         }
         return null;
-    };
-
-    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-    const isUUID = (value: any): boolean => {
-        if (typeof value !== 'string') return false;
-        return UUID_REGEX.test(value);
     };
 
     const convertToBinary = (data: Record<string, any>): Record<string, any> => {

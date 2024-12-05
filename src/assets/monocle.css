@@ -6,12 +6,12 @@
     width: 720px;
     perspective: 500px;
 
-    >.post {
+    > .post {
         z-index: -1;
     }
 }
 
-.monocle {
+/* .monocle {
     position: fixed;
     width: 720px;
     height: 480px;
@@ -31,4 +31,4 @@
     display: none;
     width: 720px;
     height: 480px;
-}
+} */

@@ -9,6 +9,7 @@ import { from } from "@/lib/mongo/query";
 import { CollapsibleField } from "@/lib/ui/form/CollapsibleField";
 import { Groups } from "@/features/Groups";
 import { Flex } from "@/lib/ui/Flex";
+import { Circle } from "@/lib/ui/Circle";
 
 export const render = Component({
     loader: () => {
@@ -71,6 +72,10 @@ export const render = Component({
                             <span>save</span>
                         </Button>
                     </Form>
+                </Flex>
+                <Flex direction="column">
+                    <h1>Account Groups</h1>
+                    <Circle />
                 </Flex>
             </Flex>
         );

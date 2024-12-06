@@ -13,6 +13,7 @@
 @import url(monocle.css);
 @import url(animoji.css);
 @import url(toaster.css);
+@import url(circle.css);
 
 div.random-image {
     background-image: url("https://picsum.photos/1024/768?grayscale&blur=2");
@@ -64,7 +65,7 @@ img {
 
 button {
     cursor: pointer;
-    
+
     * {
         pointer-events: none;
     }

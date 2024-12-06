@@ -55,38 +55,42 @@
 
 .rainbow:before {
     content: "";
-    background: conic-gradient(#ff9999,
-            #ffcc99,
-            #ffff99,
-            #ccff99,
-            #99ff99,
-            #99ffcc,
-            #99ffff,
-            #99ccff,
-            #9999ff,
-            #cc99ff,
-            #ff99ff,
-            #ff99cc,
-            #ff9999);
+    background: conic-gradient(
+        #ff9999,
+        #ffcc99,
+        #ffff99,
+        #ccff99,
+        #99ff99,
+        #99ffcc,
+        #99ffff,
+        #99ccff,
+        #9999ff,
+        #cc99ff,
+        #ff99ff,
+        #ff99cc,
+        #ff9999
+    );
     animation: spun 2s linear infinite;
     z-index: -1;
 }
 
 .rainbow:after {
     content: "";
-    background: conic-gradient(#ff9999,
-            #ffcc99,
-            #ffff99,
-            #ccff99,
-            #99ff99,
-            #99ffcc,
-            #99ffff,
-            #99ccff,
-            #9999ff,
-            #cc99ff,
-            #ff99ff,
-            #ff99cc,
-            #ff9999);
+    background: conic-gradient(
+        #ff9999,
+        #ffcc99,
+        #ffff99,
+        #ccff99,
+        #99ff99,
+        #99ffcc,
+        #99ffff,
+        #99ccff,
+        #9999ff,
+        #cc99ff,
+        #ff99ff,
+        #ff99cc,
+        #ff9999
+    );
     animation: sonar 3s ease-out infinite;
     z-index: -2;
 }
@@ -95,4 +99,33 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+@keyframes scale-in {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-scale-in {
+    animation: scale-in 0.3s ease-out forwards;
+}
+
+.animate-fade-in {
+    animation: fade-in 0.3s ease-out forwards;
+    animation-delay: calc(var(--index) * 50ms);
 }

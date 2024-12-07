@@ -1,6 +1,7 @@
 import { eventBus } from "@/lib/event";
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
+import { EventPayload } from "@/lib/event/types";
 import gsap from "gsap";
 
 type ToastEvent = {
@@ -92,7 +93,7 @@ export const Toaster = Component({
             message: string
         ) => {
             const id = Date.now().toString();
-            
+
             // Create toast element using async jsx
             const toastTitle = await jsx("h3", {}, title);
             const toastMessage = await jsx("p", {}, message);
@@ -118,11 +119,11 @@ export const Toaster = Component({
             }
         };
 
-        eventBus.subscribe("status", async (event: ToastEvent | CustomEvent) => {
-            // Handle both plain objects and CustomEvents
-            const detail = (event instanceof CustomEvent) ? event.detail : event;
+        eventBus.subscribe("status", async (event: EventPayload) => {
+            // Handle event payload data
+            const detail = event.data;
             const { variant, title, message } = detail;
-            
+
             try {
                 await makeToast(variant, title, message);
             } catch (err) {
@@ -132,16 +133,13 @@ export const Toaster = Component({
 
         window.addEventListener("keyup", (event) => {
             if (event.key === "Escape") {
-                eventBus.publish(
-                    "status",
-                    {
-                        variant: ["success", "error", "warning", "info"][
-                            Math.floor(Math.random() * 4)
-                        ] as "success" | "error" | "warning" | "info",
-                        title: "Test Title",
-                        message: "This is my test message"
-                    }
-                );
+                eventBus.publish("system", "toast", {
+                    variant: ["success", "error", "warning", "info"][
+                        Math.floor(Math.random() * 4)
+                    ] as "success" | "error" | "warning" | "info",
+                    title: "Test Title",
+                    message: "This is my test message"
+                });
             }
         });
     },

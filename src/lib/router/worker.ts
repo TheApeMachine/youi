@@ -1,5 +1,3 @@
-import { eventBus, EventPayload } from '@/lib/event';
-
 interface RouterMessage {
     type: 'navigate' | 'updateIsland' | 'getState' | 'init';
     payload: any;

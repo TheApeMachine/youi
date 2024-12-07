@@ -1,6 +1,7 @@
 @font-face {
     font-family: "Material Symbols Rounded";
-    src: url("../../assets/fonts/MaterialSymbolsRounded-VariableFont.woff2") format("woff2-variations");
+    src: url("../../assets/fonts/MaterialSymbolsRounded-VariableFont.woff2")
+        format("woff2-variations");
     font-weight: 100 700;
     font-style: normal;
     font-display: block;
@@ -46,7 +47,8 @@
     --debug-spacing-lg: 16px;
 
     /* Typography */
-    --debug-font-main: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --debug-font-main: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        monospace;
     --debug-font-size-small: 11px;
     --debug-font-size-base: 12px;
 
@@ -243,3 +245,114 @@
 }
 
 /* Rest of the existing styles... */
+
+.css-border-controls {
+    display: grid;
+    gap: 12px;
+}
+
+.css-border-side {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.css-border-label {
+    font-size: 12px;
+    color: #888;
+    text-transform: capitalize;
+}
+
+.css-border-inputs {
+    display: grid;
+    grid-template-columns: 60px 1fr 60px;
+    gap: 8px;
+    align-items: center;
+}
+
+.css-border-width {
+    width: 100%;
+    padding: 4px;
+    background: #333;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 2px;
+}
+
+.css-border-style {
+    width: 100%;
+    padding: 4px;
+    background: #333;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 2px;
+}
+
+.css-border-color {
+    width: 100%;
+    padding: 2px;
+    background: #333;
+    border: 1px solid #444;
+    border-radius: 2px;
+}
+
+.css-transform-group {
+    background: #2a2a2a;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.css-transform-group-label {
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.css-transform-input-container {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.css-transform-slider-container {
+    display: grid;
+    grid-template-columns: 1fr 60px auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.css-transform-slider {
+    width: 100%;
+    height: 4px;
+    background: #444;
+    border-radius: 2px;
+    -webkit-appearance: none;
+}
+
+.css-transform-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.css-transform-value {
+    width: 100%;
+    background: #333;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-size: 12px;
+}
+
+.css-transform-unit {
+    color: #888;
+    font-size: 12px;
+    width: 30px;
+}

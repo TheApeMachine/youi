@@ -1,4 +1,5 @@
-import { eventBus, EventPayload } from '@/lib/event';
+import { eventManager } from '@/lib/event';
+import { EventPayload } from '@/lib/event/types';
 import { Layout } from '@/lib/ui/layout/Layout';
 
 interface RouterState {
@@ -164,7 +165,7 @@ export const RouterManager = () => {
         }
 
         // Setup event listeners
-        eventBus.subscribe('navigate', async (payload: EventPayload) => {
+        eventManager.subscribe('navigate', async (payload: EventPayload) => {
             if (!state.isNavigating && payload.effect) {
                 await navigate(payload.effect);
             }

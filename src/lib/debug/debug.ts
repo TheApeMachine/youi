@@ -1,10 +1,10 @@
 import "@/lib/debug/debug.css";
-import { DebugEntry, DebugModuleSetup, DebugModuleInstance } from './types';
+import { DebugEntry, DebugModuleInstance } from './types';
 import { overlay } from './overlay';
 
 type ConsoleMethod = 'log' | 'warn' | 'error' | 'info' | 'debug';
 
-const AVAILABLE_MODULES = ['logs', 'performance'] as const;
+const AVAILABLE_MODULES = ['logs', 'performance', 'router', 'state', 'events', 'css-editor'] as const;
 type ModuleId = typeof AVAILABLE_MODULES[number];
 
 interface DebugOverlay {
@@ -57,7 +57,7 @@ export const createDebugOverlay = (): DebugOverlay => {
             // Load module
             const { setup } = await import(`./modules/${moduleId}`);
             const instance = await setup.setup({
-                addLog: (entry) => globalAddLog?.(entry),
+                addLog: (entry: DebugEntry) => globalAddLog?.(entry),
                 container: contentGrid
             });
 

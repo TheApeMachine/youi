@@ -4,7 +4,7 @@ import { Component } from "@/lib/ui/Component";
 
 export const Avatar = Component({
     render: async () => {
-        const user = stateManager.getState("user")[0];
+        const user = (await stateManager.getState("user"))[0];
 
         return user?.ImageURL ? (
             <img

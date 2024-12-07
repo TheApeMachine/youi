@@ -1,16 +1,14 @@
 import { StateBackend } from './types';
-import { MongoClient } from '@/lib/mongo/client';
-import { Query } from '@/lib/mongo/query';
+import { fetchCollection, updateCollection } from '@/lib/mongo/client';
 
 export const createMongoBackend = (): StateBackend => {
-    const client = MongoClient();
-
     return {
         get: async <T>(key: string) => {
             try {
-                const query = Query.findOne({ key });
-                const result = await client.execute(query);
-                return result as T;
+                const result = await fetchCollection("State", {
+                    query: { key }
+                });
+                return result[0] as T;
             } catch (error) {
                 console.error(`MongoDB get error for ${key}:`, error);
                 return undefined;
@@ -19,8 +17,11 @@ export const createMongoBackend = (): StateBackend => {
 
         set: async (key: string, value: any) => {
             try {
-                const query = Query.insertOne({ key, value });
-                await client.execute(query);
+                await updateCollection("State", {
+                    query: { key },
+                    update: { $set: { key, value } },
+                    upsert: true
+                });
             } catch (error) {
                 console.error(`MongoDB set error for ${key}:`, error);
                 throw error;
@@ -29,11 +30,10 @@ export const createMongoBackend = (): StateBackend => {
 
         update: async (key: string, value: any) => {
             try {
-                const query = Query.updateOne(
-                    { key },
-                    { $set: { value } }
-                );
-                await client.execute(query);
+                await updateCollection("State", {
+                    query: { key },
+                    update: { $set: { value } }
+                });
             } catch (error) {
                 console.error(`MongoDB update error for ${key}:`, error);
                 throw error;

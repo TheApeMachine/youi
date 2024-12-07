@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import auth0, { Auth0Error, Auth0UserProfile } from "auth0-js";
 import { eventBus } from "@/lib/event";
 import { stateManager } from "@/lib/state";
@@ -23,7 +25,7 @@ export type User = {
 // Add after the type definitions, before auth initialization
 const handleAuthError = (error: Auth0Error, defaultMessage: string) => {
     const message = error.description ?? defaultMessage;
-    eventBus.publish("status", {
+    eventBus.publish("system", "status", {
         variant: "error",
         title: "Error",
         message
@@ -54,7 +56,7 @@ export const AuthService = {
                 }
                 if (result) {
                     console.log("login", result);
-                    eventBus.publish("stateChange", {
+                    eventBus.publish("state", "stateChange", {
                         key: "auth",
                         value: {
                             ...result,
@@ -77,7 +79,7 @@ export const AuthService = {
 
                 if (result) {
                     const user = result as User;
-                    eventBus.publish("stateChange", {
+                    eventBus.publish("state", "stateChange", {
                         key: "authUser",
                         value: user
                     });
@@ -90,7 +92,7 @@ export const AuthService = {
     },
 
     isAuthenticated: async (): Promise<boolean> => {
-        const auth = stateManager.getState('auth');
+        const auth = await stateManager.getState('auth');
         if (!auth?.accessToken) {
             return false;
         }
@@ -102,7 +104,7 @@ export const AuthService = {
 
         if (now - tokenTimestamp > expirationTime) {
             // Token is expired
-            eventBus.publish("stateChange", {
+            eventBus.publish("state", "stateChange", {
                 key: "auth",
                 value: null
             });
@@ -114,18 +116,18 @@ export const AuthService = {
 
     // Logout
     logout: () => {
-        eventBus.publish("stateChange", {
+        eventBus.publish("state", "stateChange", {
             key: "auth",
             value: null
         });
-        eventBus.publish("stateChange", {
+        eventBus.publish("state", "stateChange", {
             key: "authUser",
             value: null
         });
 
-        eventBus.publish("status", {
+        eventBus.publish("state", "status", {
             variant: "success",
-            title: "Logged out", 
+            title: "Logged out",
             message: "You have been logged out successfully"
         });
     }

@@ -1,6 +1,7 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { eventBus, EventPayload } from "@/lib/event";
+import { eventBus } from "@/lib/event";
+import { EventPayload } from "@/lib/event/types";
 import gsap from "gsap";
 import Flip from "gsap/Flip";
 

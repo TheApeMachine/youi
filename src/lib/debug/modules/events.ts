@@ -1,150 +1,197 @@
-import { DebugModuleSetup, DebugModuleContext } from '../types';
-import { createJsonViewer } from '../jsonview';
-import { eventBus, EventPayload } from '@/lib/event';
+import { DebugModuleSetup } from '../types';
+import { eventManager } from '@/lib/event';
+import { EventPayload } from '@/lib/event/types';
+
+interface EventEntry {
+    topic: string;
+    effect?: string;
+    trigger?: string;
+    timestamp: number;
+    meta?: {
+        source: string;
+        target?: string;
+        path?: string[];
+    };
+    data?: any;
+}
 
 export const setup: DebugModuleSetup = {
     name: 'Events',
-    description: 'Monitor and inspect framework events',
-    setup: async (context: DebugModuleContext) => {
+    description: 'Monitor event system activity',
+    setup: async ({ addLog, container }) => {
         const section = document.createElement('div');
         section.className = 'debug-section events';
 
-        let events: Array<{
-            id: string;
-            timestamp: string;
-            type: string;
-            topic: string;
-            payload: any;
-        }> = [];
-        let expandedEntries = new Set<string>();
-        let paused = false;
+        // Create event stream view
+        const eventStream = document.createElement('div');
+        eventStream.className = 'event-stream';
+        eventStream.innerHTML = '<h4>Event Stream</h4>';
+        const streamList = document.createElement('ul');
+        eventStream.appendChild(streamList);
+        section.appendChild(eventStream);
 
-        // Create controls
-        const controls = document.createElement('div');
-        controls.className = 'debug-section-controls';
-        controls.innerHTML = `
-            <button class="debug-button pause-button">
-                <span class="material-symbols-rounded">pause</span>
-            </button>
-            <button class="debug-button clear-button">
-                <span class="material-symbols-rounded">clear_all</span>
-            </button>
-            <div class="event-filters">
-                <select class="type-filter">
-                    <option value="">All Types</option>
-                    <option value="dom">DOM</option>
-                    <option value="state">State</option>
-                    <option value="route">Route</option>
-                    <option value="system">System</option>
-                    <option value="custom">Custom</option>
-                </select>
-            </div>
-        `;
-        section.appendChild(controls);
+        // Create active subscriptions view
+        const subscriptionsView = document.createElement('div');
+        subscriptionsView.className = 'event-subscriptions';
+        subscriptionsView.innerHTML = '<h4>Active Subscriptions</h4>';
+        const subscriptionsList = document.createElement('ul');
+        subscriptionsView.appendChild(subscriptionsList);
+        section.appendChild(subscriptionsView);
 
-        // Create events container
-        const eventsContainer = document.createElement('div');
-        eventsContainer.className = 'events-container';
-        section.appendChild(eventsContainer);
+        // Create event patterns view
+        const patternsView = document.createElement('div');
+        patternsView.className = 'event-patterns';
+        patternsView.innerHTML = '<h4>Event Patterns</h4>';
+        section.appendChild(patternsView);
 
-        const updateDisplay = () => {
-            const typeFilter = (controls.querySelector('.type-filter') as HTMLSelectElement).value;
-            
-            const filteredEvents = events
-                .filter(event => !typeFilter || event.type === typeFilter);
+        // Keep track of events
+        const events: EventEntry[] = [];
+        const MAX_EVENTS = 100;
+        const activeSubscriptions = new Set<string>();
 
-            const html = filteredEvents.map(event => {
-                const time = event.timestamp.split('T')[1].split('.')[0];
-                const isExpanded = expandedEntries.has(event.id);
+        const addEvent = (entry: EventEntry) => {
+            events.unshift(entry);
+            if (events.length > MAX_EVENTS) {
+                events.pop();
+            }
+            updateEventStream();
+        };
 
-                return `
-                    <div class="debug-entry">
-                        <div class="debug-entry-header" data-id="${event.id}">
-                            <span class="debug-timestamp">[${time}]</span>
-                            <span class="debug-category" data-type="${event.type}">${event.type}</span>
-                            <span class="debug-topic">${event.topic || ''}</span>
+        const updateEventStream = () => {
+            streamList.innerHTML = events
+                .map(event => `
+                    <li class="event-entry">
+                        <div class="event-header">
+                            <span class="topic">${event.topic}</span>
+                            ${event.meta?.source ? `<span class="source">from: ${event.meta.source}</span>` : ''}
+                            <span class="time">${new Date(event.timestamp).toLocaleTimeString()}</span>
                         </div>
-                        ${isExpanded ? `
-                            <div class="debug-details">
-                                <div class="debug-json" data-json='${JSON.stringify(event.payload)}'></div>
+                        ${event.effect ? `<div class="effect">Effect: ${event.effect}</div>` : ''}
+                        ${event.trigger ? `<div class="trigger">Trigger: ${event.trigger}</div>` : ''}
+                        ${event.meta?.target ? `<div class="target">Target: ${event.meta.target}</div>` : ''}
+                        ${event.data ? `
+                            <div class="data">
+                                <pre>${JSON.stringify(event.data, null, 2)}</pre>
                             </div>
                         ` : ''}
-                    </div>
-                `;
-            }).join('');
-
-            eventsContainer.innerHTML = html;
-
-            // Initialize JSON viewers
-            eventsContainer.querySelectorAll('.debug-json').forEach(jsonContainer => {
-                const jsonData = JSON.parse(jsonContainer.getAttribute('data-json') ?? '{}');
-                createJsonViewer(jsonData, {
-                    initialExpandDepth: 1,
-                    showTypes: true,
-                    theme: 'dark'
-                })(jsonContainer as HTMLElement);
-            });
+                    </li>
+                `)
+                .join('');
         };
 
-        // Event handlers
-        controls.querySelector('.pause-button')?.addEventListener('click', (e) => {
-            paused = !paused;
-            const button = e.target as HTMLElement;
-            button.textContent = paused ? 'play_arrow' : 'pause';
-        });
+        const updateSubscriptions = () => {
+            subscriptionsList.innerHTML = Array.from(activeSubscriptions)
+                .map(topic => `
+                    <li class="subscription-entry">
+                        <span class="topic">${topic}</span>
+                    </li>
+                `)
+                .join('');
+        };
 
-        controls.querySelector('.clear-button')?.addEventListener('click', () => {
-            events = [];
-            updateDisplay();
-        });
-
-        controls.querySelector('.type-filter')?.addEventListener('change', () => {
-            updateDisplay();
-        });
-
-        eventsContainer.addEventListener('click', (e) => {
-            const header = (e.target as Element).closest('.debug-entry-header');
-            if (header) {
-                const id = header.getAttribute('data-id');
-                if (id) {
-                    if (expandedEntries.has(id)) {
-                        expandedEntries.delete(id);
-                    } else {
-                        expandedEntries.add(id);
-                    }
-                    updateDisplay();
-                }
-            }
-        });
-
-        // Subscribe to events
-        const handleEvent = (payload: EventPayload) => {
-            if (paused) return;
-
-            events.unshift({
-                id: Math.random().toString(36).slice(2),
+        // Event handler for all events
+        const eventHandler = (event: EventPayload) => {
+            addLog({
+                type: 'event',
+                category: 'events',
+                summary: `Event: ${event.topic ?? 'global'}`,
+                details: event,
                 timestamp: new Date().toISOString(),
-                type: payload.type,
-                topic: payload.topic || '',
-                payload
+                id: crypto.randomUUID()
             });
 
-            if (events.length > 100) events.pop();
-            updateDisplay();
+            addEvent({
+                topic: event.topic ?? '',
+                effect: event.effect,
+                trigger: event.trigger,
+                timestamp: event.meta?.timestamp ?? Date.now(),
+                meta: event.meta,
+                data: event.data
+            });
+
+            // Track active topics
+            if (event.topic) {
+                activeSubscriptions.add(event.topic);
+                updateSubscriptions();
+            }
         };
 
-        // Subscribe to all event types
-        const eventTypes = ['dom', 'state', 'route', 'system', 'custom'];
-        const subscriptions = eventTypes.map(type => 
-            eventBus.subscribe(type, handleEvent)
-        );
+        // Subscribe to all events using pattern matching
+        const cleanup = eventManager.subscribePattern('*', eventHandler);
+
+        // Add styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .debug-section.events {
+                padding: 10px;
+                font-family: monospace;
+                font-size: 12px;
+            }
+            .event-stream, .event-subscriptions, .event-patterns {
+                margin-bottom: 15px;
+            }
+            .event-entry {
+                margin: 5px 0;
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                background: #f8f8f8;
+            }
+            .event-header {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 5px;
+            }
+            .topic {
+                font-weight: bold;
+                color: #0066cc;
+            }
+            .source {
+                color: #666;
+                font-style: italic;
+            }
+            .time {
+                color: #999;
+                margin-left: auto;
+            }
+            .effect, .trigger, .target {
+                font-size: 11px;
+                color: #666;
+                margin: 2px 0;
+            }
+            .data {
+                margin-top: 5px;
+                padding: 5px;
+                background: #fff;
+                border-radius: 2px;
+                overflow-x: auto;
+            }
+            .data pre {
+                margin: 0;
+                white-space: pre-wrap;
+            }
+            .subscription-entry {
+                padding: 4px 8px;
+                border: 1px solid #eee;
+                border-radius: 4px;
+                margin: 2px 0;
+            }
+            ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+        `;
+        document.head.appendChild(style);
 
         return {
             component: section,
             cleanup: () => {
-                subscriptions.forEach(sub => sub.unsubscribe());
-                events = [];
-                expandedEntries.clear();
+                // Cleanup subscription
+                cleanup();
+                style.remove();
             }
         };
     }

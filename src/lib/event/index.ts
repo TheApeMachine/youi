@@ -1,4 +1,4 @@
-import { EventType, EventPayload, EventMessage, EventSubscription, EventConfig } from './types';
+import { EventType, EventPayload, EventMessage, EventConfig } from './types';
 
 export const createEventManager = (config: EventConfig = {}) => {
     const worker = new Worker(
@@ -41,7 +41,13 @@ export const createEventManager = (config: EventConfig = {}) => {
 
         if (type === 'publish' && payload.data) {
             const callbacks = subscribers.get(payload.data.topic);
-            callbacks?.forEach(callback => callback(payload.data));
+            callbacks?.forEach(callback => {
+                try {
+                    callback(payload.data);
+                } catch (error) {
+                    console.error('Error in event callback:', error);
+                }
+            });
             return;
         }
 
@@ -93,19 +99,15 @@ export const createEventManager = (config: EventConfig = {}) => {
 
         subscribe: (topic: string, callback: (payload: EventPayload) => void) => {
             const id = crypto.randomUUID();
-            const subscription: EventSubscription = {
-                id,
-                type: 'custom',
-                topic,
-                callback
-            };
 
+            // Store callback in main thread
             if (!subscribers.has(topic)) {
                 subscribers.set(topic, new Set());
             }
             subscribers.get(topic)!.add(callback);
 
-            sendMessage('subscribe', subscription)
+            // Send subscription to worker (without callback)
+            sendMessage('subscribe', { id, topic })
                 .catch(error => console.error('Subscription error:', error));
 
             return () => {
@@ -123,17 +125,25 @@ export const createEventManager = (config: EventConfig = {}) => {
 
         subscribePattern: (pattern: string, callback: (payload: EventPayload) => void) => {
             const id = crypto.randomUUID();
-            const subscription: EventSubscription = {
-                id,
-                type: 'custom',
-                pattern,
-                callback
-            };
 
-            sendMessage('subscribe', subscription)
+            // Store callback in main thread
+            if (!subscribers.has(pattern)) {
+                subscribers.set(pattern, new Set());
+            }
+            subscribers.get(pattern)!.add(callback);
+
+            // Send subscription to worker (without callback)
+            sendMessage('subscribe', { id, pattern })
                 .catch(error => console.error('Pattern subscription error:', error));
 
             return () => {
+                const callbacks = subscribers.get(pattern);
+                if (callbacks) {
+                    callbacks.delete(callback);
+                    if (callbacks.size === 0) {
+                        subscribers.delete(pattern);
+                    }
+                }
                 sendMessage('unsubscribe', { id, pattern })
                     .catch(error => console.error('Pattern unsubscribe error:', error));
             };
@@ -142,4 +152,23 @@ export const createEventManager = (config: EventConfig = {}) => {
 };
 
 // Export a singleton instance
-export const eventManager = createEventManager(); 
+export const eventManager = {
+    ...createEventManager(),
+    init: async () => {
+        // Add initialization logic if needed
+        return Promise.resolve();
+    }
+};
+
+// Export the event bus instance with proper types
+export const eventBus = {
+    ...eventManager,  // This includes publish and init
+    subscribe: (topic: string, callback: (payload: EventPayload) => void) => {
+        return eventManager.subscribe(topic, callback);
+    },
+    unsubscribe: (topic: string, callback: (payload: EventPayload) => void) => {
+        // Use the cleanup function returned by subscribe
+        const cleanup = eventManager.subscribe(topic, callback);
+        cleanup();
+    }
+};

@@ -1,7 +1,8 @@
-import { EventManager } from "@/lib/event";
+import { eventManager } from "@/lib/event";
 import { routerManager } from "./router/manager";
 import { stateManager } from "./state";
 import { initializeDebugContext } from "./debug/context";
+import "@/assets/themes/styles.css";
 
 export const YouI = {
     init: async () => {
@@ -11,7 +12,7 @@ export const YouI = {
         // Initialize all core systems in parallel
         await Promise.all([
             routerManager.init(),
-            EventManager().init(),
+            eventManager.init(),
             stateManager.init()
         ]);
     }

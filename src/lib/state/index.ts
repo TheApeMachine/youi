@@ -1,4 +1,4 @@
-import { DataSource, StateBackend, StateConfig, backends } from './backends';
+import { StateBackend, StateConfig, backends } from './backends';
 
 interface StateOptions {
     config: Record<string, StateConfig>;
@@ -157,4 +157,16 @@ export const createStateManager = (options: StateOptions) => {
         update,
         subscribe
     };
+};
+
+// Create state manager instance and export it
+export const stateManager = {
+    registry: {} as Record<string, any>,
+    getState: async (key: string) => {
+        return stateManager.registry[key];
+    },
+    init: async () => {
+        // Add initialization logic if needed
+        return Promise.resolve();
+    }
 };

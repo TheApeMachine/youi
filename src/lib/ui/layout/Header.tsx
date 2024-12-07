@@ -3,10 +3,10 @@ import { Component } from "@/lib/ui/Component";
 import { Button } from "../button/Button";
 import { Avatar } from "../profile/Avatar";
 import { Flex } from "../Flex";
-import { eventBus } from "@/lib/event";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
 import { Lamp } from "../lamp/Lamp";
+import { eventBus } from "@/lib/event";
 
 gsap.registerPlugin(Flip);
 

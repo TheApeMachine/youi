@@ -4,7 +4,8 @@ import { Text } from "@/lib/ui/Text";
 import { Button } from "../button/Button";
 import gsap from "gsap";
 import Flip from "gsap/Flip";
-import { eventBus, EventPayload } from "@/lib/event";
+import { eventBus } from "@/lib/event";
+import { EventPayload } from "@/lib/event/types";
 import { Icon } from "../Icon";
 
 gsap.registerPlugin(Flip);
@@ -104,7 +105,7 @@ const animateMenu = (
 export const Navigation = Component({
     effect: () => {
         eventBus.subscribe("menu", (e: EventPayload) => {
-            const target = e.originalEvent?.target as HTMLElement;
+            const target = e.meta?.originalEvent?.target as HTMLElement;
             if (!target) return;
 
             const nav = target.closest<HTMLElement>("nav");

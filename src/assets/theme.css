@@ -90,6 +90,13 @@ body,
     }
 }
 
+sub {
+    * {
+        margin-right: var(--xs);
+        vertical-align: sub;
+    }
+}
+
 a {
     display: flex;
     align-items: center;
@@ -413,31 +420,25 @@ img {
     }
 }
 
-#lexical-editor {
-    --valid: hsl(140 80% 40%);
-    --invalid: hsl(10 80% 40%);
-    --input: hsl(0 0% 0%);
-
+.surface {
     --is-valid: 0;
     --is-invalid: 0;
-    background: linear-gradient(var(--input), var(--input)) padding-box,
-        linear-gradient(var(--invalid), var(--invalid))
+    background: linear-gradient(var(--surface), var(--surface)) padding-box,
+        linear-gradient(var(--danger), var(--danger))
             calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
-        linear-gradient(var(--valid), var(--valid))
+        linear-gradient(var(--success), var(--success))
             calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
-        var(--input);
+        var(--surface);
+
     border: 2px solid transparent;
-    padding: var(--unit) var(--xl);
     background-repeat: no-repeat;
     background-size: 100% 100%;
     max-width: 100%;
     width: 100cqi;
     color: var(--fg);
-    border-radius: 100px;
     outline: none;
     font-weight: 200;
-    box-shadow: 0 1px hsl(0 0% 100% / 0.35) inset, 0 -1px hsl(0 0% 0% / 1) inset,
-        0 10px 20px -5px hsl(0 0% 0% / 1);
+    box-shadow: var(--surface-shadow);
 }
 
 .button-submenu,
@@ -469,4 +470,17 @@ img {
     background: var(--bg-glass);
     border: 1px solid var(--muted);
     border-radius: 50%;
+}
+
+.chart-container {
+    height: 20px;
+    width: 200px;
+}
+
+.chat {
+    flex-direction: row;
+}
+
+.timeline {
+    flex-direction: column;
 }

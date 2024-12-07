@@ -44,54 +44,39 @@ export const render = Component({
                     <List
                         items={feedbackData.map((feedback: any) => (
                             <Flex
-                                direction="column"
-                                background="bg-glass"
-                                border="1px solid var(--muted)"
-                                pad="xs"
-                                radius="xs"
-                                gap="sm"
+                                align="center"
+                                justify="center"
+                                gap="lg"
+                                fullWidth
                             >
-                                {/* Title and Status */}
-                                <Flex
-                                    justify="space-between"
-                                    align="center"
-                                    gap="lg"
-                                    fullWidth
+                                <Text variant="h5">{feedback.Name}</Text>
+                                <Text icon="work" variant="sub">
+                                    {feedback.Challenges?.[0]?.Function ||
+                                        "N/A"}
+                                </Text>
+                                <Text icon="calendar_today" variant="sub">
+                                    {feedback.Start}
+                                </Text>
+                                <Badge
+                                    color={
+                                        feedback.HasStarted
+                                            ? "brand-light"
+                                            : "muted"
+                                    }
                                 >
-                                    <Text variant="h5">{feedback.Name}</Text>
-                                    <Icon icon="work" size="sm" />
-                                    <Text variant="sub">
-                                        {feedback.Challenges?.[0]?.Function ||
-                                            "N/A"}
+                                    <Text variant="h6" color="highlight">
+                                        {feedback.HasStarted
+                                            ? "Active"
+                                            : "Pending"}
                                     </Text>
-                                    <Icon icon="calendar_today" size="sm" />
-                                    <Text variant="sub">
-                                        {new Date(
-                                            feedback.Start
-                                        ).toLocaleDateString()}
-                                    </Text>
-                                    <Badge
-                                        color={
-                                            feedback.HasStarted
-                                                ? "brand-light"
-                                                : "muted"
-                                        }
-                                    >
-                                        <Text variant="h6" color="highlight">
-                                            {feedback.HasStarted
-                                                ? "Active"
-                                                : "Pending"}
-                                        </Text>
-                                    </Badge>
-                                </Flex>
-                                <Flex fullWidth>
-                                    <Bars
-                                        completed={
-                                            feedback.UsersStarted?.length || 0
-                                        }
-                                        total={feedback.MinimumRespondents}
-                                    />
-                                </Flex>
+                                </Badge>
+                                <Bars
+                                    id={`bars-${feedback._id}`}
+                                    completed={
+                                        feedback.UsersStarted?.length || 0
+                                    }
+                                    total={feedback.MinimumRespondents}
+                                />
                             </Flex>
                         ))}
                     />

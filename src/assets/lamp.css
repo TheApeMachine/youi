@@ -1,110 +1,59 @@
-.grab-handle {
-    width: 48px;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    position: absolute;
-    top: calc((48px * (0.35 / 2)) + ((48px * 0.65) * (125 / 48)));
-    left: 50%;
-    translate: -50% -50%;
-    z-index: 999999;
-}
-
-:root:has(#handle:checked) .grab-handle {
-    outline: 4px dashed canvasText;
-    background: hsl(10 100% 50% / 0.2);
-}
-
-.arrow {
-    width: 150%;
-    position: absolute;
-    right: 150%;
-    top: 250%;
-}
-
-.arrow label {
-    white-space: nowrap;
-    position: absolute;
-    top: 50%;
-    right: 110%;
-}
-
-.arrow svg {
-    width: 100%;
-}
-
 .toggle-scene {
     overflow: visible !important;
+    height: 24px;
+    width: 24px;
     position: absolute;
-    width: 65%;
-    top: 50%;
-    left: 50%;
-    translate: -50% -50%;
+    top: 0;
+    right: 2rem;
+    transform: scale(0.2);
+    z-index: 100;
 }
-
 .toggle-scene__cord {
     stroke: var(--cord);
-    stroke-width: 10;
     cursor: move;
 }
-
 .toggle-scene__cord:nth-of-type(1) {
     display: none;
 }
-
 .toggle-scene__cord:nth-of-type(2),
 .toggle-scene__cord:nth-of-type(3),
 .toggle-scene__cord:nth-of-type(4),
 .toggle-scene__cord:nth-of-type(5) {
     display: none;
 }
-
 .toggle-scene__cord-end {
     stroke: var(--cord);
     fill: var(--cord);
 }
-
 .toggle-scene__dummy-cord {
-    stroke-width: 10;
+    stroke-width: 6;
     stroke: var(--cord);
 }
-
 .bulb__filament {
     stroke: var(--filament);
-    stroke-width: 8;
 }
-
-[data-theme="light"] .bulb__filament {
-    stroke-width: 12;
-}
-
 .bulb__shine {
     stroke: var(--shine);
 }
-
+.bulb__flash {
+    stroke: #f5e0a3;
+    display: none;
+}
 .bulb__bulb {
     stroke: var(--stroke);
-    fill: var(--bulb);
-    stroke-width: 10;
+    fill: hsla(
+        calc(180 - (95 * var(--on))),
+        80%,
+        80%,
+        calc(0.1 + (0.4 * var(--on)))
+    );
 }
-
 .bulb__cap {
     fill: var(--cap);
 }
-
 .bulb__cap-shine {
     fill: var(--shine);
 }
-
 .bulb__cap-outline {
-    stroke-width: 10;
     stroke: var(--stroke);
-}
-
-.controls {
-    position: absolute;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.5rem 1rem;
-    right: 0;
-    top: 100%;
 }

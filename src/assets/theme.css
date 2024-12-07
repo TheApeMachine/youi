@@ -60,6 +60,10 @@ body,
     }
 }
 
+.text {
+    white-space: nowrap;
+}
+
 .icon {
     cursor: pointer;
 }
@@ -446,4 +450,23 @@ img {
         content: "";
         background: var(--gradient-dark-vertical);
     }
+}
+
+.avatar-placeholder {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    background: var(--bg-glass);
+    border: 1px solid var(--muted);
+}
+
+.initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--bg-glass);
+    border: 1px solid var(--muted);
+    border-radius: 50%;
 }

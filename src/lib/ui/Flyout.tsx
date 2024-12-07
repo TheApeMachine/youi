@@ -1,13 +1,9 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { eventBus } from "../event";
+import { eventBus, type EventPayload } from "../event";
 import { Header } from "./layout/Header";
-import { Aside } from "./layout/Aside";
-import { Article } from "./layout/Article";
-import { Footer } from "./layout/Footer";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
-import { EventPayload } from "../event";
 
 gsap.registerPlugin(Flip);
 
@@ -19,16 +15,8 @@ interface FlyoutProps {
     direction?: Direction;
 }
 
-const lookupMap = {
-    header: "height",
-    aside: "width",
-    article: "width",
-    footer: "height"
-};
-
 export const Flyout = Component({
     effect: ({
-        props,
         rootElement
     }: {
         props: FlyoutProps;
@@ -39,11 +27,13 @@ export const Flyout = Component({
         let isOpen = false;
         let isClosed = true;
 
-        const mouseMoveHandler = (e: MouseEvent) => {
-            if (e.originalEvent.clientY <= 50 && isClosed) {
+        const mouseMoveHandler = (e: EventPayload) => {
+            const originalEvent = e.originalEvent as MouseEvent;
+
+            if (originalEvent.clientY <= 50 && isClosed) {
                 isOpen = true;
                 isClosed = false;
-            } else if (e.originalEvent.clientY > 50 && isOpen) {
+            } else if (originalEvent.clientY > 50 && isOpen) {
                 isOpen = false;
                 isClosed = true;
             } else {
@@ -62,13 +52,14 @@ export const Flyout = Component({
             });
 
             Flip.from(state, {
-                autoPlay: true,
                 duration: 0.5,
                 ease: "power2.out"
             });
         };
 
-        eventBus.subscribe("mousemove", mouseMoveHandler);
+        if (window.location.pathname !== "/dashboard") {
+            eventBus.subscribe("mousemove", mouseMoveHandler);
+        }
 
         gsap.set(rootElement, {
             marginTop: -100
@@ -78,7 +69,7 @@ export const Flyout = Component({
             eventBus.unsubscribe("mousemove", mouseMoveHandler);
         };
     },
-    render: async ({ variant = "header" }: FlyoutProps) => {
+    render: async () => {
         return <Header />;
     }
 });

@@ -8,6 +8,16 @@ import { Flex } from "../Flex";
 
 gsap.registerPlugin(Observer);
 
+/**
+ * The key idea:
+ * - The monocle is centered on the screen.
+ * - Its height matches the current post's height.
+ * - The current post is shown fully inside the monocle, which means the post is effectively "centered"
+ *   (since monocle and post heights match and monocle is centered in the viewport).
+ * - To switch posts, we just shift the monocleStream and timelineStream by the height of the posts.
+ * - The mouse wheel direction is reversed as requested, so scrolling "down" moves to a smaller index and "up" moves to a larger index.
+ */
+
 interface TimelineData {
     items: Array<{
         _id: string;
@@ -20,142 +30,155 @@ export const Timeline = Component({
         return {
             items: from("Item")
                 .where({ Deleted: null })
+                .include("User")
                 .sortBy("Created", "desc")
                 .limit(10)
                 .exec()
         };
     },
     effect: () => {
-        requestAnimationFrame(() => {
-            const timeline = document.querySelector(".timeline") as HTMLElement;
-            const monocle = document.querySelector(".monocle") as HTMLElement;
-            const timelineStream = document.querySelector(
-                ".timeline-stream"
-            ) as HTMLElement;
-            const monocleStream = document.querySelector(
-                ".monocle-stream"
-            ) as HTMLElement;
+        const timeline = document.querySelector(".timeline") as HTMLElement;
+        const monocle = document.querySelector(".monocle") as HTMLElement;
+        const monocleStream = document.querySelector(
+            ".monocle-stream"
+        ) as HTMLElement;
+        const timelineStream = document.querySelector(
+            ".timeline-stream"
+        ) as HTMLElement;
 
-            if (!timeline || !monocle || !timelineStream || !monocleStream) {
-                console.error("Required elements not found");
+        if (!timeline || !monocle || !monocleStream || !timelineStream) {
+            console.error("Required elements not found");
+            return;
+        }
+
+        const posts = Array.from(monocleStream.querySelectorAll(".post"));
+        if (!posts.length) return;
+
+        const timelinePosts = Array.from(
+            timelineStream.querySelectorAll(".post")
+        );
+        if (!timelinePosts.length) return;
+
+        gsap.set(monocle, {
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            xPercent: -50,
+            yPercent: -50,
+            width: "840px",
+            overflow: "hidden",
+            zIndex: 2,
+            height: 0
+        });
+
+        let currentPostIndex = 0;
+        let isMoving = false;
+        let currentTween: gsap.core.Timeline | null = null;
+
+        const moveToPost = (index: number) => {
+            if (index < 0 || index >= posts.length) {
+                console.log("Invalid index, movement cancelled");
                 return;
             }
 
-            // Get all posts from the monocle stream (these will define our reference sizes)
-            const posts = monocleStream.querySelectorAll(
-                ".post"
-            ) as NodeListOf<HTMLElement>;
-            if (!posts.length) return;
+            currentPostIndex = index;
 
-            // Set up the main timeline container (with perspective)
-            gsap.set(timeline, {
-                position: "relative",
-                perspective: 500,
-                width: "840px"
-            });
+            if (currentTween) {
+                console.log("Killing existing tween");
+                currentTween.kill();
+            }
 
-            // Position the background timeline in z-space
-            gsap.set(timelineStream, {
-                z: -100,
-                yPercent: 50
-            });
+            isMoving = true;
 
-            // Set up the monocle as a fixed "window" (the magnifier)
-            gsap.set(monocle, {
-                position: "fixed",
-                top: "50%",
-                left: "50%",
-                xPercent: -50,
-                yPercent: -50,
-                width: "840px",
-                overflow: "hidden",
-                zIndex: 2
-            });
+            const postTop = gsap.getProperty(posts[index], "top") as number;
+            const windowHeight = gsap.getProperty(window, "height") as number;
 
-            let currentPostIndex = 0;
-            let isMoving = false;
+            // Calculate the offset between the current post and the window center
+            let calculatedOffset = postTop - windowHeight / 2;
 
-            // We'll create a function that moves the monocle and timeline to a given post index.
-            const moveToPost = (index: number) => {
-                // Ensure index wraps around if needed
-                const i = (index + posts.length) % posts.length;
-                currentPostIndex = i;
+            // Add the height of the previous post to the calculated offset, unless it's the first post
+            if (index > 0) {
+                calculatedOffset += posts[index - 1].clientHeight;
+            }
 
-                const post = posts[i];
-                if (!post) return;
+            // Calculate the offset between the timeline post and the window center
+            const timelinePostTop = gsap.getProperty(
+                timelinePosts[index],
+                "top"
+            ) as number;
+            const timelineOffset = timelinePostTop - windowHeight / 2;
 
-                const rect = post.getBoundingClientRect();
-
-                // Calculate the vertical offset needed to center the selected post in the monocle
-                const monocleTargetY =
-                    -((rect.top + post.offsetHeight / 2) - (window.innerHeight / 2));
-
-                // Calculate how far to move the timeline behind to maintain the parallax illusion
-                // We can base this on the index and post height. We'll assume a uniform spacing.
-                // Dividing by a factor (like 4) gives a subtle parallax effect.
-                const timelineTargetY = -((i * (post.offsetHeight + 20)) / 4);
-
-                // Kill any previous timeline to avoid stacking animations
-                gsap.killTweensOf([monocle, monocleStream, timelineStream]);
-
-                const tl = gsap.timeline({
+            currentTween = gsap
+                .timeline({
                     onComplete: () => {
-                        // Allow subsequent scroll events after the movement stops
                         isMoving = false;
                     }
-                });
-
-                // First, adjust the monocle height to match the new post height.
-                // Then animate monocleStream and timelineStream so that the new post is correctly aligned.
-                tl.to(monocle, { height: post.offsetHeight, duration: 0.3, ease: "power2.out" })
-                    .to(monocleStream, {
-                        y: monocleTargetY,
-                        duration: 0.5,
+                })
+                .to(monocle, {
+                    height: posts[index].clientHeight,
+                    duration: 1,
+                    ease: "power2.out"
+                })
+                .to(
+                    monocleStream,
+                    {
+                        y: `+=${calculatedOffset}`,
+                        duration: 1,
                         ease: "power2.out"
-                    }, "<") // animate in parallel with monocle height change
-                    .to(timelineStream, {
-                        y: timelineTargetY,
-                        duration: 0.5,
+                    },
+                    0
+                )
+                .to(
+                    timelineStream,
+                    {
+                        y: `+=${timelineOffset}`,
+                        duration: 1,
                         ease: "power2.out"
-                    }, "<");
-            };
+                    },
+                    0
+                );
+        };
 
-            // Initially move to the first post
-            moveToPost(0);
+        moveToPost(0);
 
-            // Create a scroll observer to detect scroll direction.
-            // We only change posts on "uninterrupted" scroll events, and after each event sequence ends.
-            Observer.create({
-                target: window,
-                type: "wheel",
-                onUp: () => {
-                    if (isMoving) return;
-                    // Move "forward" (down the timeline)
-                    isMoving = true;
-                    moveToPost(currentPostIndex + 1);
-                },
-                onDown: () => {
-                    if (isMoving) return;
-                    // Move "backward" (up the timeline)
-                    isMoving = true;
-                    moveToPost(currentPostIndex - 1);
-                },
-                onStop: () => {
-                    // Once the scrolling stops, isMoving is reset in the onComplete callback of the timeline
+        Observer.create({
+            target: window,
+            type: "wheel",
+            onDown: () => {
+                console.log("\n=== Wheel DOWN detected ===");
+                if (isMoving) {
+                    console.log("Movement in progress, ignoring wheel event");
+                    return;
                 }
-            });
+                const newIndex = currentPostIndex - 1;
+                console.log("Attempting to move to index:", newIndex);
+                if (newIndex >= 0) {
+                    moveToPost(newIndex);
+                } else {
+                    console.log("Cannot move down: already at first post");
+                }
+            },
+            onUp: () => {
+                console.log("\n=== Wheel UP detected ===");
+                if (isMoving) {
+                    console.log("Movement in progress, ignoring wheel event");
+                    return;
+                }
+                const newIndex = currentPostIndex + 1;
+                console.log("Attempting to move to index:", newIndex);
+                if (newIndex < posts.length) {
+                    moveToPost(newIndex);
+                } else {
+                    console.log("Cannot move up: already at last post");
+                }
+            }
         });
     },
     render: async ({ data }: { data: TimelineData }) => {
         return (
             <Flex direction="column" grow={false} className="timeline">
-                {/* Monocle - front layer with magnified posts */}
                 <div className="monocle card-glass">
-                    <Flex
-                        direction="column"
-                        gap="unit"
-                        className="monocle-stream"
-                    >
+                    <Flex direction="column" className="monocle-stream">
                         {data.items.map((item) => (
                             <Post
                                 item={item}
@@ -165,13 +188,7 @@ export const Timeline = Component({
                         ))}
                     </Flex>
                 </div>
-                {/* Background timeline stream - set back in Z-space */}
-                <Flex
-                    direction="column"
-                    gap="unit"
-                    className="timeline-stream"
-                    fullWidth
-                >
+                <Flex direction="column" className="timeline-stream" fullWidth>
                     {data.items.map((item) => (
                         <Post
                             item={item}

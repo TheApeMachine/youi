@@ -126,34 +126,84 @@ type Props = HTMLAttributes & {
     [K in keyof EventHandlers as `on${Capitalize<K>}`]?: EventHandlers[K];
 };
 
+const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
+
+// Comprehensive list of SVG elements
+const SVG_ELEMENTS = new Set([
+    'svg', 'path', 'circle', 'line', 'marker', 'defs',
+    'clippath', 'g', 'text', 'rect', 'polygon', 'polyline',
+    'ellipse', 'foreignObject', 'image', 'pattern', 'mask',
+    'use', 'animate', 'animateMotion', 'animateTransform',
+    'clipPath', 'linearGradient', 'radialGradient', 'stop',
+    'symbol', 'textPath', 'tspan'
+]);
+
+const handleSVG = (tag: string): { element: Element, isSVG: boolean } => {
+    const tagLower = tag.toLowerCase();
+    // Track SVG context through the tree
+    const isSVG = tagLower === 'svg' || SVG_ELEMENTS.has(tagLower);
+
+    if (isSVG) {
+        const element = document.createElementNS(SVG_NAMESPACE, tag);
+        // Set default SVG attributes if it's the root SVG element
+        if (tagLower === 'svg') {
+            element.setAttribute('version', '1.1');
+            element.setAttribute('xmlns', SVG_NAMESPACE);
+            element.setAttribute('xmlns:xlink', XLINK_NAMESPACE);
+        }
+        return { element, isSVG };
+    }
+
+    return {
+        element: document.createElement(tag),
+        isSVG: false
+    };
+};
+
+const handleEventAndRef = (element: Element, name: string, value: any): boolean => {
+    // Handle event listeners
+    if (name.startsWith('on') && typeof value === 'function') {
+        element.addEventListener(name.slice(2).toLowerCase(), value as EventListener);
+        return true;
+    }
+
+    // Handle refs
+    if (name === 'ref') {
+        if (typeof value === 'function') value(element);
+        else if (typeof value === 'object' && value !== null) value.current = element;
+        return true;
+    }
+
+    return false;
+}
+
 const handleElementProps = (element: Element, props: Props, isSVG: boolean) => {
     Object.entries(props).forEach(([name, value]) => {
-        if (name === 'className') {
-            isSVG ? element.setAttributeNS(null, 'class', String(value))
-                : element.setAttribute('class', String(value));
+        if (handleEventAndRef(element, name, value)) {
             return;
         }
 
-        if (name.startsWith('on') && typeof value === 'function') {
-            element.addEventListener(name.slice(2).toLowerCase(), value as EventListener);
-            return;
-        }
+        // Convert camelCase to kebab-case for SVG attributes
+        const attrName = name === 'className' ? 'class' :
+            isSVG ? name.replace(/([A-Z])/g, '-$1').toLowerCase() : name;
 
-        if (name === 'ref') {
-            if (typeof value === 'function') value(element);
-            else if (typeof value === 'object' && value !== null) value.current = element;
-            return;
-        }
-
+        // Handle boolean attributes
         if (typeof value === 'boolean') {
-            value ? element.setAttribute(name, '') : element.removeAttribute(name);
+            value ? element.setAttribute(attrName, '') : element.removeAttribute(attrName);
             return;
         }
 
-        isSVG ? element.setAttributeNS(null, name, String(value))
-            : element.setAttribute(name, String(value));
+        // Handle xlink attributes
+        if (name === 'xlinkHref' || name === 'xlink:href' || (name === 'href' && isSVG)) {
+            element.setAttributeNS(XLINK_NAMESPACE, 'xlink:href', String(value));
+            return;
+        }
+
+        // Regular attribute
+        element.setAttribute(attrName, String(value));
     });
-}
+};
 
 const handleFragment = async (children: any[]) => {
     const fragment = document.createDocumentFragment();
@@ -213,20 +263,6 @@ const handleTransitions = (element: Element, props: Props | null) => {
             }
         );
     }
-}
-
-const handleSVG = (tag: string): { element: Element, isSVG: boolean } => {
-    // Check if element is SVG
-    const isSVG = tag === 'svg' || tag === 'path' || tag === 'circle' || tag === 'line' ||
-        tag === 'marker' || tag === 'defs' || tag === 'clippath' || tag === 'g';
-
-    // Create the element with proper namespace
-    return {
-        element: isSVG
-            ? document.createElementNS('http://www.w3.org/2000/svg', tag)
-            : document.createElement(tag),
-        isSVG
-    };
 }
 
 const handleComponent = (tag: Function, props: Props | null, children: any[]) => {

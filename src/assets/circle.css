@@ -1,12 +1,13 @@
 .circle-container {
     width: 100%;
-    max-width: 48rem; /* 4xl in tailwind */
+    max-width: 1200px;
     margin: 0 auto;
+    padding: var(--lg);
 }
 
 .circle-svg-container {
     width: 100%;
-    aspect-ratio: 16/9;
+    aspect-ratio: 4/3;
     position: relative;
 }
 
@@ -15,75 +16,226 @@
     height: 100%;
 }
 
+/* Connection lines */
 .circle-connection {
-    transition: all 0.3s ease;
+    stroke: var(--fg);
+    opacity: 0.6;
+    transition: opacity 0.4s ease-in-out;
 }
 
-.circle-node {
+.circle-connection.dimmed {
+    opacity: 0.2;
+}
+
+/* Group circles */
+.circle-group {
     cursor: pointer;
+    transition: var(--transition);
+    z-index: 1;
+    pointer-events: none;
 }
 
-.circle-highlight {
-    transition: all 0.3s ease;
+.circle-main,
+.circle-outer {
+    pointer-events: auto;
 }
 
-.circle-highlight-selected {
-    fill: var(--blue-500);
+/* Outer expanding circle */
+.circle-outer {
+    fill: var(--brand);
+    opacity: 0.1;
+    transition: all 0.5s ease-in-out;
+    filter: drop-shadow(0 0 2px var(--transparent));
 }
 
-.circle-highlight-connected {
-    fill: var(--blue-300);
+.circle-outer.active {
+    opacity: 0.25;
+    filter: drop-shadow(0 0 12px var(--brand-light));
 }
 
-.circle-highlight-inactive {
-    fill: var(--gray-200);
+/* Main circle */
+.circle-main {
+    fill: var(--brand);
+    opacity: 0.8;
+    transition: opacity 0.3s ease-in-out;
+    filter: drop-shadow(0 0 2px var(--transparent));
 }
 
-.circle-highlight-default {
-    fill: var(--gray-300);
+.circle-group:hover .circle-main {
+    opacity: 1;
+    filter: drop-shadow(0 0 4px var(--brand-light));
 }
 
-.circle-text {
-    font-size: 1.125rem;
-    font-weight: 500;
-    fill: var(--gray-700);
+.circle-main.selected {
+    opacity: 1;
+    filter: drop-shadow(0 0 8px var(--brand));
 }
 
-.circle-label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
+.circle-main.connected {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 3px var(--brand-light));
 }
 
-.circle-label-highlighted {
-    fill: var(--gray-900);
+.circle-main.inactive {
+    opacity: 0.4;
+    filter: none;
 }
 
-.circle-label-inactive {
-    fill: var(--gray-400);
+/* Text elements */
+.group-name {
+    pointer-events: none;
+    font-family: system-ui, -apple-system, sans-serif;
+    text-rendering: geometricPrecision;
+    paint-order: stroke;
+    inline-size: 80px;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
-.circle-label-default {
-    fill: var(--gray-600);
+.text-content {
+    pointer-events: none;
+    z-index: 1000;
 }
 
-.circle-info {
-    background: white;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+/* Featured Member Name */
+.featured-member-name {
+    font-family: system-ui, -apple-system, sans-serif;
+    paint-order: stroke;
+    stroke: var(--brand);
+    stroke-width: 0.5;
+    opacity: 0;
+    animation: fade-in 0.5s ease-out forwards;
 }
 
-.circle-info-title {
-    font-weight: 500;
-    color: var(--gray-900);
+/* Member containers and avatars */
+.member-container {
+    opacity: 0;
+    animation: container-enter 0.3s ease-out forwards;
+    z-index: 2000;
+    pointer-events: auto;
 }
 
-.circle-info-text {
-    color: var(--gray-500);
+.member-container.exit {
+    animation: container-exit 0.3s ease-out forwards;
 }
 
-.circle-info-account {
-    color: var(--blue-500);
+/* Base avatar styling */
+.member-avatar {
+    opacity: 0;
+    animation: avatar-enter 0.4s ease-out forwards;
+    animation-delay: calc(0.3s + var(--index) * 0.05s);
+    filter: drop-shadow(0 2px 8px var(--bg));
+    z-index: calc(2000 + var(--index));
+    pointer-events: auto;
+    will-change: transform, opacity;
+    animation-fill-mode: both;
+}
+
+/* On member exit */
+.member-avatar.exit {
+    animation: avatar-exit 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Featured member transitions to center (scale(4) translate(0,0)) */
+.member-avatar.featured {
+    animation: move-to-center-visible 0.6s ease-out forwards;
+    animation-fill-mode: both;
+    filter: drop-shadow(0 0 6px var(--brand-light));
+}
+
+.member-avatar.return {
+    animation: return-to-position-visible 0.6s ease-out forwards;
+    animation-fill-mode: both;
+}
+
+/* Avatar background and image */
+.avatar-background {
+    fill: var(--bg);
+}
+
+.avatar-image {
+    transform-origin: center;
+    image-rendering: auto;
+    shape-rendering: geometricPrecision;
+}
+
+/* Fallback initials if no image */
+.fallback-initials {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 12px;
+    fill: var(--lighter);
+    text-anchor: middle;
+    alignment-baseline: central;
+}
+
+/* Animations */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes container-enter {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes container-exit {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes avatar-enter {
+    from {
+        opacity: 0;
+        transform: scale(0.5) translate(var(--x), var(--y));
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translate(var(--x), var(--y));
+    }
+}
+
+@keyframes avatar-exit {
+    from {
+        opacity: 1;
+        transform: scale(1) translate(var(--x), var(--y));
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.5) translate(var(--x), var(--y));
+    }
+}
+
+@keyframes move-to-center-visible {
+    0% {
+        transform: scale(1) translate(var(--x), var(--y));
+        opacity: 1;
+    }
+    100% {
+        transform: scale(4) translate(0, 0);
+        opacity: 1;
+    }
+}
+
+@keyframes return-to-position-visible {
+    0% {
+        transform: scale(4) translate(0, 0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) translate(var(--x), var(--y));
+        opacity: 1;
+    }
 }

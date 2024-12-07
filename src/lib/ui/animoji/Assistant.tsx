@@ -1,78 +1,42 @@
 import { jsx } from "@/lib/template";
 import { Component } from "../Component";
-import { Animoji, AnimojiStates } from "./types";
+import { AnimojiStates } from "./types";
+import { TypeWriter } from "./Typewriter";
 import gsap from "gsap";
 import "@dotlottie/player-component";
 
 export const AnimojiAssistant = Component({
-    effect: () => {
-        const template = document.createElement("template");
-        const baseDir = "/src/assets/animoji/";
-        const shadow: ShadowRoot = this.attachShadow({ mode: "open" });
-        const animojiContainer = shadow.getElementById(
-            "animoji-container"
+    effect: (element: HTMLElement) => {
+        let currentState: keyof typeof AnimojiStates = "idle";
+        let currentIndex: number = 0;
+        let isTransitioning: boolean = false;
+        let players: Record<keyof typeof AnimojiStates, any[]> = {
+            idle: [],
+            chat: []
+        };
+        let currentPlayer: HTMLElement | null = null;
+        let cycleInterval: number | null = null;
+
+        // Get direct references to DOM elements
+        const animojiContainer = element.querySelector(
+            "#animoji-container"
         ) as HTMLDivElement;
-        const currentState: keyof typeof AnimojiStates = "idle";
-        const currentIndex: number = 0;
-        const isTransitioning: boolean = false;
-        const lastSwitchTime: number = 0;
-        const players: any;
-        const currentPlayer: HTMLElement | null = null;
-        const cycleInterval: number | null = null;
-        const chatContainer: HTMLDivElement = shadow.getElementById(
-            "chat-container"
+        const chatContainer = element.querySelector(
+            "#chat-container"
         ) as HTMLDivElement;
-        const chatInput: HTMLInputElement = shadow.getElementById(
-            "chat-input"
+        const chatInput = element.querySelector(
+            "#chat-input"
         ) as HTMLInputElement;
-        const chatOutput: HTMLDivElement = shadow.getElementById(
-            "chat-output"
-        ) as HTMLDivElement;
-        const boundKeydownHandler: (event: KeyboardEvent) => void;
 
-        shadow.appendChild(template.content.cloneNode(true));
-        const animojiContainer = shadow.getElementById(
-            "animoji-container"
-        ) as HTMLDivElement;
-        lastSwitchTime = Date.now();
-
-        players = {};
-        // Create the animoji players.
-        for (const state in AnimojiStates) {
-            players[state as keyof typeof AnimojiStates] = [];
-            const stateAnimojis =
-                AnimojiStates[state as keyof typeof AnimojiStates];
-            if (typeof stateAnimojis === "function") {
-                const animojis = new Set();
-                for (let i = 0; i < 5; i++) {
-                    const animoji = stateAnimojis(i);
-                    if (!animojis.has(animoji)) {
-                        animojis.add(animoji);
-                        const player = createPlayer(animoji);
-                        players[state as keyof typeof AnimojiStates].push(
-                            player
-                        );
-                        animojiContainer.appendChild(player);
-                    }
-                }
-            }
-        }
-
-        setState("idle");
-        startCycling();
-
-        const createPlayer = (animoji: Animoji) => {
+        // Define all functions first
+        const createPlayer = () => {
             const player = document.createElement("dotlottie-player") as any;
-            player.setAttribute("background", "transparent");
-            player.setAttribute("speed", "1");
-            player.setAttribute("loop", "true");
-            player.setAttribute("autoplay", "true");
-            const src = `${baseDir}${animoji}/lottie.json`;
-            player.setAttribute("src", src);
-            player.style.opacity = "0"; // Set initial opacity to 0
-            player.addEventListener("error", (e: any) =>
-                console.error("Lottie player error:", e)
-            );
+            player.style.opacity = "0";
+            player.style.position = "absolute";
+            player.style.top = "0";
+            player.style.left = "0";
+            player.style.width = "100%";
+            player.style.height = "100%";
             return player;
         };
 
@@ -82,7 +46,7 @@ export const AnimojiAssistant = Component({
             }
             cycleInterval = window.setInterval(() => {
                 playNextAnimoji();
-            }, 5000); // Cycle every 5 seconds
+            }, 5000);
         };
 
         const playNextAnimoji = () => {
@@ -100,7 +64,6 @@ export const AnimojiAssistant = Component({
                 onComplete: () => {
                     currentPlayer = nextPlayer;
                     isTransitioning = false;
-                    lastSwitchTime = Date.now();
                 }
             });
 
@@ -143,24 +106,53 @@ export const AnimojiAssistant = Component({
                 ease: "power2.inOut",
                 onComplete: () => {
                     chatContainer.style.display = "block";
-                    typewriterEffect("Hello! How can I assist you today?");
                     chatInput.focus(); // Focus on the input field
                 }
             });
         };
 
-        const disconnectedCallback = () => {
+        const exitChatMode = () => {
+            // Add implementation
+            chatContainer.style.display = "none";
+        };
+
+        // Create the animoji players
+        for (const state in AnimojiStates) {
+            const stateAnimojis =
+                AnimojiStates[state as keyof typeof AnimojiStates];
+            if (Array.isArray(stateAnimojis)) {
+                const animojis = new Set<string>();
+                stateAnimojis.forEach((animoji) => {
+                    if (!animojis.has(animoji)) {
+                        animojis.add(animoji);
+                        const player = createPlayer();
+                        players[state as keyof typeof AnimojiStates].push(
+                            player
+                        );
+                        animojiContainer.appendChild(player);
+                    }
+                });
+            }
+        }
+
+        setState("idle");
+        startCycling();
+
+        return () => {
             if (cycleInterval) {
                 clearInterval(cycleInterval);
             }
-
-            // Remove the keydown event listener
-            document.removeEventListener("keydown", boundKeydownHandler);
-        };
-
-        return () => {
-            // Cleanup
         };
     },
-    render: () => <div id="animoji-container"></div>
+    render: () => (
+        <div>
+            <div id="animoji-container"></div>
+            <div id="chat-container" style={{ display: "none" }}>
+                <div id="chat-output">
+                    <TypeWriter />
+                </div>
+                <input id="chat-input" type="text" />
+            </div>
+        </div>
+    )
 });

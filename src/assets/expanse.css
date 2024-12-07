@@ -1,5 +1,3 @@
-@import url(https://fonts.bunny.net/css?family=changa:400,700|hanken-grotesk:400,700);
-
 .logo-wrapper {
     font-family: "Hanken Grotesk", sans-serif;
     background: black;
@@ -22,7 +20,6 @@
     --clr-5: aqua;
     --clr-6: blue;
     --clr-7: purple;
-    /*  outline: 1px dashed red;*/
     position: relative;
     font-weight: 700;
     margin: 0;

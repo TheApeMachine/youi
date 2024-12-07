@@ -3,123 +3,82 @@ import { Component } from "@/lib/ui/Component";
 import * as echarts from "echarts";
 import { EChartsOption, GraphicComponentOption } from "echarts";
 
+interface BarsProps {
+    completed: number;
+    total: number;
+}
+
 export const Bars = Component({
-    render: () => <div id="bars-chart" class="chart-container"></div>,
-    effect: () => {
+    render: (props: BarsProps) => (
+        <div
+            id="bars-chart"
+            class="chart-container"
+            style="height: 60px; width: 100%;"
+        ></div>
+    ),
+    effect: ({ completed, total }: BarsProps) => {
         const chartDom = document.getElementById("bars-chart");
         if (!chartDom) return;
 
-        // Only initialize if no instance exists
         let myChart = echarts.getInstanceByDom(chartDom);
         if (!myChart) {
             myChart = echarts.init(chartDom);
         }
 
-        // Add resize observer
         const resizeObserver = new ResizeObserver(() => {
             myChart?.resize();
         });
         resizeObserver.observe(chartDom);
 
-        // Chart configuration
-        let option: EChartsOption & {
-            graphic: {
-                elements: GraphicComponentOption[];
-            };
-        };
+        const remaining = total - completed;
 
-        // There should not be negative values in rawData
-        const rawData = [
-            [100, 302, 301, 334, 390, 330, 320],
-            [320, 132, 101, 134, 90, 230, 210],
-            [220, 182, 191, 234, 290, 330, 310],
-            [150, 212, 201, 154, 190, 330, 410],
-            [820, 832, 901, 934, 1290, 1330, 1320]
-        ];
-
-        const totalData: number[] = [];
-        for (let i = 0; i < rawData[0].length; ++i) {
-            let sum = 0;
-            for (let j = 0; j < rawData.length; ++j) {
-                sum += rawData[j][i];
-            }
-            totalData.push(sum);
-        }
-
-        const grid = {
-            left: "10%",
-            right: "10%",
-            top: "10%",
-            bottom: "10%",
-            containLabel: true,
-            show: false
-        };
-
-        const series: echarts.BarSeriesOption[] = [
-            "Direct",
-            "Mail Ad",
-            "Affiliate Ad",
-            "Video Ad",
-            "Search Engine"
-        ].map((name, sid) => {
-            return {
-                name,
-                type: "bar",
-                stack: "total",
-                barWidth: "100%",
-                label: {
-                    show: true,
-                    formatter: (params: any) =>
-                        Math.round(params.value * 1000) / 10 + "%"
-                },
-                data: rawData[sid].map((d, did) =>
-                    totalData[did] <= 0 ? 0 : d / totalData[did]
-                )
-            };
-        });
-
-        const color = [
-            "rgba(84, 112, 198, 0.8)", // #5470c6 with 0.8 opacity
-            "rgba(145, 204, 117, 0.8)", // #91cc75 with 0.8 opacity
-            "rgba(250, 200, 88, 0.8)", // #fac858 with 0.8 opacity
-            "rgba(238, 102, 102, 0.8)", // #ee6666 with 0.8 opacity
-            "rgba(115, 192, 222, 0.8)" // #73c0de with 0.8 opacity
-        ];
-
-        option = {
-            grid,
-            yAxis: {
-                type: "value",
-                axisLabel: {
-                    show: false
-                },
-                splitLine: {
-                    show: false
-                },
-                axisLine: {
-                    show: false
-                },
-                axisTick: {
-                    show: false
-                }
+        const option: EChartsOption = {
+            grid: {
+                left: "3%",
+                right: "3%",
+                top: "20%",
+                bottom: "20%",
+                containLabel: true
             },
             xAxis: {
-                type: "category",
-                data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-                splitLine: {
-                    show: false
-                }
+                type: "value",
+                show: false,
+                max: total
             },
-            series,
-            color,
-            graphic: {
-                elements: []
-            }
-        } as typeof option;
+            yAxis: {
+                type: "category",
+                show: false,
+                data: ["Respondents"]
+            },
+            series: [
+                {
+                    name: "Completed",
+                    type: "bar",
+                    stack: "total",
+                    data: [completed],
+                    itemStyle: {
+                        color: "var(--brand-light)"
+                    },
+                    label: {
+                        show: true,
+                        position: "inside",
+                        formatter: `${completed}/${total}`
+                    }
+                },
+                {
+                    name: "Remaining",
+                    type: "bar",
+                    stack: "total",
+                    data: [remaining],
+                    itemStyle: {
+                        color: "var(--muted)"
+                    }
+                }
+            ]
+        };
 
         option && myChart.setOption(option);
 
-        // Cleanup
         return () => {
             resizeObserver.disconnect();
             myChart.dispose();

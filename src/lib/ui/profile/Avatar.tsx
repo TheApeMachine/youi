@@ -4,11 +4,11 @@ import { Component } from "@/lib/ui/Component";
 
 export const Avatar = Component({
     render: async () => {
-        const authUser = stateManager.getState("authUser");
+        const user = stateManager.getState("user")[0];
 
-        return authUser?.picture ? (
+        return user?.ImageURL ? (
             <img
-                src={authUser?.picture}
+                src={user.ImageURL + "&w=128"}
                 alt="avatar"
                 class="avatar"
                 data-trigger="click"

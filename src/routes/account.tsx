@@ -2,14 +2,16 @@ import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { Form } from "@/lib/ui/form/Form";
 import { TextField } from "@/lib/ui/form/TextField";
-import { FileField } from "@/lib/ui/form/FileField";
 import { Button } from "@/lib/ui/button/Button";
 import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
-import { CollapsibleField } from "@/lib/ui/form/CollapsibleField";
-import { Groups } from "@/features/Groups";
 import { Flex } from "@/lib/ui/Flex";
 import { Circle } from "@/lib/ui/Circle";
+import { eventBus } from "@/lib/event";
+
+interface AccountData {
+    user: any[];
+}
 
 export const render = Component({
     loader: () => {
@@ -18,23 +20,23 @@ export const render = Component({
             user: from("User").where({ Auth0UserId: authUser.sub }).exec()
         };
     },
-    render: ({ data }) => {
+    effect: () => {
+        eventBus.publish("request-avatar", null);
+    },
+    render: ({ data }: { data: AccountData }) => {
         const user = data.user[0];
 
         return (
-            <Flex>
+            <Flex pad="xxl">
                 <Flex
                     direction="column"
                     background="bg-glass"
                     className="card-glass"
+                    pad="xxl"
                 >
-                    <Form>
-                        <FileField
-                            label="Profile Picture"
-                            name="picture"
-                            accept="image/*"
-                        />
+                    <div class="avatar-placeholder"></div>
 
+                    <Form>
                         <div class="row gap">
                             <TextField
                                 label="First Name"
@@ -50,18 +52,16 @@ export const render = Component({
                                 required
                                 icon="person"
                             />
+                            <TextField
+                                label="Email"
+                                name="email"
+                                type="email"
+                                value={user?.Email}
+                                required
+                                icon="mail"
+                            />
                         </div>
 
-                        <TextField
-                            label="Email"
-                            name="email"
-                            type="email"
-                            value={user?.Email}
-                            required
-                            icon="mail"
-                        />
-
-                        <Groups user={user} />
                         <Button
                             variant="brand"
                             icon="check"

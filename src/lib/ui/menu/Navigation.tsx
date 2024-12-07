@@ -143,7 +143,6 @@ export const Navigation = Component({
                 };
 
                 animateMenu(elements, "collapsed");
-                return;
             }
         });
     },

@@ -16,6 +16,10 @@ interface PostItem {
     Text: string;
     UserImgUrl: string;
     UserName: string;
+    user?: {
+        FirstName: string;
+        LastName: string;
+    };
 }
 
 interface PostProps {
@@ -33,7 +37,7 @@ export const Post = Component({
             return;
         }
 
-        const postId = `post-${props.item._id}`;
+        const postId = props.key;
         const contentDiv = document.getElementById(postId) as HTMLElement;
         if (!contentDiv) {
             console.error(`Content div not found for post ${postId}`);
@@ -46,70 +50,41 @@ export const Post = Component({
             return;
         }
 
-        // Add debug logging
-        console.log("Post content:", {
-            id: postId,
-            text: props.item.Text,
-            type: typeof props.item.Text
-        });
-
-        // Check if content contains HTML tags
-        const containsHTML =
+        // Quick check if content looks like Lexical JSON state
+        const looksLikeLexicalState =
             typeof props.item.Text === "string" &&
-            (props.item.Text.includes("<p") ||
-                props.item.Text.includes("<div") ||
-                props.item.Text.includes("<br"));
+            props.item.Text.trim().startsWith('{"root":');
 
-        if (containsHTML) {
-            // If HTML content, sanitize and insert directly
-            const sanitized = sanitizeHTML(props.item.Text);
-            console.log("Sanitized HTML:", sanitized);
-            contentDiv.innerHTML = sanitized;
-            return;
-        }
-
-        // Try parsing as JSON first to handle stringified Lexical state
-        let lexicalState = props.item.Text;
-        if (typeof props.item.Text === "string") {
+        if (looksLikeLexicalState) {
             try {
-                lexicalState = JSON.parse(props.item.Text);
+                const lexicalState = JSON.parse(props.item.Text);
                 console.log("Parsed Lexical state:", lexicalState);
-            } catch (e) {
-                // If it's not valid JSON, treat as plain text with line breaks
-                console.log("Not valid JSON, using as formatted text:", e);
-                // Convert newlines to <br> tags and wrap in <p> tags
-                const formattedText = props.item.Text.split("\n")
-                    .map((line) => `<p>${line}</p>`)
-                    .join("");
-                contentDiv.innerHTML = sanitizeHTML(formattedText);
+
+                // Initialize Lexical editor
+                const editor = createEditor({
+                    namespace: postId,
+                    nodes: [HeadingNode, QuoteNode, EmojiNode],
+                    editable: false,
+                    onError: (error) => {
+                        console.error("Lexical editor error:", error);
+                        contentDiv.textContent = props.item.Text;
+                    }
+                });
+
+                registerEmojiPlugin(editor);
+                editor.setRootElement(contentDiv);
+                editor.setEditorState(editor.parseEditorState(lexicalState));
                 return;
+            } catch (e) {
+                console.warn("Failed to parse potential Lexical state:", e);
             }
         }
 
-        // Otherwise, handle as Lexical content
-        const editor = createEditor({
-            namespace: postId,
-            nodes: [HeadingNode, QuoteNode, EmojiNode],
-            editable: false,
-            onError: (error) => {
-                console.error("Lexical editor error:", error);
-                contentDiv.textContent = props.item.Text; // Fallback to plain text
-            }
-        });
-
-        registerEmojiPlugin(editor);
-        editor.setRootElement(contentDiv);
-
-        try {
-            editor.setEditorState(editor.parseEditorState(lexicalState));
-        } catch (error) {
-            console.error("Failed to parse editor state:", error);
-            // Format plain text with line breaks
-            const formattedText = props.item.Text.split("\n")
-                .map((line) => `<p>${line}</p>`)
-                .join("");
-            contentDiv.innerHTML = sanitizeHTML(formattedText);
-        }
+        // Handle as regular text content
+        const formattedText = props.item.Text.split("\n")
+            .map((line) => `<p>${line}</p>`)
+            .join("");
+        contentDiv.innerHTML = sanitizeHTML(formattedText);
     },
     render: async (props: PostProps) => {
         // Early validation of required data
@@ -129,10 +104,18 @@ export const Post = Component({
                 fullWidth
             >
                 <Flex direction="column" textAlign="left">
-                    <Image src={props.item.UserImgUrl} />
-                    <Text variant="h4">{props.item.UserName}</Text>
+                    <Image src={props.item.UserImgUrl + "&width=64"} />
+                    <Text variant="h4">
+                        {props.item.UserName ??
+                            `${props.item.user?.FirstName} ${props.item.user?.LastName}`}
+                    </Text>
                 </Flex>
-                <Flex direction="column" id={`post-${props.item._id}`}>
+                <Flex
+                    direction="column"
+                    align="start"
+                    justify="start"
+                    id={props.key}
+                >
                     {/* Content will be populated in effect */}
                 </Flex>
                 <Flex align="stretch" justifySelf="end" grow={false} fullWidth>

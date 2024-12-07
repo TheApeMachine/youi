@@ -2,11 +2,11 @@ import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { Button } from "../button/Button";
 import { Avatar } from "../profile/Avatar";
-import { Icon } from "../Icon";
 import { Flex } from "../Flex";
 import { eventBus } from "@/lib/event";
 import gsap from "gsap";
-import Flip from "gsap/Flip";
+import { Flip } from "gsap/Flip";
+import { Lamp } from "../lamp/Lamp";
 
 gsap.registerPlugin(Flip);
 
@@ -19,10 +19,10 @@ export const Header = Component({
 
             if (!headerAvatar) return;
 
-            // Store initial state for FLIP animation
-            const state = Flip.getState(headerAvatar);
-
             if (isDashboard) {
+                // Store initial state for FLIP animation
+                const state = Flip.getState(headerAvatar);
+
                 headerAvatar.classList.add("xl", "ring-double-purple");
                 if (profileCard) {
                     gsap.set(profileCard, {
@@ -38,7 +38,16 @@ export const Header = Component({
                     xPercent: -50,
                     zIndex: 99999
                 });
+
+                // Animate from original state
+                Flip.from(state, {
+                    duration: 0.6,
+                    ease: "power2.inOut",
+                    absolute: true
+                });
             } else {
+                const state = Flip.getState(headerAvatar);
+
                 headerAvatar.classList.remove("xl", "ring-double-purple");
                 gsap.set(headerAvatar, {
                     width: "24px",
@@ -55,14 +64,14 @@ export const Header = Component({
                         height: "-=128px"
                     });
                 }
-            }
 
-            // Animate from original state
-            Flip.from(state, {
-                duration: 0.6,
-                ease: "power2.inOut",
-                absolute: true
-            });
+                // Animate from original state
+                Flip.from(state, {
+                    duration: 0.6,
+                    ease: "power2.inOut",
+                    absolute: true
+                });
+            }
         };
 
         // Initial setup
@@ -70,6 +79,15 @@ export const Header = Component({
 
         // Listen for navigation events
         eventBus.subscribe("navigate", handleRouteChange);
+        eventBus.subscribe("request-avatar", (evt: any) => {
+            const headerAvatar = document.querySelector("header img");
+
+            headerAvatar?.classList.add("xl", "ring-double-purple");
+            Flip.fit(headerAvatar, ".avatar-placeholder", {
+                duration: 0.6,
+                ease: "power2.inOut"
+            });
+        });
 
         // Cleanup
         eventBus.subscribe("cleanup", () => {
@@ -94,6 +112,7 @@ export const Header = Component({
                             event="dialog"
                             effect="open"
                         />
+                        <Lamp />
                     </Flex>
                     <Flex grow={false}>
                         <Avatar />

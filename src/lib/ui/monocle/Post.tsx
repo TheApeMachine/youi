@@ -7,7 +7,6 @@ import { Flex } from "../Flex";
 import { Image } from "../Image";
 import { Text } from "../Text";
 import { Icon } from "../Icon";
-import { sanitizeHTML } from "@/lib/template";
 import { Link } from "../Link";
 
 // Add this interface at the top of the file
@@ -37,7 +36,7 @@ export const Post = Component({
             return;
         }
 
-        const postId = props.key;
+        const postId = props.key || props.item._id;
         const contentDiv = document.getElementById(postId) as HTMLElement;
         if (!contentDiv) {
             console.error(`Content div not found for post ${postId}`);
@@ -82,9 +81,10 @@ export const Post = Component({
 
         // Handle as regular text content
         const formattedText = props.item.Text.split("\n")
+            .map((line) => line.replace(/</g, '&lt;').replace(/>/g, '&gt;'))
             .map((line) => `<p>${line}</p>`)
             .join("");
-        contentDiv.innerHTML = sanitizeHTML(formattedText);
+        contentDiv.innerHTML = formattedText;
     },
     render: async (props: PostProps) => {
         // Early validation of required data

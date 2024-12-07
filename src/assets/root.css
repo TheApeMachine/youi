@@ -36,6 +36,7 @@
     --purple: #999cff;
     --pink: hsl(302, 100%, 80%);
     --white: hsl(0, 0%, 98%);
+    --black: hsl(0, 0%, 0%);
 
     --gradient-dark: linear-gradient(
         to right,
@@ -59,6 +60,10 @@
     --shadow-tile: rgba(0, 0, 0, 0.4) 0px 2px 4px,
         rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
         rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+
+    --surface: var(--black);
+    --surface-shadow: 0 1px hsl(0 0% 100% / 0.35) inset,
+        0 -1px hsl(0 0% 0% / 1) inset, 0 10px 20px -5px hsl(0 0% 0% / 1);
 
     --ring-brand: 0 0 0 2px var(--brand);
     --ring-brand-light: 0 0 0 2px var(--brand-light);

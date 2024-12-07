@@ -112,11 +112,11 @@ export const Header = Component({
                             event="dialog"
                             effect="open"
                         />
-                        <Lamp />
                     </Flex>
                     <Flex grow={false}>
                         <Avatar />
                         <Button variant="animoji" icon="notifications" />
+                        <Lamp />
                     </Flex>
                 </Flex>
             </header>

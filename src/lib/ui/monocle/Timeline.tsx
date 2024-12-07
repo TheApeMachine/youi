@@ -59,18 +59,6 @@ export const Timeline = Component({
         );
         if (!timelinePosts.length) return;
 
-        gsap.set(monocle, {
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            xPercent: -50,
-            yPercent: -50,
-            width: "840px",
-            overflow: "hidden",
-            zIndex: 2,
-            height: 0
-        });
-
         let currentPostIndex = 0;
         let isMoving = false;
         let currentTween: gsap.core.Timeline | null = null;
@@ -98,7 +86,7 @@ export const Timeline = Component({
 
             // Add the height of the previous post to the calculated offset, unless it's the first post
             if (index > 0) {
-                calculatedOffset += posts[index - 1].clientHeight;
+                calculatedOffset -= posts[index - 1].clientHeight;
             }
 
             // Calculate the offset between the timeline post and the window center
@@ -131,7 +119,7 @@ export const Timeline = Component({
                 .to(
                     timelineStream,
                     {
-                        y: `+=${timelineOffset}`,
+                        transform: `translate3d(0, ${timelineOffset}px, -250px)`,
                         duration: 1,
                         ease: "power2.out"
                     },
@@ -176,7 +164,12 @@ export const Timeline = Component({
     },
     render: async ({ data }: { data: TimelineData }) => {
         return (
-            <Flex direction="column" grow={false} className="timeline">
+            <Flex
+                direction="column"
+                grow={false}
+                className="timeline"
+                fullHeight
+            >
                 <div className="monocle card-glass">
                     <Flex direction="column" className="monocle-stream">
                         {data.items.map((item) => (

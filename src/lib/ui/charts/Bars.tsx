@@ -4,20 +4,15 @@ import * as echarts from "echarts";
 import { EChartsOption, GraphicComponentOption } from "echarts";
 
 interface BarsProps {
+    id: string;
     completed: number;
     total: number;
 }
 
 export const Bars = Component({
-    render: (props: BarsProps) => (
-        <div
-            id="bars-chart"
-            class="chart-container"
-            style="height: 60px; width: 100%;"
-        ></div>
-    ),
-    effect: ({ completed, total }: BarsProps) => {
-        const chartDom = document.getElementById("bars-chart");
+    render: ({ id }: BarsProps) => <div id={id} class="chart-container"></div>,
+    effect: ({ id, completed, total }: BarsProps) => {
+        const chartDom = document.getElementById(id);
         if (!chartDom) return;
 
         let myChart = echarts.getInstanceByDom(chartDom);
@@ -31,6 +26,13 @@ export const Bars = Component({
         resizeObserver.observe(chartDom);
 
         const remaining = total - completed;
+        const completedPercentage = Math.round((completed / total) * 100);
+        const remainingPercentage = Math.round((remaining / total) * 100);
+
+        console.log("Percentages:", {
+            completedPercentage,
+            remainingPercentage
+        });
 
         const option: EChartsOption = {
             grid: {
@@ -43,7 +45,8 @@ export const Bars = Component({
             xAxis: {
                 type: "value",
                 show: false,
-                max: total
+                max: 100,
+                min: 0
             },
             yAxis: {
                 type: "category",
@@ -55,23 +58,28 @@ export const Bars = Component({
                     name: "Completed",
                     type: "bar",
                     stack: "total",
-                    data: [completed],
+                    data: [completedPercentage],
                     itemStyle: {
                         color: "var(--brand-light)"
                     },
                     label: {
                         show: true,
                         position: "inside",
-                        formatter: `${completed}/${total}`
+                        formatter: `${completedPercentage}%`
                     }
                 },
                 {
                     name: "Remaining",
                     type: "bar",
                     stack: "total",
-                    data: [remaining],
+                    data: [remainingPercentage],
                     itemStyle: {
-                        color: "var(--muted)"
+                        color: "#ffffff"
+                    },
+                    label: {
+                        show: true,
+                        position: "inside",
+                        formatter: `${remainingPercentage}%`
                     }
                 }
             ]

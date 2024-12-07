@@ -84,41 +84,10 @@ export const Input = Component({
             }
         });
     },
-    render: () => (
-        <Flex direction="column" fullWidth radius="bottom-xs" shrink>
-            <Flex justify="space-between" fullWidth>
-                <Button
-                    variant="icon"
-                    pad="md"
-                    icon="add_photo_alternate"
-                    trigger="click"
-                    event="chat"
-                    effect="photo"
-                    className="photo"
-                />
-                <Button
-                    variant="icon"
-                    pad="md"
-                    icon="mic"
-                    trigger="click"
-                    event="chat"
-                    effect="mic"
-                    className="mic"
-                />
-                <Popover>
-                    <Button
-                        variant="icon"
-                        pad="md"
-                        icon="mood"
-                        trigger="click"
-                        event="chat"
-                        effect="mood"
-                        className="mood"
-                    />
-                </Popover>
-                <Flex id="lexical-editor" fullWidth contentEditable></Flex>
-                <Button variant="icon" pad="md" icon="send" />
-            </Flex>
+    render: ({ variant }: { variant: "chat" | "timeline" }) => (
+        <Flex justify="space-between" fullWidth>
+            <Flex id="lexical-editor" fullWidth contentEditable></Flex>
+            <Button variant="icon" color="muted" icon="send" />
         </Flex>
     )
 });

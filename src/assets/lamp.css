@@ -2,15 +2,13 @@
     overflow: visible !important;
     height: 24px;
     width: 24px;
-    position: absolute;
-    top: 0;
-    right: 2rem;
-    transform: scale(0.2);
+    transform: scale(0.2) translate(-100px, -130px);
     z-index: 100;
 }
 .toggle-scene__cord {
     stroke: var(--cord);
     cursor: move;
+    z-index: 100;
 }
 .toggle-scene__cord:nth-of-type(1) {
     display: none;
@@ -24,10 +22,12 @@
 .toggle-scene__cord-end {
     stroke: var(--cord);
     fill: var(--cord);
+    z-index: 100;
 }
 .toggle-scene__dummy-cord {
     stroke-width: 6;
     stroke: var(--cord);
+    z-index: 100;
 }
 .bulb__filament {
     stroke: var(--filament);

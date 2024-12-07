@@ -113,7 +113,7 @@ export const Component = Object.assign(
         create: <Props>(
             render: (props: Props) => Promise<Node | JSX.Element> | Node | JSX.Element
         ) => (props: Props): JSX.Element => {
-            return render(props) as JSX.Element;
+            return render(props);
         }
     }
 );

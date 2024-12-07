@@ -1,9 +1,9 @@
 .timeline {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: end;
     height: 100%;
-    width: 720px;
+    overflow: hidden;
     perspective: 500px;
 
     > .post {
@@ -11,24 +11,19 @@
     }
 }
 
-/* .monocle {
+.timeline-stream {
+    transform: translate3d(0, 0, -250px);
+}
+
+.monocle {
     position: fixed;
-    width: 720px;
-    height: 480px;
     top: 50%;
     transform: translateY(-50%);
     overflow: hidden;
     border-radius: var(--md);
     z-index: 1;
 
-    >.post {
-        display: none;
+    > .post {
         z-index: 1;
     }
 }
-
-.post {
-    display: none;
-    width: 720px;
-    height: 480px;
-} */

@@ -12,9 +12,14 @@ import { DynamicIsland } from "@/components/ui/DynamicIsland";
 const MyPage = () => (
     <DynamicIsland
         variant="page"
-        sources={{
+        state={{
+            user: {
+                primary: "mongo",
+                sync: ["indexeddb"],
+                cache: true
+            },
             navigation: {
-                import: "@/data/navigation.json"
+                primary: "indexeddb"
             }
         }}
     />
@@ -23,11 +28,52 @@ const MyPage = () => (
 
 ## 🏗️ Architecture
 
-The Dynamic Island consists of three main parts:
+The Dynamic Island consists of five main parts that work together to create a seamless, reactive system:
 
 1. **Core Component**: Manages the overall structure and lifecycle
-2. **Source Loader**: Handles data fetching and imports
-3. **Content Builder**: Constructs the DOM based on configuration
+
+    - Handles component initialization and cleanup
+    - Manages component transitions
+    - Coordinates between other parts
+
+2. **Event System**: Orchestrates all interactions and updates
+
+    - Handles user interactions (clicks, inputs, etc.)
+    - Manages system events (state changes, routing, etc.)
+    - Coordinates data flow between components
+    - Triggers state updates and transitions
+
+3. **State Manager**: Handles data persistence and synchronization
+
+    - Manages data across different backends
+    - Handles caching and persistence
+    - Provides real-time updates
+    - Syncs between different data sources
+
+4. **Source Loader**: Handles data fetching and imports
+
+    - Loads configuration files
+    - Fetches external data
+    - Manages loading states
+    - Handles errors and retries
+
+5. **Content Builder**: Constructs the DOM based on configuration
+    - Builds component structure
+    - Applies styles and animations
+    - Handles dynamic updates
+    - Manages transitions
+
+### Data Flow
+
+```plaintext
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Events    │ ──> │    State    │ ──> │  Content    │
+└─────────────┘     └─────────────┘     └─────────────┘
+      │                    │                   │
+      │                    │                   │
+      └──────────────────────────────────────>│
+           Direct UI Updates (Animations)
+```
 
 ### Core Structure
 
@@ -43,7 +89,7 @@ The Dynamic Island consists of three main parts:
 
 ## 📝 Configuration
 
-### Basic Configuration Structure
+### Basic Configuration with State
 
 ```json
 {
@@ -52,12 +98,11 @@ The Dynamic Island consists of three main parts:
             "display": "flex",
             "flexDirection": "column"
         },
+        "state": "navigation", // References state configuration
         "children": [
             {
                 "tag": "nav",
-                "source": [
-                    // Source configuration
-                ]
+                "source": "{{navigation}}" // Uses state data
             }
         ]
     }
@@ -69,7 +114,7 @@ The Dynamic Island consists of three main parts:
 ```json
 {
     "tag": "button",
-    "text": "{{category}}",
+    "text": "{{user.name}}", // References user state
     "styles": {
         "display": "flex",
         "padding": "var(--sm)"
@@ -88,161 +133,179 @@ The Dynamic Island consists of three main parts:
 }
 ```
 
-## 🔄 Data Sources
+## 🔄 Data Management
 
-### Source Configuration
+### State Configuration
 
 ```tsx
-interface SourceConfig {
-    import?: string; // Dynamic imports
-    fetch?: string; // API endpoints
-    static?: any; // Static data
+interface StateConfig {
+    primary: "mongo" | "indexeddb" | "http" | "crdt";
+    sync?: Array<"mongo" | "indexeddb" | "http" | "crdt">;
+    cache?: boolean;
+    realtime?: boolean;
 }
 
-const sources = {
-    navigation: {
-        import: "@/data/navigation.json"
+const state = {
+    user: {
+        primary: "mongo",
+        sync: ["indexeddb"],
+        cache: true
     },
-    users: {
-        fetch: "https://api.example.com/users"
+    preferences: {
+        primary: "indexeddb"
     }
 };
 ```
 
+### Data Sources
+
+Dynamic Islands can now use multiple data sources:
+
+```tsx
+<DynamicIsland
+    state={{
+        profile: {
+            primary: "mongo",
+            sync: ["indexeddb"],
+            cache: true
+        }
+    }}
+    sources={{
+        theme: {
+            import: "@/data/theme.json"
+        },
+        chat: {
+            primary: "crdt",
+            realtime: true
+        }
+    }}
+/>
+```
+
 ### Template Variables
 
-Use double curly braces for data binding:
+Use double curly braces for data binding from any source:
 
 ```json
 {
-    "text": "{{category}}",
+    "text": "{{user.profile.name}}", // From MongoDB
     "children": [
         {
-            "text": "{{collections.label}}"
-        }
-    ]
-}
-```
-
-## 🎨 Animations
-
-### GSAP Integration
-
-The Dynamic Island uses GSAP for smooth transitions:
-
-```json
-"events": {
-    "trigger": "click",
-    "effects": [
-        {
-            "target": "ul > li",
+            "text": "{{preferences.theme}}", // From IndexedDB
             "styles": {
-                "opacity": "1",
-                "transform": "translateX(0)"
+                "background": "{{theme.colors.primary}}" // From JSON import
             }
         }
     ]
 }
 ```
 
-### Timeline Management
+## 🔧 State Integration
 
-Animations are managed using GSAP timelines:
+### Reactive Updates
 
-```ts
-const timeline = gsap.timeline({ paused: true });
-timeline.to(targets, {
-    ...effect.styles,
-    duration: 0.3,
-    ease: "power4.inOut",
-    stagger: 0.05
-});
+Dynamic Islands automatically react to state changes:
+
+```tsx
+const ChatIsland = () => (
+    <DynamicIsland
+        state={{
+            messages: {
+                primary: "crdt",
+                sync: ["mongo"],
+                realtime: true
+            }
+        }}
+        render={({ messages }) => (
+            <div class="messages">
+                {messages.map((msg) => (
+                    <Message key={msg.id} {...msg} />
+                ))}
+            </div>
+        )}
+    />
+);
 ```
 
-## 🔧 Event Handling
-
-### Event Configuration
+### State-Driven Animations
 
 ```json
 "events": {
     "trigger": "click",
     "effects": [
         {
-            "target": "selector",
+            "target": "ul",
             "styles": {
-                "property": "value"
+                "height": "{{ui.expanded ? 'auto' : '0'}}",
+                "opacity": "{{ui.expanded ? '1' : '0'}}"
             }
         }
     ]
 }
-```
-
-### Event Bus Integration
-
-```ts
-eventBus.subscribe("toggleAccordion", (payload) => {
-    // Handle accordion toggle
-});
 ```
 
 ## 🛠️ Best Practices
 
-1. **Configuration Organization**
+1. **State Organization**
 
-    - Keep configurations in separate files
-    - Use semantic naming for variants
-    - Leverage CSS variables for consistent styling
+    - Use appropriate backends for different data types
+    - Enable caching for frequently accessed data
+    - Use real-time updates only when needed
 
 2. **Performance**
 
-    - Use dynamic imports for large data sources
-    - Cache GSAP timelines
-    - Minimize DOM operations
+    - Leverage state caching
+    - Use appropriate sync strategies
+    - Consider backend characteristics
 
 3. **Maintainability**
 
-    - Keep configurations flat when possible
-    - Use template variables consistently
-    - Document complex animations
+    - Keep state configurations clear
+    - Document data flow
+    - Use consistent naming
 
-4. **Accessibility**
-    - Include ARIA attributes in configurations
-    - Ensure keyboard navigation
-    - Maintain proper focus management
+4. **Data Flow**
+    - Plan state synchronization carefully
+    - Handle offline scenarios
+    - Consider conflict resolution
 
 ## 🔍 Advanced Usage
 
-### Nested Sources
+### Nested State Management
 
-```json
-{
-    "source": [
-        {
-            "children": [
-                {
-                    "source.collections": [
-                        {
-                            "tag": "li",
-                            "text": "{{collections.label}}"
-                        }
-                    ]
+```tsx
+<DynamicIsland
+    state={{
+        ui: {
+            primary: "indexeddb"
+        },
+        data: {
+            primary: "mongo",
+            sync: ["indexeddb"],
+            cache: true,
+            children: {
+                profile: {
+                    primary: "mongo",
+                    cache: true
+                },
+                preferences: {
+                    primary: "indexeddb"
                 }
-            ]
+            }
         }
-    ]
-}
+    }}
+/>
 ```
 
-### Custom Effects
+### Custom State Effects
 
 ```json
 "effects": [
     {
-        "target": "ul",
+        "when": "{{ui.theme === 'dark'}}",
         "styles": {
-            "height": "auto",
-            "overflow": "visible",
-            "marginTop": "var(--xs)"
+            "background": "var(--dark-bg)",
+            "color": "var(--dark-text)"
         }
     }
 ]
@@ -250,6 +313,6 @@ eventBus.subscribe("toggleAccordion", (payload) => {
 
 ## 🌟 Conclusion
 
-The Dynamic Island system provides a flexible, configuration-driven approach to building complex UI components. Its combination of declarative configuration, dynamic data loading, and smooth animations makes it ideal for creating morphing interfaces.
+The Dynamic Island system combines flexible UI configuration with powerful state management. Its ability to handle multiple data sources, automatic synchronization, and reactive updates makes it ideal for building complex, data-driven interfaces.
 
-For more complex scenarios, you can extend the system by adding new source types, animation effects, or event handlers as needed.
+The integration with the state management system allows for seamless data flow while maintaining the simplicity of configuration-driven development.

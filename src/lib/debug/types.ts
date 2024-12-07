@@ -8,4 +8,18 @@ export interface DebugEntry {
     stack?: string;
 }
 
-export type ConsoleMethod = 'log' | 'warn' | 'error' | 'info' | 'debug'; 
+export interface DebugModuleContext {
+    addLog: (entry: DebugEntry) => void;
+    container: HTMLElement;
+}
+
+export interface DebugModuleInstance {
+    component: HTMLElement;
+    cleanup?: () => void;
+}
+
+export interface DebugModuleSetup {
+    setup: (context: DebugModuleContext) => Promise<DebugModuleInstance>;
+    name: string;
+    description?: string;
+} 

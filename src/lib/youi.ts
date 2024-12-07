@@ -1,12 +1,18 @@
 import { EventManager } from "@/lib/event";
-import { createRouter } from "./router";
+import { routerManager } from "./router/manager";
+import { stateManager } from "./state";
+import { initializeDebugContext } from "./debug/context";
 
 export const YouI = {
     init: async () => {
-        const [{ router }] = await Promise.all([
-            createRouter(),
+        // Initialize debug context first
+        initializeDebugContext();
+
+        // Initialize all core systems in parallel
+        await Promise.all([
+            routerManager.init(),
             EventManager().init(),
+            stateManager.init()
         ]);
-        await router();
     }
-}
+};

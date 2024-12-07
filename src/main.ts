@@ -1,7 +1,7 @@
-import { createRouter } from '@/lib/router';
-import { EventManager } from "@/lib/event";
+import { YouI } from '@/lib/youi';
 
 document.addEventListener("DOMContentLoaded", async () => {
     if (document.body) {
+        await YouI.init();
     }
 });

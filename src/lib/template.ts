@@ -1,6 +1,14 @@
 // @ts-ignore: JSX factory import is used by the transpiler
 import { Transition } from "@/lib/transition";
 
+// Export JSX namespace
+export namespace JSX {
+    export interface Element extends Node { }
+    export interface IntrinsicElements {
+        [elemName: string]: any;
+    }
+}
+
 /*
 html is a function that takes a TemplateStringsArray and any number of values and returns a DocumentFragment.
 @param strings The TemplateStringsArray to render.
@@ -219,7 +227,6 @@ const handleFragment = async (children: any[]) => {
     }
     return fragment;
 };
-
 const appendChild = async (element: Element, child: any) => {
     // Skip falsy values but keep 0
     if (child === false || child === null || child === undefined) return;
@@ -306,3 +313,4 @@ export const jsx = async (
 
     return element;
 }
+

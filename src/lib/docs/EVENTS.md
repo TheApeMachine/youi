@@ -1,6 +1,6 @@
 # YouI Event System
 
-A powerful and flexible event management system that combines a global event bus with DOM event handling.
+A powerful and flexible event management system that combines a global event bus with ergonomic DOM event handling and type-safe event props.
 
 ## 🚀 Getting Started
 
@@ -60,122 +60,111 @@ eventBus.publish("userAction", {
 });
 ```
 
-### Event Queuing
-
-The event system includes automatic event queuing to handle race conditions where events might be published before subscribers are ready:
-
-```ts
-// Event published before any subscribers
-eventBus.publish("earlyEvent", { data: "important" });
-
-// Later subscription will still receive the queued event
-eventBus.subscribe("earlyEvent", (payload) => {
-    console.log("Received queued event:", payload);
-});
-```
-
-Events are:
-
-- Automatically queued if published before subscribers exist
-- Processed in order when subscribers are added
-- Cleared from queue after processing
-- Logged for debugging purposes
-
 ## 🖱️ DOM Event Handling
 
-### Basic DOM Event Attributes
+### Type-Safe Event Props
 
-Add data attributes to your HTML elements to enable automatic event handling:
+Components can receive strongly-typed event handlers through props:
 
-```html
-<!-- Basic click event -->
-<button data-event="buttonClicked" data-trigger="click">Click Me</button>
+```tsx
+interface ButtonProps extends ComponentEventProps {
+    label: string;
+}
 
-<!-- Event with variant -->
-<div data-event="hover" data-trigger="mouseenter" data-variant="primary">
-    Hover Me
-</div>
-
-<!-- Directional event -->
-<div data-event="scroll" data-trigger="wheel" data-direction="vertical">
-    Scroll Me
-</div>
-```
-
-### Custom Event Handlers
-
-```ts
-// Add custom event handler
-eventManager.addEvent("mousemove", (event) => {
-    console.log("Mouse position:", event.clientX, event.clientY);
+const Button = Component({
+    render: (props: ButtonProps) => (
+        <button onClick={props.onClick}>{props.label}</button>
+    )
 });
 
-// Scoped event listener
-const container = document.querySelector(".container");
-if (container instanceof HTMLElement) {
-    eventManager.addScopedEventListener(container, "scroll", (event) => {
-        console.log("Container scrolled");
-    });
-}
+// Usage with type checking
+<Button
+    label="Click Me"
+    onClick={(e: MouseEvent) => console.log("Clicked!", e)}
+    onMouseEnter={(e: MouseEvent) => console.log("Mouse entered")}
+/>;
 ```
 
-## 🏗️ Component Lifecycle Management
+### Available Event Props
 
-Track when elements are added to or removed from the DOM:
+The system provides type-safe handlers for common DOM events:
+
+-   `onClick`: MouseEvent
+-   `onInput`: InputEvent
+-   `onChange`: Event
+-   `onSubmit`: SubmitEvent
+-   `onFocus`: FocusEvent
+-   `onBlur`: FocusEvent
+-   `onMouseEnter`: MouseEvent
+-   `onMouseLeave`: MouseEvent
+-   `onKeyDown`: KeyboardEvent
+-   `onKeyUp`: KeyboardEvent
+
+### Event Types
+
+Events are categorized into different types:
 
 ```ts
-const myElement = document.createElement("div");
-myElement.setAttribute("data-event", "myCustomEvent");
+type EventType =
+    | "dom" // DOM events (click, input, etc.)
+    | "state" // State changes
+    | "route" // Navigation/routing events
+    | "system" // System events (loading, error, etc.)
+    | "custom"; // User-defined events
+```
 
-eventManager.manageComponentLifecycle(
-    myElement,
-    () => {
-        console.log("Element mounted");
-        // Setup component-specific listeners
-    },
-    () => {
-        console.log("Element unmounted");
-        // Cleanup listeners
-    }
-);
+### Event Payloads
 
-// Example usage
-document.body.appendChild(myElement); // Triggers mount
-document.body.removeChild(myElement); // Triggers unmount
+All events carry a standardized payload structure:
+
+```ts
+interface EventPayload {
+    type: EventType;
+    topic?: string;
+    effect?: string;
+    trigger?: string;
+    data?: any;
+    meta?: {
+        timestamp: number;
+        source: string;
+        target?: string;
+        path?: string[];
+        originalEvent?: Event;
+    };
+}
 ```
 
 ## 🔄 State Management Integration
 
-The event system automatically integrates with the state manager:
+The event system seamlessly integrates with the state manager:
 
 ```ts
 // State changes through events
 eventBus.publish("stateChange", {
-    key: "theme",
-    value: "dark"
+    type: "state",
+    topic: "theme",
+    data: { mode: "dark" }
 });
 
 // Listen for specific state changes
-eventBus.subscribe(
-    "stateChange",
-    (payload) => {
-        console.log("Theme changed to:", payload.value);
-    },
-    (payload) => payload.key === "theme"
-);
+eventBus.subscribe("stateChange", (payload) => {
+    if (payload.topic === "theme") {
+        console.log("Theme changed to:", payload.data.mode);
+    }
+});
 ```
 
 ## 🛠️ Best Practices
 
-1. **Event Naming**: Use descriptive, action-based names (e.g., `userLoggedIn`, `dataLoaded`, `modalClosed`)
-2. **Error Handling**: Event listeners are automatically wrapped in try-catch blocks
-3. **Conditional Subscriptions**: Use conditions to filter events and reduce unnecessary callback executions
-4. **Cleanup**: Always remove event listeners when components are unmounted
-5. **Type Safety**: The system includes TypeScript support for better type checking
-6. **Event Queuing**: Let the system handle race conditions by utilizing the built-in event queue
+1. **Type Safety**: Use TypeScript interfaces for props and event handlers
+2. **Event Categorization**: Use appropriate EventType for different kinds of events
+3. **Prop Composition**: Extend ComponentEventProps for component props that need event handling
+4. **Error Handling**: Event handlers are automatically wrapped in try-catch blocks
+5. **Cleanup**: Event listeners are automatically managed through the component lifecycle
+6. **Event Payload Structure**: Follow the standard EventPayload interface for consistency
 
 ## 🌟 Conclusion
 
-This event system provides a robust foundation for handling both application-level events and DOM interactions. It combines the flexibility of a publish/subscribe pattern with the convenience of declarative DOM event handling.
+The YouI event system provides a robust, type-safe foundation for handling both application-level events and DOM interactions. It combines the power of a publish/subscribe pattern with ergonomic, strongly-typed event handling props for components.
 
-For more complex scenarios or custom implementations, you can extend the system using the provided methods or create custom event handlers as needed.
+The system is designed to be both performant and developer-friendly, with TypeScript integration ensuring type safety throughout your application.

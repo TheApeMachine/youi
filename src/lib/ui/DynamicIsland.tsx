@@ -1,10 +1,5 @@
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
-import { gsap } from "gsap";
-import Flip from "gsap/Flip";
 import { Radius } from "./types";
-
-gsap.registerPlugin(Flip);
 
 interface DynamicIslandStyle {
     borderRadius?: Radius;
@@ -18,17 +13,21 @@ interface DynamicIslandProps {
     main?: JSX.Element;
     article?: JSX.Element;
     footer?: JSX.Element;
+    effect?: (rootElement: HTMLElement) => void | (() => void);
 }
 
-export const DynamicIsland = ({
-    variant,
-    header,
-    aside,
-    main,
-    article,
-    footer
-}: DynamicIslandProps) => {
-    return (
+export const DynamicIsland = (props: DynamicIslandProps) => {
+    const {
+        variant,
+        header,
+        aside,
+        main,
+        article,
+        footer,
+        effect
+    } = props;
+
+    const element = (
         <div className={`dynamic-island ${variant}`}>
             {header}
             {aside}
@@ -37,4 +36,18 @@ export const DynamicIsland = ({
             {footer}
         </div>
     );
+
+    if (effect) {
+        queueMicrotask(() => {
+            const rootElement = element instanceof DocumentFragment
+                ? element.firstElementChild as HTMLElement
+                : element as HTMLElement;
+
+            if (rootElement) {
+                effect(rootElement);
+            }
+        });
+    }
+
+    return element;
 };

@@ -40,12 +40,6 @@ export const Layout = Component({
     },
     render: async () => (
         <div class="layout">
-            {AuthService.isAuthenticated().then(
-                (isAuthenticated) =>
-                    isAuthenticated && (
-                        <Flyout variant="header" direction="top" />
-                    )
-            )}
             <main id="app">
                 <div class="reveal">
                     <div class="slides"></div>

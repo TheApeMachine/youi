@@ -27,7 +27,7 @@
 
 .debug-root {
     /* Colors */
-    --debug-bg-main: rgba(20, 20, 20, 0.95);
+    --debug-bg-main: rgba(20, 20, 20, 0.9);
     --debug-bg-entry: rgba(255, 255, 255, 0.03);
     --debug-bg-details: rgba(0, 0, 0, 0.2);
     --debug-border: rgba(255, 255, 255, 0.1);
@@ -56,12 +56,16 @@
     /* Layout */
     --debug-overlay-width: 25%;
     --debug-overlay-max-height: 600px;
-    --debug-border-radius: 8px;
+    --debug-border-radius: 4px;
     --debug-entry-border-radius: 4px;
 
     --sb-track-color: #232e33;
     --sb-thumb-color: #6baf8d;
     --sb-size: 8px;
+
+    --debug-resize-handle-width: 4px;
+    --debug-resize-handle-color: rgba(255, 255, 255, 0.1);
+    --debug-resize-handle-hover-color: rgba(255, 255, 255, 0.3);
 
     position: fixed;
     top: 0;
@@ -69,13 +73,14 @@
     bottom: 0;
     width: 400px;
     z-index: 9999;
-    pointer-events: none;
     display: flex;
 
     * {
         scrollbar-width: thin;
         scrollbar-color: var(--brand) var(--bg);
         transition: background 0.5s ease, color 0.5s ease;
+        margin: 0;
+        padding: 0;
     }
 
     *::-webkit-scrollbar {
@@ -112,19 +117,17 @@
 /* Toolbox */
 .debug-toolbox {
     background: var(--debug-bg-main);
-    border-radius: 8px;
     padding: var(--debug-spacing-sm);
     pointer-events: auto;
     display: flex;
     gap: var(--debug-spacing-sm);
-    border: 1px solid var(--debug-border);
-    transition: all 0.3s ease;
+    transition: opacity 0.2s ease-out;
 }
 
 .debug-toolbox.hidden {
     opacity: 0;
     pointer-events: none;
-    transform: translateY(-50%) translateX(20px);
+    height: 0;
 }
 
 .debug-tool {
@@ -147,7 +150,7 @@
 }
 
 .debug-overlay {
-    background-color: rgba(64, 64, 64, 0.9);
+    background-color: rgba(64, 64, 64, 0.5);
     color: #fff;
     font-family: var(--debug-font-main);
     font-size: var(--debug-font-size-base);
@@ -177,6 +180,7 @@
     display: flex;
     align-items: center;
     gap: var(--debug-spacing-sm);
+    user-select: none;
 }
 
 .debug-header-controls {
@@ -200,13 +204,15 @@
 
 /* Content Grid */
 .debug-content-grid {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 25%);
+    max-width: 100%;
     gap: var(--debug-spacing-sm);
     padding: var(--debug-spacing-sm);
+    padding-left: calc(
+        var(--debug-spacing-sm) + var(--debug-resize-handle-width)
+    );
     overflow-y: auto;
-    transition: all 0.3s ease;
 }
 
 .debug-content-grid.drop-zone {
@@ -215,17 +221,38 @@
     outline-offset: -8px;
 }
 
+.debug-content-grid::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--debug-border);
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+    pointer-events: none;
+}
+
+.debug-content-grid.dragging-over::after {
+    opacity: 1;
+}
+
 /* Draggable sections */
 .debug-section {
-    background: #1a1a1a;
-    border-radius: 4px;
+    flex: 1;
+    background: var(--debug-bg-main);
+    border-radius: var(--debug-border-radius);
     padding: var(--debug-spacing-sm);
     overflow: hidden;
     cursor: grab;
     user-select: none;
-    transition: all 0.2s ease;
+    transition: transform 0.15s ease-out;
     border: 1px solid transparent;
-    view-transition-name: debug-section;
+    position: relative;
+    min-height: 100px;
+    max-width: 100%;
+    width: 100%;
+    z-index: 1;
 }
 
 .debug-section:active {
@@ -233,7 +260,9 @@
 }
 
 .debug-section.dragging {
-    opacity: 0.4;
+    opacity: 0.6;
+    transform: scale(1.02);
+    cursor: grabbing;
 }
 
 @keyframes drop-zone {
@@ -389,6 +418,158 @@
     width: 30px;
 }
 
+.css-editor {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.css-picker-btn {
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+.css-picker-btn.active {
+    background: #007bff;
+    color: white;
+}
+
+.css-picker-highlight {
+    outline: 2px dashed #007bff !important;
+}
+
+.css-style-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.css-group {
+    border: 1px solid #444;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.css-group summary {
+    padding: 8px 12px;
+    background: #333;
+    cursor: pointer;
+    user-select: none;
+}
+
+.css-group summary:hover {
+    background: #444;
+}
+
+.css-group-controls {
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    background: #222;
+}
+
+.css-control {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.css-control label {
+    font-size: 12px;
+    color: #888;
+}
+
+.css-control-input {
+    width: 100%;
+    padding: 4px;
+    background: #333;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 2px;
+}
+
+.css-control-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.css-compound-control {
+    grid-column: 1 / -1;
+    background: #2a2a2a;
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.css-compound-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.css-unit-select {
+    background: #333;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+.css-sliders-container {
+    display: grid;
+    gap: 8px;
+}
+
+.css-slider-container {
+    display: grid;
+    grid-template-columns: 80px 1fr 60px;
+    align-items: center;
+    gap: 8px;
+}
+
+.css-slider-label {
+    font-size: 12px;
+    color: #888;
+    text-transform: capitalize;
+}
+
+.css-slider-input {
+    width: 100%;
+    height: 4px;
+    background: #444;
+    border-radius: 2px;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.css-slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.css-value-display {
+    width: 100%;
+    background: #333;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-size: 12px;
+}
+
+.css-value-display:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
 .debug-section.router {
     padding: 10px;
     font-family: monospace;
@@ -409,4 +590,210 @@
 }
 .slide-name {
     font-weight: bold;
+}
+
+/* Events Debug Module */
+.event-subscriptions,
+.event-activity {
+    margin-bottom: 1rem;
+}
+
+.subscription-entry,
+.activity-entry {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: var(--surface);
+    border-radius: var(--xs);
+}
+
+.activity-entry {
+    border-left: 3px solid var(--muted);
+}
+
+.activity-entry.publish {
+    border-color: var(--brand);
+}
+
+.activity-entry.subscribe {
+    border-color: var(--success);
+}
+
+.activity-entry.unsubscribe {
+    border-color: var(--danger);
+}
+
+.activity-entry.receive {
+    border-color: var(--warning);
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.type {
+    font-weight: bold;
+}
+
+.channel {
+    color: var(--muted);
+}
+
+.data pre {
+    font-size: 0.8rem;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* Add resize handle styles */
+.debug-resize-handle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--debug-resize-handle-width);
+    background: var(--debug-resize-handle-color);
+    cursor: ew-resize;
+    transition: background-color 0.15s ease-out;
+    z-index: 1001;
+}
+
+.debug-resize-handle:hover,
+.debug-resize-handle.resizing {
+    background: var(--debug-resize-handle-hover-color);
+}
+
+/* Add module resize handle */
+.debug-section-resize {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--debug-resize-handle-width);
+    background: var(--debug-resize-handle-color);
+    cursor: ns-resize;
+    transition: opacity 0.15s ease-out, background-color 0.15s ease-out;
+    opacity: 0;
+}
+
+.debug-section-resize:hover,
+.debug-section-resize.resizing {
+    background: var(--debug-resize-handle-hover-color);
+}
+
+.debug-section:hover .debug-section-resize {
+    opacity: 1;
+}
+
+/* Add a header style for better dragging */
+.debug-section-header {
+    padding: var(--debug-spacing-xs) var(--debug-spacing-sm);
+    margin: calc(-1 * var(--debug-spacing-sm));
+    margin-bottom: var(--debug-spacing-sm);
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: var(--debug-spacing-sm);
+    user-select: none;
+}
+
+.debug-section-handle {
+    color: var(--debug-text-dim);
+    cursor: grab;
+    padding: 0 var(--debug-spacing-xs);
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.debug-section-title {
+    flex: 1;
+    min-width: 0; /* Allow text to truncate */
+    overflow: hidden;
+}
+
+.debug-section-title h4 {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.debug-section-header:active,
+.debug-section-handle:active {
+    cursor: grabbing;
+}
+
+/* Add visual feedback for drop targets */
+.debug-section.drop-target {
+    border: 2px dashed var(--debug-border);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Update dragging styles */
+.debug-section.dragging {
+    opacity: 0.5;
+    transform: scale(1.02);
+    z-index: 1002;
+    pointer-events: none;
+}
+
+.debug-section:not(.dragging) {
+    transition: transform 0.2s ease;
+}
+
+.debug-section h4 {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    margin-bottom: var(--debug-spacing-sm);
+}
+
+/* Module-specific content styles */
+.router-content,
+.state-content,
+.css-editor-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--debug-spacing-sm);
+    overflow: auto;
+}
+
+/* Router specific styles */
+.router-content .router-state,
+.router-content .router-history,
+.router-content .router-islands {
+    background: var(--debug-bg-entry);
+    padding: var(--debug-spacing-sm);
+    border-radius: var(--debug-border-radius);
+}
+
+/* State specific styles */
+.state-content .state-overview,
+.state-content .state-history,
+.state-content .state-subscriptions {
+    background: var(--debug-bg-entry);
+    padding: var(--debug-spacing-sm);
+    border-radius: var(--debug-border-radius);
+}
+
+/* CSS Editor specific styles */
+.css-editor-content {
+    gap: var(--debug-spacing-md);
+}
+
+.css-editor-content .css-style-panel {
+    flex: 1;
+    overflow: auto;
+}
+
+/* Add placeholder styles */
+.debug-section-placeholder {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed var(--debug-border);
+    border-radius: var(--debug-border-radius);
+    min-height: 100px;
+    opacity: 0.5;
 }

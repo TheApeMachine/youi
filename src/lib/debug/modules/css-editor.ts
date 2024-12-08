@@ -213,12 +213,9 @@ const STYLE_GROUPS: StyleGroup[] = [
 export const setup: DebugModuleSetup = {
     name: 'CSS Editor',
     description: 'Live CSS editor with element picker',
-    setup: async (context: DebugModuleContext) => {
-        const section = document.createElement('div');
-        section.className = 'debug-section css-editor';
-
-        let selectedElement: HTMLElement | null = null;
-        let isPicking = false;
+    setup: async ({ addLog, container }) => {
+        const content = document.createElement('div');
+        content.className = 'css-editor-content';
 
         // Create UI elements
         const pickerBtn = document.createElement('button');
@@ -231,9 +228,12 @@ export const setup: DebugModuleSetup = {
         const elementInfo = document.createElement('div');
         elementInfo.className = 'css-element-info';
 
-        section.appendChild(pickerBtn);
-        section.appendChild(elementInfo);
-        section.appendChild(stylePanel);
+        content.appendChild(pickerBtn);
+        content.appendChild(elementInfo);
+        content.appendChild(stylePanel);
+
+        let selectedElement: HTMLElement | null = null;
+        let isPicking = false;
 
         const createStyleControl = (control: StyleControl) => {
             const container = document.createElement('div');
@@ -922,7 +922,7 @@ export const setup: DebugModuleSetup = {
             e.stopPropagation();
 
             const target = e.target as HTMLElement;
-            if (target === section || section.contains(target)) return;
+            if (target === content || content.contains(target)) return;
 
             // Remove highlight from previous element
             document.querySelectorAll('.css-picker-highlight').forEach(el =>
@@ -938,7 +938,7 @@ export const setup: DebugModuleSetup = {
             e.stopPropagation();
 
             const target = e.target as HTMLElement;
-            if (target === section || section.contains(target)) return;
+            if (target === content || content.contains(target)) return;
 
             selectedElement = target;
             isPicking = false;
@@ -956,219 +956,11 @@ export const setup: DebugModuleSetup = {
         document.addEventListener('mouseover', handleMouseOver);
         document.addEventListener('click', handleClick, true);
 
-        // Add styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .css-editor {
-                padding: 16px;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-                height: 100%;
-                overflow-y: auto;
-            }
-            
-            .css-picker-btn {
-                padding: 8px 16px;
-                cursor: pointer;
-            }
-            
-            .css-picker-btn.active {
-                background: #007bff;
-                color: white;
-            }
-            
-            .css-picker-highlight {
-                outline: 2px dashed #007bff !important;
-            }
-            
-            .css-style-panel {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .css-group {
-                border: 1px solid #444;
-                border-radius: 4px;
-                overflow: hidden;
-            }
-            
-            .css-group summary {
-                padding: 8px 12px;
-                background: #333;
-                cursor: pointer;
-                user-select: none;
-            }
-            
-            .css-group summary:hover {
-                background: #444;
-            }
-            
-            .css-group-controls {
-                padding: 12px;
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 12px;
-                background: #222;
-            }
-            
-            .css-control {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
-            
-            .css-control label {
-                font-size: 12px;
-                color: #888;
-            }
-            
-            .css-control-input {
-                width: 100%;
-                padding: 4px;
-                background: #333;
-                border: 1px solid #444;
-                color: #fff;
-                border-radius: 2px;
-            }
-            
-            .css-control-input:focus {
-                outline: none;
-                border-color: #007bff;
-            }
-            
-            .css-compound-control {
-                grid-column: 1 / -1;
-                background: #2a2a2a;
-                border-radius: 4px;
-                padding: 12px;
-            }
-            
-            .css-compound-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 12px;
-            }
-            
-            .css-unit-select {
-                background: #333;
-                border: 1px solid #444;
-                color: #fff;
-                padding: 2px 4px;
-                border-radius: 2px;
-            }
-            
-            .css-sliders-container {
-                display: grid;
-                gap: 8px;
-            }
-            
-            .css-slider-container {
-                display: grid;
-                grid-template-columns: 80px 1fr 60px;
-                align-items: center;
-                gap: 8px;
-            }
-            
-            .css-slider-label {
-                font-size: 12px;
-                color: #888;
-                text-transform: capitalize;
-            }
-            
-            .css-slider-input {
-                width: 100%;
-                height: 4px;
-                background: #444;
-                border-radius: 2px;
-                -webkit-appearance: none;
-            }
-            
-            .css-slider-input::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                width: 12px;
-                height: 12px;
-                background: #007bff;
-                border-radius: 50%;
-                cursor: pointer;
-            }
-            
-            .css-value-display {
-                width: 100%;
-                background: #333;
-                border: 1px solid #444;
-                color: #fff;
-                padding: 2px 4px;
-                border-radius: 2px;
-                font-size: 12px;
-            }
-            
-            .css-value-display:focus {
-                outline: none;
-                border-color: #007bff;
-            }
-            
-            .css-border-controls {
-                display: grid;
-                gap: 12px;
-            }
-            
-            .css-border-side {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
-            
-            .css-border-label {
-                font-size: 12px;
-                color: #888;
-                text-transform: capitalize;
-            }
-            
-            .css-border-inputs {
-                display: grid;
-                grid-template-columns: 60px 1fr 60px;
-                gap: 8px;
-                align-items: center;
-            }
-            
-            .css-border-width {
-                width: 100%;
-                padding: 4px;
-                background: #333;
-                border: 1px solid #444;
-                color: #fff;
-                border-radius: 2px;
-            }
-            
-            .css-border-style {
-                width: 100%;
-                padding: 4px;
-                background: #333;
-                border: 1px solid #444;
-                color: #fff;
-                border-radius: 2px;
-            }
-            
-            .css-border-color {
-                width: 100%;
-                padding: 2px;
-                background: #333;
-                border: 1px solid #444;
-                border-radius: 2px;
-            }
-        `;
-
-        document.head.appendChild(style);
-
         return {
-            component: section,
+            component: content,
             cleanup: () => {
                 document.removeEventListener('mouseover', handleMouseOver);
                 document.removeEventListener('click', handleClick, true);
-                style.remove();
             }
         };
     }

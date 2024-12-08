@@ -9,7 +9,7 @@ import { from } from "@/lib/mongo/query";
 import { eventBus, EventPayload } from "@/lib/event";
 import { Flex } from "@/lib/ui/Flex";
 import { List } from "@/lib/ui/List";
-import { Button } from "@/lib/ui/button/Button";
+import { Button } from "@/lib/ui/Button";
 
 export const render = Component({
     loader: () => {

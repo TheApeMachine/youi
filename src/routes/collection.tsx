@@ -8,13 +8,13 @@ import { from, isUUID } from "@/lib/mongo/query";
 import { Flex } from "@/lib/ui/Flex";
 import { stats } from "@/lib/ui/table/stats";
 import { Checkbox } from "@/lib/ui/Checkbox";
-import { Button } from "@/lib/ui/button/Button";
+import { Button } from "@/lib/ui/Button";
 import { EventPayload, eventBus } from "@/lib/event";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
 import { List } from "@/lib/ui/List";
 import { Popover } from "@/lib/ui/Popover";
-import { Icon } from "@/lib/ui/Icon";
+import { Icon } from "@/lib/ui/icon/Icon";
 import { Link } from "@/lib/ui/Link";
 
 gsap.registerPlugin(Flip);

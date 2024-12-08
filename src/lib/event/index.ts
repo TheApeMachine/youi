@@ -1,6 +1,48 @@
-import { EventType, EventPayload, EventMessage, EventConfig } from './types';
+import { EventPayload } from './types';
 
-export const createEventManager = (config: EventConfig = {}) => {
+const serializeEventData = (data: any): any => {
+    if (!data) return data;
+
+    // Handle common non-serializable objects
+    if (data instanceof Event) {
+        return {
+            type: data.type,
+            timeStamp: data.timeStamp,
+            // Add any other relevant event properties
+            target: data.target instanceof HTMLElement ? {
+                id: data.target.id,
+                className: data.target.className,
+                tagName: data.target.tagName,
+                value: 'value' in data.target ? (data.target as HTMLInputElement).value : undefined
+            } : null
+        };
+    }
+
+    // Handle arrays
+    if (Array.isArray(data)) {
+        return data.map(item => serializeEventData(item));
+    }
+
+    // Handle objects
+    if (typeof data === 'object') {
+        const serialized: Record<string, any> = {};
+        for (const [key, value] of Object.entries(data)) {
+            try {
+                // Test if the value can be cloned
+                structuredClone(value);
+                serialized[key] = value;
+            } catch {
+                // If it can't be cloned, try to serialize it
+                serialized[key] = serializeEventData(value);
+            }
+        }
+        return serialized;
+    }
+
+    return data;
+};
+
+export const createEventManager = () => {
     const worker = new Worker(
         new URL('./worker.ts', import.meta.url),
         { type: 'module' }
@@ -11,7 +53,8 @@ export const createEventManager = (config: EventConfig = {}) => {
         reject: (error: any) => void;
     }>();
 
-    const subscribers = new Map<string, Set<(payload: EventPayload) => void>>();
+    const handlers = new Map<string, Set<(payload: EventPayload) => void>>();
+    const patternHandlers = new Map<string, Set<(payload: EventPayload) => void>>();
     const ready = initialize();
 
     async function initialize(): Promise<void> {
@@ -36,42 +79,81 @@ export const createEventManager = (config: EventConfig = {}) => {
         });
     }
 
+    const matchesPattern = (pattern: string, topic: string): boolean => {
+        if (pattern === '*') return true;
+        if (pattern === topic) return true;
+
+        const patternParts = pattern.split('.');
+        const topicParts = topic.split('.');
+
+        if (patternParts.length !== topicParts.length && !pattern.includes('*')) {
+            return false;
+        }
+
+        return patternParts.every((part, i) => {
+            if (part === '*') return true;
+            if (part === '**') return true;
+            return part === topicParts[i];
+        });
+    };
+
     const handleMessage = (event: MessageEvent) => {
         const { type, payload, id } = event.data;
 
-        if (type === 'publish' && payload.data) {
-            const callbacks = subscribers.get(payload.data.topic);
+        if (type === 'event' && payload.eventName) {
+            const callbacks = handlers.get(payload.eventName);
             callbacks?.forEach(callback => {
                 try {
-                    callback(payload.data);
+                    callback(payload.event);
                 } catch (error) {
                     console.error('Error in event callback:', error);
                 }
             });
-            return;
+
+            patternHandlers.forEach((callbacks, pattern) => {
+                if (matchesPattern(pattern, payload.eventName)) {
+                    callbacks.forEach(callback => {
+                        try {
+                            callback(payload.event);
+                        } catch (error) {
+                            console.error('Error in pattern event callback:', error);
+                        }
+                    });
+                }
+            });
         }
 
         if (id && messageQueue.has(id)) {
             const { resolve, reject } = messageQueue.get(id)!;
+            messageQueue.delete(id);
+
             if (type === 'error') {
                 reject(new Error(payload.error));
             } else {
                 resolve(payload);
             }
-            messageQueue.delete(id);
         }
     };
 
     const sendMessage = async (type: string, payload: any): Promise<any> => {
         await ready;
 
+        // Serialize the payload before sending
+        const serializedPayload = serializeEventData(payload);
+
         return new Promise((resolve, reject) => {
             const id = crypto.randomUUID();
             messageQueue.set(id, { resolve, reject });
 
-            const message: EventMessage = { type: type as any, payload, id };
-            worker.postMessage(message);
+            try {
+                worker.postMessage({ type, payload: serializedPayload, id });
+            } catch (error) {
+                messageQueue.delete(id);
+                reject(error instanceof Error ? error : new Error(String(error)));
+                return;
+            }
 
+            // Set a timeout for the response
             setTimeout(() => {
                 if (messageQueue.has(id)) {
                     messageQueue.delete(id);
@@ -84,69 +166,49 @@ export const createEventManager = (config: EventConfig = {}) => {
     worker.onmessage = handleMessage;
 
     return {
-        publish: async (type: EventType, topic: string, data: any) => {
-            const payload: EventPayload = {
-                type,
-                topic,
-                data,
-                meta: {
-                    timestamp: Date.now(),
-                    source: 'event-manager'
-                }
-            };
-            await sendMessage('publish', payload);
+        init: async () => {
+            await ready;
         },
+        subscribe: async (topic: string, handler: (payload: EventPayload) => void) => {
+            const handlerId = crypto.randomUUID();
 
-        subscribe: (topic: string, callback: (payload: EventPayload) => void) => {
-            const id = crypto.randomUUID();
-
-            // Store callback in main thread
-            if (!subscribers.has(topic)) {
-                subscribers.set(topic, new Set());
+            if (!handlers.has(topic)) {
+                handlers.set(topic, new Set());
             }
-            subscribers.get(topic)!.add(callback);
+            handlers.get(topic)!.add(handler);
 
-            // Send subscription to worker (without callback)
-            sendMessage('subscribe', { id, topic })
-                .catch(error => console.error('Subscription error:', error));
+            await sendMessage('subscribe', { eventName: topic, handlerId });
 
             return () => {
-                const callbacks = subscribers.get(topic);
+                const callbacks = handlers.get(topic);
                 if (callbacks) {
-                    callbacks.delete(callback);
+                    callbacks.delete(handler);
                     if (callbacks.size === 0) {
-                        subscribers.delete(topic);
+                        handlers.delete(topic);
                     }
                 }
-                sendMessage('unsubscribe', { id, topic })
+                sendMessage('unsubscribe', { eventName: topic, handlerId })
                     .catch(error => console.error('Unsubscribe error:', error));
             };
         },
-
-        subscribePattern: (pattern: string, callback: (payload: EventPayload) => void) => {
-            const id = crypto.randomUUID();
-
-            // Store callback in main thread
-            if (!subscribers.has(pattern)) {
-                subscribers.set(pattern, new Set());
+        subscribePattern: async (pattern: string, handler: (payload: EventPayload) => void) => {
+            if (!patternHandlers.has(pattern)) {
+                patternHandlers.set(pattern, new Set());
             }
-            subscribers.get(pattern)!.add(callback);
-
-            // Send subscription to worker (without callback)
-            sendMessage('subscribe', { id, pattern })
-                .catch(error => console.error('Pattern subscription error:', error));
+            patternHandlers.get(pattern)!.add(handler);
 
             return () => {
-                const callbacks = subscribers.get(pattern);
+                const callbacks = patternHandlers.get(pattern);
                 if (callbacks) {
-                    callbacks.delete(callback);
+                    callbacks.delete(handler);
                     if (callbacks.size === 0) {
-                        subscribers.delete(pattern);
+                        patternHandlers.delete(pattern);
                     }
                 }
-                sendMessage('unsubscribe', { id, pattern })
-                    .catch(error => console.error('Pattern unsubscribe error:', error));
             };
+        },
+        publish: async (type: string, topic: string, data: any) => {
+            await sendMessage('publish', { eventName: topic, event: { type, data } });
         }
     };
 };
@@ -155,20 +217,21 @@ export const createEventManager = (config: EventConfig = {}) => {
 export const eventManager = {
     ...createEventManager(),
     init: async () => {
-        // Add initialization logic if needed
         return Promise.resolve();
     }
 };
 
 // Export the event bus instance with proper types
 export const eventBus = {
-    ...eventManager,  // This includes publish and init
+    ...eventManager,
     subscribe: (topic: string, callback: (payload: EventPayload) => void) => {
         return eventManager.subscribe(topic, callback);
     },
-    unsubscribe: (topic: string, callback: (payload: EventPayload) => void) => {
-        // Use the cleanup function returned by subscribe
-        const cleanup = eventManager.subscribe(topic, callback);
+    subscribePattern: (pattern: string, callback: (payload: EventPayload) => void) => {
+        return eventManager.subscribePattern(pattern, callback);
+    },
+    unsubscribe: async (topic: string, callback: (payload: EventPayload) => void) => {
+        const cleanup = await eventManager.subscribe(topic, callback);
         cleanup();
     }
 };

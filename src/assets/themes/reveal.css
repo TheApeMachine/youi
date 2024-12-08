@@ -50,33 +50,6 @@
     align-items: center;
     justify-content: center;
 }
-.reveal .items-stretch {
-    align-items: stretch;
-}
-.reveal .items-start {
-    align-items: flex-start;
-}
-.reveal .items-center {
-    align-items: center;
-}
-.reveal .items-end {
-    align-items: flex-end;
-}
-.reveal .justify-between {
-    justify-content: space-between;
-}
-.reveal .justify-around {
-    justify-content: space-around;
-}
-.reveal .justify-start {
-    justify-content: flex-start;
-}
-.reveal .justify-center {
-    justify-content: center;
-}
-.reveal .justify-end {
-    justify-content: flex-end;
-}
 html.reveal-full-page {
     width: 100%;
     height: 100%;

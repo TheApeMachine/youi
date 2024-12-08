@@ -1,71 +1,49 @@
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
 import { AuthService } from "@/lib/auth";
-import { eventBus, EventPayload } from "@/lib/event";
-import { createRouter } from "@/lib/router";
-import { Flex } from "@/lib/ui/Flex";
-import { Form } from "@/lib/ui/form/Form";
-import { TextField } from "@/lib/ui/form/TextField";
-import { Button } from "@/lib/ui/button/Button";
+import { Center, Column, Row } from "@/lib/ui/Flex";
+import Form from "@/lib/ui/form/Form";
+import Button from "@/lib/ui/button/Button";
 import { Text } from "@/lib/ui/Text";
-export const render = Component({
-    effect: () => {
-        createRouter().then(({ navigateTo }) => {
-            eventBus.subscribe("login", async (payload: EventPayload) => {
-                const { email, password } = payload.data as {
-                    email: string;
-                    password: string;
-                };
-                await AuthService.login(email, password);
-            });
+import Card from "@/lib/ui/card/Card";
 
-            eventBus.subscribe(
-                "stateChange",
-                async (payload: { key: string; value: any }) => {
-                    if (payload.key === "auth") {
-                        await AuthService.getUserInfo(
-                            payload.value.accessToken
-                        );
-                        navigateTo("/dashboard");
-                    }
-                }
-            );
-        });
-    },
-    render: async () => (
-        <Flex fullHeight fullWidth>
-            <Flex direction="column" grow>
-                <Flex direction="column" gap="md" className="card-shadow">
+export default async () => {
+    return (
+        <Row>
+            <Center>
+                <Card>
                     <Text variant="h1" color="brand">
                         Fan App
                     </Text>
                     <p>Sign in to continue</p>
 
-                    <Form event="login" effect="authenticate">
-                        <TextField
-                            label="Email"
-                            name="email"
-                            type="email"
-                            icon="person"
-                            required
-                            validationMessage="Please enter a valid email"
-                        />
-                        <TextField
-                            label="Password"
-                            name="password"
-                            type="password"
-                            icon="lock"
-                            required
-                            validationMessage="Password is required"
-                        />
-                        <Button variant="brand" type="submit" icon="key">
-                            <Text variant="h6">Sign in</Text>
-                        </Button>
-                    </Form>
+                    <Form
+                        onSubmit={() => {
+                            console.log("submit");
+                        }}
+                        fields={{
+                            email: {
+                                type: "email",
+                                label: "Email",
+                                required: true
+                            },
+                            password: {
+                                type: "password",
+                                label: "Password",
+                                required: true
+                            }
+                        }}
+                        buttons={{
+                            submit: (
+                                <Button variant="submit" icon="login">
+                                    Sign In
+                                </Button>
+                            )
+                        }}
+                    />
 
-                    <Flex direction="column" gap="md" fullWidth>
+                    <Column gap>
                         <p>Or sign in with</p>
-                        <Flex gap="md" fullWidth>
+                        <Row gap>
                             <Button
                                 variant="icon"
                                 color="muted"
@@ -77,19 +55,19 @@ export const render = Component({
                                 color="muted"
                                 icon="flutter_dash"
                             />
-                        </Flex>
-                    </Flex>
+                        </Row>
+                    </Column>
 
-                    <Flex direction="column">
+                    <Column>
                         <p>
                             Don't have an account? <a href="/signup">Sign up</a>
                         </p>
-                    </Flex>
-                </Flex>
-            </Flex>
-            <Flex direction="column" className="random-image" grow>
+                    </Column>
+                </Card>
+            </Center>
+            <Column className="random-image" grow>
                 <img src="/public/logo.png" alt="logo" class="logo" />
-            </Flex>
-        </Flex>
-    )
-});
+            </Column>
+        </Row>
+    );
+};

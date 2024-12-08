@@ -1,32 +1,123 @@
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
+import { Alignment, Justification, Unit } from "./types";
 
-export const Flex = Component({
-    render: ({
-        className,
-        children
-    }: {
-        className?: string;
-        children: Node | Node[];
-    }) => {
-        return <div class={className}>{children}</div>;
-    }
-});
+export const Flex = async ({
+    children,
+    direction = "column",
+    align = "stretch",
+    justify = "start",
+    gap = false,
+    grow = false,
+    className,
+    ...props
+}: {
+    children: JSX.Element;
+    direction?: "row" | "column";
+    align?: Alignment;
+    justify?: Justification;
+    gap?: boolean | Unit;
+    grow?: boolean;
+    className?: string;
+}) => {
+    // If gap is a boolean, it should become gap-unit
+    const gapClass = typeof gap === "boolean" ? `gap-unit` : `gap-${gap}`;
+    const alignClass = align ? `align-${align}` : "";
+    const justifyClass = justify ? `justify-${justify}` : "";
+    const growClass = grow ? "flex-grow" : "";
 
-export const Row = Component({
-    render: ({ children }: { children: Node | Node[] }) => (
-        <Flex className="row-box">{children}</Flex>
-    )
-});
+    return (
+        <div
+            className={`flex ${direction} ${
+                gap ? gapClass : ""
+            } ${alignClass} ${justifyClass} ${growClass} ${className}`}
+            {...props}
+        >
+            {children}
+        </div>
+    );
+};
 
-export const Column = Component({
-    render: ({ children }: { children: Node | Node[] }) => (
-        <Flex className="column-box">{children}</Flex>
-    )
-});
+export const Row = async ({
+    align = "stretch",
+    justify = "start",
+    gap = false,
+    grow = false,
+    children,
+    className,
+    ...props
+}: {
+    align?: Alignment;
+    justify?: Justification;
+    gap?: boolean | Unit;
+    grow?: boolean;
+    children: JSX.Element;
+    className?: string;
+}) => {
+    return (
+        <Flex
+            direction="row"
+            align={align}
+            justify={justify}
+            gap={gap}
+            grow={grow}
+            className={className}
+            {...props}
+        >
+            {children}
+        </Flex>
+    );
+};
 
-export const Center = Component({
-    render: ({ children }: { children: Node | Node[] }) => (
-        <Flex className="center-box">{children}</Flex>
-    )
-});
+export const Column = async ({
+    align = "stretch",
+    justify = "start",
+    gap = false,
+    grow = false,
+    children,
+    className,
+    ...props
+}: {
+    align?: Alignment;
+    justify?: Justification;
+    gap?: boolean | Unit;
+    grow?: boolean;
+    children: JSX.Element;
+    className?: string;
+}) => {
+    return (
+        <Flex
+            direction="column"
+            align={align}
+            justify={justify}
+            gap={gap}
+            grow={grow}
+            className={className}
+            {...props}
+        >
+            {children}
+        </Flex>
+    );
+};
+
+export const Center = async ({
+    children,
+    grow = true,
+    className,
+    ...props
+}: {
+    children: JSX.Element;
+    grow?: boolean;
+    className?: string;
+}) => {
+    return (
+        <Flex
+            align="center"
+            justify="center"
+            grow={grow}
+            className={className}
+            {...props}
+        >
+            {children}
+        </Flex>
+    );
+};

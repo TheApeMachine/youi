@@ -26,6 +26,7 @@ export const onMount = (element: HTMLElement | null, handler: () => void) => {
                 obs.disconnect();
             }
         });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 };
 

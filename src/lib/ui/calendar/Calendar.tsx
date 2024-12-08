@@ -3,7 +3,7 @@ import { Component } from "@/lib/ui/Component";
 import { Flex } from "../Flex";
 import { Text } from "../Text";
 import { DateTime } from "luxon";
-import { Icon } from "../Icon";
+import { Icon } from "../icon/Icon";
 import { Button } from "../button/Button";
 import { eventBus } from "@/lib/event";
 import { from } from "@/lib/mongo/query";

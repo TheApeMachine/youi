@@ -3,7 +3,7 @@ import { Component } from "@/lib/ui/Component";
 import { Flex } from "@/lib/ui/Flex";
 import { Text } from "@/lib/ui/Text";
 import { List } from "@/lib/ui/List";
-import { Icon } from "@/lib/ui/Icon";
+import { Icon } from "@/lib/ui/icon/Icon";
 import { Badge } from "@/lib/ui/Badge";
 import { from } from "@/lib/mongo/query";
 import { Bars } from "@/lib/ui/charts/Bars";

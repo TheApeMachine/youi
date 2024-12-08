@@ -9,7 +9,11 @@ console.log("Home route module loaded");
 // Expose event manager for debugging
 (window as any).debugEventManager = eventManager;
 
-export default () => {
+export default async () => {
     console.log("Home component rendering");
-    return <DynamicIsland variant="logo" main={<Rainbow />} />;
+    return await (
+        <DynamicIsland>
+            <Rainbow />
+        </DynamicIsland>
+    );
 };

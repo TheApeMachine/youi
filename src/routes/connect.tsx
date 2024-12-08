@@ -6,7 +6,7 @@ import { Flex } from "@/lib/ui/Flex";
 import { Timeline } from "@/lib/ui/monocle/Timeline";
 import { DynamicIsland } from "@/lib/ui/DynamicIsland";
 import { Popover } from "@/lib/ui/Popover";
-import { Button } from "@/lib/ui/button/Button";
+import { Button } from "@/lib/ui/Button";
 
 export const render = Component({
     render: async () => {

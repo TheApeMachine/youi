@@ -2,11 +2,19 @@
 
 A simple way to build complexity.
 
-## Concepts
+## Core Concepts
 
 ### Dynamic Islands
 
-A Dynamic Island is a self-contained, independently rendered component that can be used to build data-driven UI components.
+A Dynamic Island is a self-contained, independently rendered component that can be used to build data-driven UI components. The system is built on three core pillars:
+
+-   worker-based routing, state, and event management,
+-   event-driven updates,
+-   slide-based page routing, combined with individual dynamic island routing.
+
+In rough terms:
+
+Given a route like `/home/profile`, we could say that there must be a slide for `/home`, and within that slide there must be a dynamic island for `/profile`.
 
 #### Core Structure
 
@@ -36,127 +44,169 @@ Each Dynamic Island uses a consistent HTML structure:
 
 This structure and styling makes it so that any element that does not have any content will not take up any space. Dynamic Islands are designed to essentially "morph" into various component types, using the mini-grid system to lay things out.
 
-#### Examples
-
-Form Field:
-
-```html
-<div class="dynamic-island">
-    <header>Form Field Label</header>
-    <aside></aside>
-    <main><input type="text" /></main>
-    <article></article>
-    <footer><p>Validation Message</p></footer>
-</div>
-```
-
-Button:
-
-```html
-<style>
-    .dynamic-island {
-        border: 1px solid;
-        border-radius: 10px;
-
-        &:hover {
-            border-color: var(--color-primary);
-        }
-    }
-</style>
-<div class="dynamic-island">
-    <header></header>
-    <aside><span>Icon</span></aside>
-    <main><span>Text</span></main>
-    <article></article>
-    <footer></footer>
-</div>
-```
-
 ## Technical Architecture
 
 ### Core Principles
 
-1. **Self-Contained Units**: Each Dynamic Island is a fully independent unit that manages its own:
+1. **Worker-Based Architecture**: Each core system runs in its own Web Worker:
 
-    - Data fetching and state
-    - Lifecycle and rendering
-    - Event handling
-    - Child island composition
-
-2. **Parallel Processing**: Leveraging Web Workers for performance:
-    - State Management Worker: Handles persistence and state updates
+    - State Worker: Handles state persistence and updates
     - Event Worker: Manages event queuing and processing
-    - Route/Data Worker: Handles data prefetching and resolution
+    - Router Worker: Handles navigation and view updates
 
-### State Management (Worker-based)
+2. **Event-Driven Updates**: All system interactions are event-based:
 
-```typescript
-interface StateWorker {
-    storage: {
-        read: () => Promise<any>;
-        write: (data: any) => Promise<void>;
-    };
-    mutations: {
-        update: (key: string, value: any) => void;
-        notify: (subscribers: string[]) => void;
-    };
-}
-```
+    - DOM events through data attributes
+    - State changes through worker messages
+    - Navigation through slide transitions
+
+3. **Parallel Processing**: Each worker operates independently:
+    - Asynchronous state updates
+    - Non-blocking event processing
+    - Independent view updates
+
+### Current Implementation Status
+
+#### ✅ Completed Features
+
+1. **State Management**
+
+    - Worker-based state handling
+    - Multiple backend support (IndexedDB, planned: MongoDB, HTTP, CRDT)
+    - Nested state operations
+    - Real-time subscriptions
+
+2. **Event System**
+
+    - Worker-based event processing
+    - Pattern-based subscriptions
+    - DOM event integration
+    - Event buffering and retention
+
+3. **Router**
+    - Slide-based navigation
+    - Independent island updates
+    - Worker-based route handling
+    - History management
+
+#### 🚧 In Progress
+
+1. **Data Layer**
+
+    - Backend integrations
+    - CRDT implementation
+    - Caching mechanisms
+    - Offline support
+
+2. **UI Components**
+
+    - Configuration-driven islands
+    - Template system
+    - Animation framework
+    - Theme management
+
+3. **Developer Tools**
+    - Debug interface
+    - State inspector
+    - Event monitor
+    - Performance tracking
 
 ### Component API
 
 ```typescript
 const ExampleIsland = YouI({
-    // Data requirements (processed in worker)
+    // Data requirements
     load: {
         data: DataSource.query(),
         related: RelatedData.fetch()
     },
 
-    // Internal state (managed in worker)
+    // State configuration
     state: {
-        activeView: "default",
-        isLoading: false
+        primary: "indexeddb",
+        sync: ["mongo"],
+        cache: true
     },
 
-    // Event handlers (processed in worker)
+    // Event handlers
     events: {
         onChange: (value) => {},
         onSubmit: () => {}
     },
 
-    // Composition
+    // Island composition
     island: DynamicIsland({
         header: HeaderComponent,
-        aside: AsideIsland, // Nested independent island
+        aside: AsideIsland,
         main: MainContent,
-        article: StatsIsland, // Nested independent island
+        article: StatsIsland,
         footer: FooterActions
     })
 });
 ```
 
-### Implementation Strategy
+## Roadmap
 
-1. **Phase 1: State Management Worker**
+### Phase 1: Core Systems (Current)
 
-    - Implement persistence layer
-    - Build state mutation system
-    - Create notification mechanism
+1. **State Management**
 
-2. **Phase 2: Event System**
+    - [x] Worker implementation
+    - [x] IndexedDB backend
+    - [ ] MongoDB integration
+    - [ ] CRDT support
 
-    - Design event queue
-    - Implement subscription management
-    - Build worker communication
+2. **Event System**
 
-3. **Phase 3: Data and Routing**
+    - [x] Worker implementation
+    - [x] Pattern matching
+    - [x] DOM integration
+    - [ ] Event replay
 
-    - Create data resolution system
-    - Implement route prefetching
-    - Build caching mechanism
+3. **Router**
+    - [x] Worker implementation
+    - [x] Slide transitions
+    - [x] Island updates
+    - [ ] Prefetching
 
-4. **Phase 4: Island Composition**
-    - Design nested island architecture
-    - Implement data flow
-    - Build transition system
+### Phase 2: Data Layer
+
+1. **Backend Integration**
+
+    - [ ] REST API wrapper
+    - [ ] GraphQL support
+    - [ ] WebSocket integration
+    - [ ] Offline first
+
+2. **Data Sync**
+    - [ ] Multi-backend sync
+    - [ ] Conflict resolution
+    - [ ] Change tracking
+    - [ ] Migration system
+
+### Phase 3: UI Framework
+
+1. **Component System**
+
+    - [ ] Template engine
+    - [ ] Style system
+    - [ ] Animation framework
+    - [ ] Accessibility layer
+
+2. **Developer Experience**
+    - [ ] CLI tools
+    - [ ] Debug tools
+    - [ ] Documentation
+    - [ ] Testing utilities
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

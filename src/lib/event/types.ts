@@ -1,3 +1,8 @@
+export interface EventPayload {
+    type: string;
+    data: any;
+}
+
 export type DOMEventName =
     | 'click'
     | 'input'
@@ -9,13 +14,6 @@ export type DOMEventName =
     | 'mouseleave'
     | 'keydown'
     | 'keyup';
-
-export type EventType =
-    | 'dom'      // DOM events (click, input, etc.)
-    | 'state'    // State changes
-    | 'route'    // Navigation/routing events
-    | 'system'   // System events (loading, error, etc.)
-    | 'custom';  // User-defined events
 
 export type EventHandler<T = any> = (event: T) => void;
 
@@ -47,53 +45,27 @@ export interface ComponentEventProps extends BaseEventProps {
     onKeyUp?: KeyboardHandler;
 }
 
-export interface EventPayload {
-    type: EventType;
-    topic?: string;
-    effect?: string;
-    trigger?: string;
-    data?: any;
-    meta?: {
-        timestamp: number;
-        source: string;
-        target?: string;
-        path?: string[];
-        originalEvent?: Event;
-    };
+export interface HandlerPayload {
+    eventName: string;
+    handlerId: string;
 }
 
-export interface EventSubscription {
-    id: string;
-    type: EventType;
-    topic?: string;
-    pattern?: string;
-    callback: (payload: EventPayload) => void;
+export interface EventDispatchPayload {
+    eventName: string;
+    event: EventPayload;
 }
+
+export type EventMessageType =
+    | 'subscribe'
+    | 'unsubscribe'
+    | 'publish'
+    | 'event'
+    | 'success'
+    | 'error'
+    | 'ready';
 
 export interface EventMessage {
-    type: 'subscribe' | 'unsubscribe' | 'publish' | 'ready';
-    payload: EventPayload | EventSubscription;
+    type: EventMessageType;
+    payload: HandlerPayload | EventDispatchPayload | { success?: boolean; error?: string };
     id?: string;
-}
-
-export interface EventResponse {
-    type: string;
-    payload: {
-        success?: boolean;
-        error?: string;
-        data?: any;
-    };
-    id?: string;
-}
-
-export interface EventConfig {
-    bufferSize?: number;
-    debounceMs?: number;
-    retainedEvents?: string[];
-    patterns?: {
-        [key: string]: {
-            target: EventType;
-            transform?: (payload: EventPayload) => EventPayload;
-        }
-    };
 } 

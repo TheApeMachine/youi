@@ -1,120 +1,76 @@
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
-import { Player } from "../animoji/Player";
-import { Color, Background, Unit } from "../types";
-import { Icon } from "../Icon";
+import { createEventProps } from "@/lib/event/dom";
+import { Icon } from "@/lib/ui/icon/Icon";
 
-type ButtonProps = {
-    variant: "brand" | "icon" | "animoji" | "button" | "text" | "keypad";
-    color?: Color;
-    background?: Background;
-    type?: "button" | "submit" | "reset";
-    className?: string;
+export type ButtonVariant =
+    | "primary"
+    | "secondary"
+    | "icon"
+    | "text"
+    | "animoji"
+    | "submit";
+export type ButtonColor = "brand" | "muted" | "danger" | "success";
+export type ButtonSize = "sm" | "md" | "lg";
+
+export interface ButtonProps {
+    variant?: ButtonVariant;
+    color?: ButtonColor;
+    size?: ButtonSize;
     icon?: string;
-    trigger?: string;
-    event?: string;
-    effect?: string;
-    topic?: string;
-    children?: Node | Node[];
-    popovertarget?: string;
-    pad?: Unit;
+    disabled?: boolean;
+    loading?: boolean;
+    className?: string;
+    children?: any;
+    onClick?: (event: MouseEvent) => void;
+    type?: "button" | "submit" | "reset";
+}
+
+export default async ({
+    variant = "primary",
+    color = "brand",
+    size = "md",
+    icon,
+    disabled = false,
+    loading = false,
+    className = "",
+    children,
+    onClick,
+    type = variant === "submit" ? "submit" : "button",
+    ...props
+}: ButtonProps) => {
+    const eventProps = createEventProps("button");
+    const baseClass = "button";
+    const variantClass = `${baseClass}--${variant}`;
+    const colorClass = `${baseClass}--${color}`;
+    const sizeClass = `${baseClass}--${size}`;
+    const classes = [
+        baseClass,
+        variantClass,
+        colorClass,
+        sizeClass,
+        disabled && "disabled",
+        loading && "loading",
+        className
+    ]
+        .filter(Boolean)
+        .join(" ");
+
+    return (
+        <button
+            type={type}
+            class={classes}
+            disabled={disabled || loading}
+            onClick={onClick}
+            {...eventProps}
+            {...props}
+        >
+            {icon && <Icon icon={icon} color={color} />}
+            {children}
+            {loading && (
+                <span class="loading-indicator">
+                    <Icon icon="sync" color={color} />
+                </span>
+            )}
+        </button>
+    );
 };
-
-export const Button = Component({
-    effect: (props: ButtonProps & { rootElement: HTMLElement }) => {
-        if (props.popovertarget) {
-            console.log("popovertarget", props.popovertarget);
-            (props.rootElement as any).popovertarget = props.popovertarget;
-        }
-    },
-    render: ({
-        variant,
-        color = "fg",
-        background = "transparent",
-        type = "button",
-        icon,
-        effect,
-        trigger,
-        event,
-        topic,
-        children,
-        className,
-        pad
-    }: ButtonProps) => {
-        const style = [pad && `padding: var(--${pad})`]
-            .filter(Boolean)
-            .join(";");
-
-        switch (variant) {
-            case "brand":
-                return (
-                    <button
-                        type={type}
-                        style={`gap: var(--xs); color: var(--highlight); ${style}`}
-                        class="brand"
-                        data-trigger={trigger}
-                        data-event={event}
-                        data-effect={effect}
-                        data-topic={topic}
-                    >
-                        {icon && <Icon icon={icon} color={color} />}
-                        {children ?? ""}
-                    </button>
-                );
-            case "animoji":
-                return (
-                    <div
-                        class="animoji"
-                        data-trigger="click"
-                        data-event="dialog"
-                        data-effect="open"
-                        style={style}
-                    >
-                        {icon && <Icon icon={icon} color={color} />}
-                        {icon && <Player data={{ animoji: icon }} />}
-                    </div>
-                );
-            case "keypad":
-                return (
-                    <button
-                        data-trigger={trigger}
-                        data-event={event}
-                        data-effect={effect}
-                        data-topic={topic}
-                        class={`keypad ${className ?? ""}`}
-                        style={style}
-                    >
-                        {icon && <Icon icon={icon} color={color} />}
-                        {children}
-                    </button>
-                );
-            case "text":
-                return (
-                    <button
-                        data-trigger={trigger}
-                        data-event={event}
-                        data-effect={effect}
-                        data-topic={topic}
-                        style={`color: var(--${color}); background-color: var(--${background}, transparent); ${style}`}
-                        class={`text ${className ?? ""}`}
-                    >
-                        {children}
-                    </button>
-                );
-            default:
-                return (
-                    <button
-                        data-trigger={trigger}
-                        data-event={event}
-                        data-effect={effect}
-                        data-topic={topic}
-                        style={`color: var(--${color}); background-color: var(--${background}, transparent); ${style}`}
-                        class={`icon ${className ?? ""}`}
-                    >
-                        {icon && <Icon icon={icon} color={color} />}
-                        {children}
-                    </button>
-                );
-        }
-    }
-});

@@ -7,7 +7,7 @@ import { stateManager } from "@/lib/state";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
 import { Flex } from "@/lib/ui/Flex";
-import { Icon } from "@/lib/ui/Icon";
+import { Icon } from "@/lib/ui/icon/Icon";
 import { Link } from "@/lib/ui/Link";
 import { Badge } from "@/lib/ui/Badge";
 import { Text } from "@/lib/ui/Text";

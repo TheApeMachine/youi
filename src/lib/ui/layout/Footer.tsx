@@ -1,7 +1,7 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { Flex } from "../Flex";
-import { Icon } from "../Icon";
+import { Icon } from "../icon/Icon";
 
 export const Footer = Component({
     render: async () => (

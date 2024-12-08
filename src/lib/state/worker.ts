@@ -17,6 +17,15 @@ const createStateWorker = () => {
     const subscribers = new Map<string, string[]>();
     let version = 0;
 
+    const updateStateKeys = () => {
+        const keys = Array.from(state.keys()).filter(key => key !== '__state_keys__');
+        state.set('__state_keys__', {
+            value: keys,
+            timestamp: Date.now(),
+            version: version++
+        });
+    };
+
     const postResponse = (type: string, payload: any, id?: string) => {
         self.postMessage({ type, payload, id });
     };
@@ -24,7 +33,9 @@ const createStateWorker = () => {
     const persistState = async () => {
         const stateObj: Record<string, any> = {};
         for (const [key, data] of state.entries()) {
-            stateObj[key] = data.value;
+            if (key !== '__state_keys__') {
+                stateObj[key] = data.value;
+            }
         }
         await localforage.setItem('app_state', stateObj);
     };
@@ -70,6 +81,7 @@ const createStateWorker = () => {
             });
         }
 
+        updateStateKeys();
         await persistState();
         postResponse('write', { success: true }, id);
     };
@@ -86,6 +98,7 @@ const createStateWorker = () => {
             version: version++
         });
 
+        updateStateKeys();
         await persistState();
 
         const subs = subscribers.get(key) || [];
@@ -124,6 +137,7 @@ const createStateWorker = () => {
                     });
                 });
             }
+            updateStateKeys();
             postResponse('ready', { success: true });
         } catch (error) {
             postResponse('ready', {

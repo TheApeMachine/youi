@@ -6,7 +6,7 @@ import { EmojiNode, registerEmojiPlugin } from "@/lib/plugins/EmojiPlugin";
 import { Flex } from "../Flex";
 import { Image } from "../Image";
 import { Text } from "../Text";
-import { Icon } from "../Icon";
+import { Icon } from "../icon/Icon";
 import { sanitizeHTML } from "@/lib/template";
 import { Link } from "../Link";
 

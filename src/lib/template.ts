@@ -1,5 +1,6 @@
 // @ts-ignore: JSX factory import is used by the transpiler
 import { Transition } from "@/lib/transition";
+import { registerEventHandlers } from "@/lib/event/dom";
 
 // Export JSX namespace
 export namespace JSX {
@@ -170,9 +171,29 @@ const handleSVG = (tag: string): { element: Element, isSVG: boolean } => {
 };
 
 const handleEventAndRef = (element: Element, name: string, value: any): boolean => {
-    // Handle event listeners
+    // Handle mount handler specially
+    if (name === 'onMount' && typeof value === 'function') {
+        requestAnimationFrame(() => {
+            if (element.isConnected) {
+                value(element);
+            } else {
+                const observer = new MutationObserver((mutations, obs) => {
+                    if (element.isConnected) {
+                        requestAnimationFrame(() => value(element));
+                        obs.disconnect();
+                    }
+                });
+                observer.observe(document.body, { childList: true, subtree: true });
+            }
+        });
+        return true;
+    }
+
+    // Handle regular event listeners through the event system
     if (name.startsWith('on') && typeof value === 'function') {
-        element.addEventListener(name.slice(2).toLowerCase(), value as EventListener);
+        const eventName = name.slice(2).toLowerCase();
+        const props = { [`on${eventName.charAt(0).toUpperCase()}${eventName.slice(1)}`]: value };
+        registerEventHandlers(element, props);
         return true;
     }
 
@@ -272,12 +293,19 @@ const handleTransitions = (element: Element, props: Props | null) => {
     }
 }
 
-const handleComponent = (tag: Function, props: Props | null, children: any[]) => {
+const handleComponent = async (tag: Function, props: Props | null, children: any[]) => {
     const componentProps = props ? { ...props } : {};
     if (children.length > 0) {
-        componentProps.children = children.length === 1 ? children[0] : children;
+        // Resolve any async children before passing them to the component
+        const resolvedChildren = await Promise.all(
+            children.map(async child =>
+                child instanceof Promise ? await child : child
+            )
+        );
+        componentProps.children = resolvedChildren.length === 1 ? resolvedChildren[0] : resolvedChildren;
     }
-    return tag(componentProps);
+    const result = tag(componentProps);
+    return result instanceof Promise ? await result : result;
 }
 
 /*
@@ -299,11 +327,7 @@ export const jsx = async (
 
     // Handle function components
     if (typeof tag === 'function') {
-        const result = tag(props || {});
-        if (result instanceof Promise) {
-            return await result;
-        }
-        return result;
+        return handleComponent(tag, props, children);
     }
 
     // Handle HTML/SVG elements
@@ -313,9 +337,20 @@ export const jsx = async (
         handleElementProps(element, props, isSVG);
     }
 
+    // Resolve all children before appending
+    const resolvedChildren = await Promise.all(
+        children.flat().map(async child =>
+            child instanceof Promise ? await child : child
+        )
+    );
+
     // Handle children
-    for (const child of children.flat()) {
-        await appendChild(element, child);
+    for (const child of resolvedChildren) {
+        if (child !== false && child !== null && child !== undefined) {
+            element.appendChild(
+                child instanceof Node ? child : document.createTextNode(String(child))
+            );
+        }
     }
 
     return element;

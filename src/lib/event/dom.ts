@@ -2,10 +2,7 @@ import { DOMEventName, EventHandler, ComponentEventProps } from './types';
 import { eventManager } from './index';
 
 // Map to track event handlers by element and event type
-const handlerMap = new WeakMap<
-    Element,
-    Map<string, Set<EventHandler>>
->();
+const handlerMap = new WeakMap<Element, Map<string, Set<EventHandler>>>();
 
 // Single event listener per event type that delegates to registered handlers
 const delegateHandler = (eventName: string) => (event: Event) => {
@@ -23,7 +20,7 @@ const delegateHandler = (eventName: string) => (event: Event) => {
 // Initialize global event listeners once
 const initializedEvents = new Set<string>();
 
-export const initializeEventType = (eventName: DOMEventName) => {
+const initializeEventType = (eventName: DOMEventName) => {
     if (!initializedEvents.has(eventName)) {
         document.addEventListener(eventName, delegateHandler(eventName));
         initializedEvents.add(eventName);
@@ -31,11 +28,8 @@ export const initializeEventType = (eventName: DOMEventName) => {
 };
 
 // Register event handlers for an element
-export const registerEventHandlers = (
-    element: Element,
-    props: ComponentEventProps
-) => {
-    // Initialize handler map for this element
+export const registerEventHandlers = (element: Element, props: ComponentEventProps) => {
+    // Initialize handler map for this element if needed
     if (!handlerMap.has(element)) {
         handlerMap.set(element, new Map());
     }
@@ -54,6 +48,9 @@ export const registerEventHandlers = (
                 elementHandlers.set(eventName, new Set());
             }
             elementHandlers.get(eventName)!.add(handler);
+
+            // Register with event manager
+            eventManager.subscribe(eventName, handler);
         }
     });
 

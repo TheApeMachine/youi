@@ -1,8 +1,8 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { Button } from "@/lib/ui/button/Button";
+import { Button } from "@/lib/ui/Button";
 import { Flex } from "../Flex";
-import { Icon } from "../Icon";
+import { Icon } from "../icon/Icon";
 
 export const Article = Component({
     render: async () => (

@@ -14,13 +14,13 @@ export const setup: DebugModuleSetup = {
     name: 'Router',
     description: 'Monitor router state and navigation',
     setup: async ({ addLog, container }) => {
-        const section = document.createElement('div');
-        section.className = 'debug-section router';
+        const content = document.createElement('div');
+        content.className = 'router-content';
 
         // Create router state display
         const stateDisplay = document.createElement('div');
         stateDisplay.className = 'router-state';
-        section.appendChild(stateDisplay);
+        content.appendChild(stateDisplay);
 
         // Create navigation history
         const historyDisplay = document.createElement('div');
@@ -28,13 +28,13 @@ export const setup: DebugModuleSetup = {
         historyDisplay.innerHTML = '<h4>Navigation History</h4>';
         const historyList = document.createElement('ul');
         historyDisplay.appendChild(historyList);
-        section.appendChild(historyDisplay);
+        content.appendChild(historyDisplay);
 
         // Create island state display
         const islandDisplay = document.createElement('div');
         islandDisplay.className = 'router-islands';
         islandDisplay.innerHTML = '<h4>Dynamic Islands</h4>';
-        section.appendChild(islandDisplay);
+        content.appendChild(islandDisplay);
 
         // Function to update displays
         const updateDisplays = async () => {
@@ -75,12 +75,15 @@ export const setup: DebugModuleSetup = {
             }
         };
 
-        // Store event handler reference for cleanup
+        // Store cleanup function
+        let unsubscribe: (() => void) | null = null;
+
+        // Navigation handler with double assertion through unknown
         const navigationHandler = async (payload: EventPayload) => {
             addLog({
                 type: 'navigation',
                 category: 'router',
-                summary: `Navigation: ${payload.effect}`,
+                summary: `Navigation: ${(payload as unknown as { effect: string }).effect}`,
                 details: payload,
                 timestamp: new Date().toISOString(),
                 id: crypto.randomUUID()
@@ -88,16 +91,16 @@ export const setup: DebugModuleSetup = {
             await updateDisplays();
         };
 
-        // Subscribe and get the cleanup function
-        const cleanupSubscription = eventManager.subscribe('navigation', navigationHandler);
+        // Subscribe and store the cleanup function
+        unsubscribe = await eventManager.subscribe('navigation', navigationHandler);
 
         // Initial update
         await updateDisplays();
 
         return {
-            component: section,
+            component: content,
             cleanup: () => {
-                cleanupSubscription(); // Clean up the subscription
+                unsubscribe?.(); // Clean up the subscription if it exists
             }
         };
     }

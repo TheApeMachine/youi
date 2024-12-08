@@ -6,7 +6,7 @@ import gsap from "gsap";
 import Flip from "gsap/Flip";
 import { eventBus } from "@/lib/event";
 import { EventPayload } from "@/lib/event/types";
-import { Icon } from "../Icon";
+import { Icon } from "../icon/Icon";
 
 gsap.registerPlugin(Flip);
 

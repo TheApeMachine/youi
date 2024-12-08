@@ -1,3 +1,5 @@
+import { eventManager } from '@/lib/event';
+
 export const createStateManager = () => {
     const subscribers = new Map<string, Set<(value: any) => void>>();
     let worker: Worker | null = null;
@@ -85,6 +87,18 @@ export const createStateManager = () => {
     const update = async (key: string, value: any): Promise<void> => {
         try {
             await sendWorkerMessage('update', { key, value });
+            // Publish state change event
+            eventManager.publish('state', 'change', {
+                type: 'stateChange',
+                data: {
+                    key,
+                    value,
+                    metadata: {
+                        timestamp: Date.now(),
+                        version: 1
+                    }
+                }
+            });
         } catch (error) {
             console.error(`Failed to update ${key}:`, error);
             throw error;

@@ -102,7 +102,7 @@ export const RouterManager = () => {
                     slideSection.replaceChildren(element);
                 } else if (element && typeof element === 'object') {
                     console.log('Transforming JSX element');
-                    const rendered = await jsx('div', null, element);
+                    const rendered = await element;
                     console.log('JSX transformed:', rendered);
                     slideSection.replaceChildren(rendered);
                 } else {
@@ -233,6 +233,8 @@ export const RouterManager = () => {
                 hash: false,
                 autoSlide: 0,
                 help: false,
+                display: "flex",
+                layout: false,
                 ready: () => console.log('Reveal.js ready callback fired')
             });
             console.log('Reveal.js initialization complete');
@@ -243,8 +245,8 @@ export const RouterManager = () => {
         // Setup event listeners
         console.log('Setting up navigation event listener');
         eventManager.subscribe('navigate', async (payload: EventPayload) => {
-            if (!state.isNavigating && payload.effect) {
-                await navigate(payload.effect);
+            if (!state.isNavigating && payload.data) {
+                await navigate(payload.data);
             }
         });
 

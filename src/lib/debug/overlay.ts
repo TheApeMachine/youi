@@ -1,5 +1,13 @@
+type DragPosition = {
+    offset: number;
+    element: Element | null;
+};
+
 export const overlay = () => {
     let isMinimized = false;
+    let isResizing = false;
+    let startX = 0;
+    let startWidth = 0;
 
     const createDiv = (className: string, parent: HTMLElement | null = null, textContent: string | null = null) => {
         const el = document.createElement('div');
@@ -22,6 +30,7 @@ export const overlay = () => {
     }
 
     const rootContainer = createDiv('debug-root');
+    const resizeHandle = createDiv('debug-resize-handle', rootContainer);
     const container = createDiv('debug-overlay', rootContainer);
     const header = createDiv('debug-header', container);
     const title = createDiv('debug-header-title', header, 'Debug Tools');
@@ -34,11 +43,11 @@ export const overlay = () => {
         e.preventDefault();
         const draggable = contentGrid.querySelector('.debug-section.dragging');
         if (!draggable) return;
-        
+
         const afterElement = getDragAfterElement(contentGrid, e.clientY);
-        if (afterElement && afterElement !== draggable) {
+        if (afterElement) {
             contentGrid.insertBefore(draggable, afterElement);
-        } else if (!afterElement && draggable !== contentGrid.lastElementChild) {
+        } else {
             contentGrid.appendChild(draggable);
         }
     });
@@ -46,11 +55,11 @@ export const overlay = () => {
     // Helper function to determine where to place the dragged element
     const getDragAfterElement = (container: HTMLElement, y: number) => {
         const draggableElements = [...container.querySelectorAll('.debug-section:not(.dragging)')];
-        
-        return draggableElements.reduce<{ offset: number, element: Element | null }>((closest, child) => {
+
+        return draggableElements.reduce<DragPosition>((closest, child) => {
             const box = child.getBoundingClientRect();
             const offset = y - box.top - box.height / 2;
-            
+
             if (offset < 0 && offset > closest.offset) {
                 return { offset, element: child };
             } else {
@@ -69,6 +78,74 @@ export const overlay = () => {
     // Add toolbox toggle
     const toolboxToggle = createButton('debug-button', controls, 'construction', () => toolbox.classList.toggle('hidden'));
 
+    // Add resize functionality
+    const startResize = (e: MouseEvent) => {
+        isResizing = true;
+        startX = e.clientX;
+        startWidth = rootContainer.offsetWidth;
+        resizeHandle.classList.add('resizing');
+        document.addEventListener('mousemove', handleResize);
+        document.addEventListener('mouseup', stopResize);
+    };
+
+    const handleResize = (e: MouseEvent) => {
+        if (!isResizing) return;
+        const width = startWidth - (e.clientX - startX);
+        rootContainer.style.width = `${Math.max(400, Math.min(1200, width))}px`;
+    };
+
+    const stopResize = () => {
+        isResizing = false;
+        resizeHandle.classList.remove('resizing');
+        document.removeEventListener('mousemove', handleResize);
+        document.removeEventListener('mouseup', stopResize);
+    };
+
+    resizeHandle.addEventListener('mousedown', startResize);
+
+    // Add module resize functionality
+    const setupModuleResize = (toolElement: HTMLElement) => {
+        const resizeHandle = createDiv('debug-section-resize', toolElement);
+        let startY = 0;
+        let startHeight = 0;
+        let isResizing = false;
+
+        const startModuleResize = (e: MouseEvent) => {
+            isResizing = true;
+            startY = e.clientY;
+            startHeight = toolElement.offsetHeight;
+            resizeHandle.classList.add('resizing');
+            document.addEventListener('mousemove', handleModuleResize);
+            document.addEventListener('mouseup', stopModuleResize);
+        };
+
+        const handleModuleResize = (e: MouseEvent) => {
+            if (!isResizing) return;
+            const height = startHeight + (e.clientY - startY);
+            toolElement.style.height = `${Math.max(100, height)}px`;
+        };
+
+        const stopModuleResize = () => {
+            isResizing = false;
+            resizeHandle.classList.remove('resizing');
+            document.removeEventListener('mousemove', handleModuleResize);
+            document.removeEventListener('mouseup', stopModuleResize);
+        };
+
+        resizeHandle.addEventListener('mousedown', startModuleResize);
+    };
+
+    // Update setupToolDragging function
+    const setupToolDragging = (toolElement: HTMLElement) => {
+        toolElement.classList.add('debug-section');
+
+        // Make the entire section draggable
+        toolElement.setAttribute('draggable', 'true');
+        toolElement.setAttribute('ondragstart', 'drag(event)')
+
+        setupModuleResize(toolElement);
+    };
+
     return {
         rootContainer,
         container,
@@ -79,47 +156,6 @@ export const overlay = () => {
         toolbox,
         minimizeButton,
         toolboxToggle,
-        setupToolDragging: (toolElement: HTMLElement) => {
-            toolElement.classList.add('debug-section');
-            
-            // Create header if it doesn't exist
-            let toolHeader = toolElement.querySelector('.debug-section-header') as HTMLElement;
-            if (!toolHeader) {
-                toolHeader = document.createElement('div');
-                toolHeader.className = 'debug-section-header';
-                if (toolElement.firstChild) {
-                    toolElement.insertBefore(toolHeader, toolElement.firstChild);
-                } else {
-                    toolElement.appendChild(toolHeader);
-                }
-            }
-            
-            toolHeader.style.cursor = 'grab';
-            toolElement.setAttribute('draggable', 'true');
-            
-            toolElement.addEventListener('dragstart', () => {
-                toolElement.classList.add('dragging');
-            });
-            
-            toolElement.addEventListener('dragend', () => {
-                toolElement.classList.remove('dragging');
-            });
-            
-            toolHeader.addEventListener('mousedown', () => {
-                toolElement.setAttribute('draggable', 'true');
-            });
-            
-            toolHeader.addEventListener('mouseup', () => {
-                toolElement.setAttribute('draggable', 'false');
-            });
-            
-            // Prevent dragging from content
-            toolElement.addEventListener('mousedown', (e) => {
-                const target = e.target as HTMLElement;
-                if (!toolHeader.contains(target)) {
-                    toolElement.setAttribute('draggable', 'false');
-                }
-            });
-        }
-    }
+        setupToolDragging
+    };
 }

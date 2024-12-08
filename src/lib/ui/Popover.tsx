@@ -1,6 +1,6 @@
 import { jsx, Fragment } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { Button } from "@/lib/ui/button/Button";
+import { Button } from "@/lib/ui/Button";
 
 interface Props {
     content: JSX.Element;

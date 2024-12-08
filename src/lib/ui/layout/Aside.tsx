@@ -2,7 +2,7 @@ import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { Flex } from "../Flex";
 import { Button } from "../button/Button";
-import { Icon } from "../Icon";
+import { Icon } from "../icon/Icon";
 
 export const Aside = Component({
     render: () => (

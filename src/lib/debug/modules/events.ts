@@ -2,16 +2,10 @@ import { DebugModuleSetup } from '../types';
 import { eventManager } from '@/lib/event';
 import { EventPayload } from '@/lib/event/types';
 
-interface EventEntry {
-    topic: string;
-    effect?: string;
-    trigger?: string;
+interface EventActivity {
     timestamp: number;
-    meta?: {
-        source: string;
-        target?: string;
-        path?: string[];
-    };
+    type: 'subscribe' | 'unsubscribe' | 'publish' | 'receive';
+    channel: string;
     data?: any;
 }
 
@@ -19,59 +13,51 @@ export const setup: DebugModuleSetup = {
     name: 'Events',
     description: 'Monitor event system activity',
     setup: async ({ addLog, container }) => {
-        const section = document.createElement('div');
-        section.className = 'debug-section events';
+        const content = document.createElement('div');
+        content.className = 'events-content';
 
-        // Create event stream view
-        const eventStream = document.createElement('div');
-        eventStream.className = 'event-stream';
-        eventStream.innerHTML = '<h4>Event Stream</h4>';
-        const streamList = document.createElement('ul');
-        eventStream.appendChild(streamList);
-        section.appendChild(eventStream);
-
-        // Create active subscriptions view
+        // Create subscriptions view
         const subscriptionsView = document.createElement('div');
         subscriptionsView.className = 'event-subscriptions';
         subscriptionsView.innerHTML = '<h4>Active Subscriptions</h4>';
         const subscriptionsList = document.createElement('ul');
         subscriptionsView.appendChild(subscriptionsList);
-        section.appendChild(subscriptionsView);
 
-        // Create event patterns view
-        const patternsView = document.createElement('div');
-        patternsView.className = 'event-patterns';
-        patternsView.innerHTML = '<h4>Event Patterns</h4>';
-        section.appendChild(patternsView);
+        // Create event activity view
+        const activityView = document.createElement('div');
+        activityView.className = 'event-activity';
+        activityView.innerHTML = '<h4>Event Activity</h4>';
+        const activityList = document.createElement('ul');
+        activityView.appendChild(activityList);
 
-        // Keep track of events
-        const events: EventEntry[] = [];
-        const MAX_EVENTS = 100;
-        const activeSubscriptions = new Set<string>();
+        // Track event system state
+        const activeSubscriptions = new Map<string, number>();
+        const activityLog: EventActivity[] = [];
 
-        const addEvent = (entry: EventEntry) => {
-            events.unshift(entry);
-            if (events.length > MAX_EVENTS) {
-                events.pop();
-            }
-            updateEventStream();
+        const updateSubscriptionsView = () => {
+            subscriptionsList.innerHTML = Array.from(activeSubscriptions.entries())
+                .map(([channel, count]) => `
+                    <li class="subscription-entry">
+                        <span class="channel">${channel}</span>
+                        <span class="count">${count} listener${count !== 1 ? 's' : ''}</span>
+                    </li>
+                `)
+                .join('');
         };
 
-        const updateEventStream = () => {
-            streamList.innerHTML = events
-                .map(event => `
-                    <li class="event-entry">
-                        <div class="event-header">
-                            <span class="topic">${event.topic}</span>
-                            ${event.meta?.source ? `<span class="source">from: ${event.meta.source}</span>` : ''}
-                            <span class="time">${new Date(event.timestamp).toLocaleTimeString()}</span>
+        const updateActivityView = () => {
+            activityList.innerHTML = activityLog
+                .slice(0, 100)  // Keep last 100 activities
+                .map(activity => `
+                    <li class="activity-entry ${activity.type}">
+                        <div class="activity-header">
+                            <span class="type">${activity.type}</span>
+                            <span class="channel">${activity.channel}</span>
+                            <span class="time">${new Date(activity.timestamp).toLocaleTimeString()}</span>
                         </div>
-                        ${event.effect ? `<div class="effect">Effect: ${event.effect}</div>` : ''}
-                        ${event.trigger ? `<div class="trigger">Trigger: ${event.trigger}</div>` : ''}
-                        ${event.meta?.target ? `<div class="target">Target: ${event.meta.target}</div>` : ''}
-                        ${event.data ? `
+                        ${activity.data ? `
                             <div class="data">
-                                <pre>${JSON.stringify(event.data, null, 2)}</pre>
+                                <pre>${JSON.stringify(activity.data, null, 2)}</pre>
                             </div>
                         ` : ''}
                     </li>
@@ -79,119 +65,63 @@ export const setup: DebugModuleSetup = {
                 .join('');
         };
 
-        const updateSubscriptions = () => {
-            subscriptionsList.innerHTML = Array.from(activeSubscriptions)
-                .map(topic => `
-                    <li class="subscription-entry">
-                        <span class="topic">${topic}</span>
-                    </li>
-                `)
-                .join('');
+        const logActivity = (activity: EventActivity) => {
+            activityLog.unshift(activity);
+            if (activityLog.length > 1000) activityLog.pop();
+            updateActivityView();
         };
 
-        // Event handler for all events
-        const eventHandler = (event: EventPayload) => {
-            addLog({
-                type: 'event',
-                category: 'events',
-                summary: `Event: ${event.topic ?? 'global'}`,
-                details: event,
-                timestamp: new Date().toISOString(),
-                id: crypto.randomUUID()
+        // Monkey patch the event manager to track activity
+        const originalSubscribe = eventManager.subscribe;
+        eventManager.subscribe = async (topic: string, handler: (payload: EventPayload) => void) => {
+            const cleanup = await originalSubscribe.call(eventManager, topic, handler);
+
+            activeSubscriptions.set(topic, (activeSubscriptions.get(topic) ?? 0) + 1);
+            updateSubscriptionsView();
+
+            logActivity({
+                timestamp: Date.now(),
+                type: 'subscribe',
+                channel: topic
             });
 
-            addEvent({
-                topic: event.topic ?? '',
-                effect: event.effect,
-                trigger: event.trigger,
-                timestamp: event.meta?.timestamp ?? Date.now(),
-                meta: event.meta,
-                data: event.data
-            });
+            return () => {
+                cleanup();
+                const count = activeSubscriptions.get(topic) ?? 0;
+                if (count <= 1) {
+                    activeSubscriptions.delete(topic);
+                } else {
+                    activeSubscriptions.set(topic, count - 1);
+                }
+                updateSubscriptionsView();
 
-            // Track active topics
-            if (event.topic) {
-                activeSubscriptions.add(event.topic);
-                updateSubscriptions();
-            }
+                logActivity({
+                    timestamp: Date.now(),
+                    type: 'unsubscribe',
+                    channel: topic
+                });
+            };
         };
 
-        // Subscribe to all events using pattern matching
-        const cleanup = eventManager.subscribePattern('*', eventHandler);
+        const originalPublish = eventManager.publish;
+        eventManager.publish = async (type: string, topic: string, data: any) => {
+            logActivity({
+                timestamp: Date.now(),
+                type: 'publish',
+                channel: topic,
+                data: data
+            });
+            return originalPublish.call(eventManager, type, topic, data);
+        };
 
-        // Add styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .debug-section.events {
-                padding: 10px;
-                font-family: monospace;
-                font-size: 12px;
-            }
-            .event-stream, .event-subscriptions, .event-patterns {
-                margin-bottom: 15px;
-            }
-            .event-entry {
-                margin: 5px 0;
-                padding: 8px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                background: #f8f8f8;
-            }
-            .event-header {
-                display: flex;
-                gap: 10px;
-                margin-bottom: 5px;
-            }
-            .topic {
-                font-weight: bold;
-                color: #0066cc;
-            }
-            .source {
-                color: #666;
-                font-style: italic;
-            }
-            .time {
-                color: #999;
-                margin-left: auto;
-            }
-            .effect, .trigger, .target {
-                font-size: 11px;
-                color: #666;
-                margin: 2px 0;
-            }
-            .data {
-                margin-top: 5px;
-                padding: 5px;
-                background: #fff;
-                border-radius: 2px;
-                overflow-x: auto;
-            }
-            .data pre {
-                margin: 0;
-                white-space: pre-wrap;
-            }
-            .subscription-entry {
-                padding: 4px 8px;
-                border: 1px solid #eee;
-                border-radius: 4px;
-                margin: 2px 0;
-            }
-            ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-                max-height: 300px;
-                overflow-y: auto;
-            }
-        `;
-        document.head.appendChild(style);
+        content.appendChild(subscriptionsView);
+        content.appendChild(activityView);
 
         return {
-            component: section,
+            component: content,
             cleanup: () => {
-                // Cleanup subscription
-                cleanup();
-                style.remove();
+                eventManager.subscribe = originalSubscribe;
+                eventManager.publish = originalPublish;
             }
         };
     }

@@ -18,8 +18,14 @@ export interface DebugModuleInstance {
     cleanup?: () => void;
 }
 
+export interface DebugModuleSetupOptions {
+    addLog: (entry: DebugEntry) => void;
+    container: HTMLElement;
+    setupToolDragging: (element: HTMLElement) => void;
+}
+
 export interface DebugModuleSetup {
-    setup: (context: DebugModuleContext) => Promise<DebugModuleInstance>;
     name: string;
-    description?: string;
+    description: string;
+    setup: (options: DebugModuleSetupOptions) => Promise<DebugModuleInstance>;
 } 

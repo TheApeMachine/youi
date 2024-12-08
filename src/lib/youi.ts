@@ -5,6 +5,7 @@ import { initializeDebugContext } from "./debug/context";
 import "@/assets/themes/styles.css";
 
 export const YouI = {
+    isReady: false,
     init: async () => {
         console.log('YouI initialization starting');
 
@@ -12,21 +13,25 @@ export const YouI = {
         console.log('Initializing debug context');
         initializeDebugContext();
 
-        // Initialize core systems sequentially
+        // Initialize core systems in parallel
         console.log('Initializing core systems');
         try {
-            console.log('Initializing event manager');
-            await eventManager.init().catch(e => console.error('Event manager init error:', e));
-
-            console.log('Initializing state manager');
-            await stateManager.init().catch(e => console.error('State manager init error:', e));
-
-            console.log('Initializing router');
-            await routerManager.init().catch(e => console.error('Router init error:', e));
+            await Promise.all([
+                eventManager.init().catch(e => console.error('Event manager init error:', e)),
+                stateManager.init().catch(e => console.error('State manager init error:', e)),
+                routerManager.init().catch(e => console.error('Router init error:', e))
+            ]);
 
             console.log('Core systems initialized');
+
+            // Set ready flag and dispatch event
+            YouI.isReady = true;
+            document.dispatchEvent(new CustomEvent('youi:ready'));
         } catch (error) {
             console.error('Error during core systems initialization:', error);
         }
     }
 };
+
+// Expose YouI globally for debug purposes
+(window as any).youi = YouI;

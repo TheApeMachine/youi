@@ -23,13 +23,13 @@ export const setup: DebugModuleSetup = {
     name: 'State',
     description: 'Monitor state changes and subscriptions',
     setup: async ({ addLog, container }) => {
-        const section = document.createElement('div');
-        section.className = 'debug-section state';
+        const content = document.createElement('div');
+        content.className = 'state-content';
 
         // Create state overview
         const stateOverview = document.createElement('div');
         stateOverview.className = 'state-overview';
-        section.appendChild(stateOverview);
+        content.appendChild(stateOverview);
 
         // Create state history
         const stateHistory = document.createElement('div');
@@ -37,13 +37,13 @@ export const setup: DebugModuleSetup = {
         stateHistory.innerHTML = '<h4>State History</h4>';
         const historyList = document.createElement('ul');
         stateHistory.appendChild(historyList);
-        section.appendChild(stateHistory);
+        content.appendChild(stateHistory);
 
         // Create subscriptions view
         const subscriptionsView = document.createElement('div');
         subscriptionsView.className = 'state-subscriptions';
         subscriptionsView.innerHTML = '<h4>Active Subscriptions</h4>';
-        section.appendChild(subscriptionsView);
+        content.appendChild(subscriptionsView);
 
         // Keep track of state history
         const history: StateEntry[] = [];
@@ -75,19 +75,19 @@ export const setup: DebugModuleSetup = {
         // Function to update state overview
         const updateStateOverview = async () => {
             try {
-                // Get all registered state keys
-                const keys = Object.keys(stateManager.registry);
+                // Get current state using the public API
+                const stateEntries = await stateManager.get('__state_keys__') as string[] || [];
                 const states = await Promise.all(
-                    keys.map(async (key: string) => ({
+                    stateEntries.map(async (key: string) => ({
                         key,
-                        data: await stateManager.getState(key)
+                        data: await stateManager.get(key)
                     }))
                 );
 
                 stateOverview.innerHTML = `
                     <h4>Current State</h4>
                     <div class="state-entries">
-                        ${states.map(({ key, data }: { key: string; data: any }) => `
+                        ${states.map(({ key, data }) => `
                             <div class="state-entry">
                                 <div class="key">${key}</div>
                                 <div class="value">${JSON.stringify(data, null, 2)}</div>
@@ -126,77 +126,18 @@ export const setup: DebugModuleSetup = {
         };
 
         // Store unsubscribe function when subscribing
-        unsubscribe = eventBus.subscribe('stateChange', stateChangeHandler);
+        const subscribeAsync = async () => {
+            unsubscribe = await eventBus.subscribe('state.change', stateChangeHandler);
+        };
+        await subscribeAsync();
 
         // Initial state update
         await updateStateOverview();
 
-        // Add styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .debug-section.state {
-                padding: 10px;
-                font-family: monospace;
-                font-size: 12px;
-            }
-            .state-overview, .state-history, .state-subscriptions {
-                margin-bottom: 15px;
-            }
-            .state-entries {
-                max-height: 200px;
-                overflow-y: auto;
-            }
-            .state-entry {
-                margin: 5px 0;
-                padding: 5px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-            }
-            .state-entry .key {
-                font-weight: bold;
-                color: #0066cc;
-            }
-            .state-entry .value {
-                white-space: pre-wrap;
-                margin: 5px 0;
-                padding: 5px;
-                background: #f5f5f5;
-                border-radius: 2px;
-            }
-            .state-entry .metadata {
-                font-size: 10px;
-                color: #666;
-            }
-            .history-entry {
-                display: flex;
-                gap: 10px;
-                align-items: center;
-            }
-            .history-entry .version {
-                color: #666;
-            }
-            .history-entry .time {
-                color: #999;
-            }
-            ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-            li {
-                margin: 5px 0;
-                padding: 5px;
-                border: 1px solid #eee;
-                border-radius: 4px;
-            }
-        `;
-        document.head.appendChild(style);
-
         return {
-            component: section,
+            component: content,
             cleanup: () => {
-                unsubscribe?.();  // Call unsubscribe function if it exists
-                style.remove();
+                unsubscribe?.();
             }
         };
     }

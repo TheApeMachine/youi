@@ -2,7 +2,7 @@ import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 import { Form } from "@/lib/ui/form/Form";
 import { TextField } from "@/lib/ui/form/TextField";
-import { Button } from "@/lib/ui/button/Button";
+import { Button } from "@/lib/ui/Button";
 import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
 import { Flex } from "@/lib/ui/Flex";

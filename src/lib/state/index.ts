@@ -1,136 +1,105 @@
-import { StateBackend, StateConfig, backends } from './backends';
-
-interface StateOptions {
-    config: Record<string, StateConfig>;
-}
-
-export const createStateManager = (options: StateOptions) => {
+export const createStateManager = () => {
     const subscribers = new Map<string, Set<(value: any) => void>>();
-    const stateConfig = new Map(Object.entries(options.config));
+    let worker: Worker | null = null;
+    let messageId = 0;
+    const messageQueue = new Map<string, { resolve: Function, reject: Function }>();
 
-    const getBackend = (key: string): StateBackend => {
-        const config = stateConfig.get(key);
-        if (!config?.primary) {
-            // Default to indexeddb if no primary specified
-            return backends.indexeddb;
-        }
-        return backends[config.primary];
-    };
+    // Add worker initialization
+    const initWorker = async () => {
+        worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
 
-    const syncToBackends = async (key: string, value: any) => {
-        const config = stateConfig.get(key);
-        if (!config?.sync) return;
+        worker.onmessage = (event) => {
+            const { type, payload, id } = event.data;
 
-        await Promise.all(
-            config.sync.map(async (source) => {
-                try {
-                    await backends[source].set(key, value);
-                } catch (error) {
-                    console.error(`Failed to sync ${key} to ${source}:`, error);
+            if (type === 'ready') {
+                return;
+            }
+
+            // Handle queued promises
+            if (id && messageQueue.has(id)) {
+                const { resolve, reject } = messageQueue.get(id)!;
+                messageQueue.delete(id);
+
+                if (type === 'error') {
+                    reject(new Error(payload.error));
+                } else {
+                    resolve(payload);
                 }
-            })
-        );
-    };
+                return;
+            }
 
-    const setupRealtimeSync = (key: string) => {
-        const config = stateConfig.get(key);
-        if (!config?.realtime) return;
+            // Handle notifications
+            if (type === 'notify') {
+                const callbacks = subscribers.get(payload.key);
+                callbacks?.forEach(callback => callback(payload.value));
+            }
+        };
 
-        const backend = getBackend(key);
-        if (!backend.subscribe) return;
+        // Wait for worker to be ready
+        await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error('Worker initialization timeout')), 5000);
 
-        backend.subscribe(key, async (value) => {
-            // Sync to other backends
-            await syncToBackends(key, value);
-
-            // Notify subscribers
-            const callbacks = subscribers.get(key);
-            callbacks?.forEach(callback => callback(value));
+            worker!.addEventListener('message', function onReady(event) {
+                if (event.data.type === 'ready') {
+                    clearTimeout(timeout);
+                    worker!.removeEventListener('message', onReady);
+                    resolve();
+                }
+            });
         });
     };
 
+    // Add worker message helper
+    const sendWorkerMessage = async (type: string, payload: any): Promise<any> => {
+        if (!worker) throw new Error('Worker not initialized');
+
+        return new Promise((resolve, reject) => {
+            const id = String(messageId++);
+            messageQueue.set(id, { resolve, reject });
+            worker!.postMessage({ type, payload, id });
+        });
+    };
+
+    // Modify get to use worker
     const get = async <T>(key: string): Promise<T | undefined> => {
-        const backend = getBackend(key);
-        const config = stateConfig.get(key);
-
         try {
-            // Try cache first if enabled
-            if (config?.cache) {
-                const cached = await backends.indexeddb.get<T>(key);
-                if (cached !== undefined) {
-                    return cached;
-                }
-            }
-
-            // Get from primary backend
-            const value = await backend.get<T>(key);
-
-            // Update cache if enabled
-            if (config?.cache && value !== undefined) {
-                await backends.indexeddb.set(key, value);
-            }
-
-            return value;
+            const response = await sendWorkerMessage('read', key);
+            return response.value as T;
         } catch (error) {
             console.error(`Failed to get ${key}:`, error);
             return undefined;
         }
     };
 
+    // Modify set to use worker
     const set = async (key: string, value: any): Promise<void> => {
-        const backend = getBackend(key);
-
         try {
-            // Set in primary backend
-            await backend.set(key, value);
-
-            // Sync to other backends
-            await syncToBackends(key, value);
-
-            // Update cache if enabled
-            const config = stateConfig.get(key);
-            if (config?.cache) {
-                await backends.indexeddb.set(key, value);
-            }
-
-            // Notify subscribers
-            const callbacks = subscribers.get(key);
-            callbacks?.forEach(callback => callback(value));
+            await sendWorkerMessage('write', { key, value });
         } catch (error) {
             console.error(`Failed to set ${key}:`, error);
             throw error;
         }
     };
 
+    // Modify update to use worker
     const update = async (key: string, value: any): Promise<void> => {
-        const backend = getBackend(key);
-
         try {
-            // Update in primary backend
-            await backend.update(key, value);
-
-            // Sync to other backends
-            await syncToBackends(key, value);
-
-            // Update cache if enabled
-            const config = stateConfig.get(key);
-            if (config?.cache) {
-                await backends.indexeddb.update(key, value);
-            }
-
-            // Notify subscribers
-            const callbacks = subscribers.get(key);
-            callbacks?.forEach(callback => callback(value));
+            await sendWorkerMessage('update', { key, value });
         } catch (error) {
             console.error(`Failed to update ${key}:`, error);
             throw error;
         }
     };
 
+    // Modify subscribe to use worker
     const subscribe = (key: string, callback: (value: any) => void): () => void => {
         if (!subscribers.has(key)) {
             subscribers.set(key, new Set());
-            setupRealtimeSync(key);
+            // Register subscriber with worker
+            sendWorkerMessage('notify', {
+                key,
+                subscriber: crypto.randomUUID()
+            }).catch(console.error);
         }
 
         const callbacks = subscribers.get(key)!;
@@ -144,29 +113,17 @@ export const createStateManager = (options: StateOptions) => {
         };
     };
 
-    // Initialize realtime syncs
-    for (const [key, config] of stateConfig.entries()) {
-        if (config.realtime) {
-            setupRealtimeSync(key);
-        }
-    }
-
     return {
         get,
         set,
         update,
-        subscribe
+        subscribe,
+        init: async () => {
+            await initWorker();
+        }
     };
 };
 
-// Create state manager instance and export it
-export const stateManager = {
-    registry: {} as Record<string, any>,
-    getState: async (key: string) => {
-        return stateManager.registry[key];
-    },
-    init: async () => {
-        // Add initialization logic if needed
-        return Promise.resolve();
-    }
-};
+// Export the state manager instance
+const stateManagerInstance = createStateManager();
+export { stateManagerInstance as stateManager };

@@ -94,34 +94,10 @@ export const setup: DebugModuleSetup = {
         // Initial update
         await updateDisplays();
 
-        // Add some basic styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .debug-section.router {
-                padding: 10px;
-                font-family: monospace;
-            }
-            .router-state, .router-history, .router-islands {
-                margin-bottom: 15px;
-            }
-            .router-history ul, .router-islands ul {
-                margin: 0;
-                padding-left: 20px;
-            }
-            .island-group {
-                margin: 5px 0;
-            }
-            .slide-name {
-                font-weight: bold;
-            }
-        `;
-        document.head.appendChild(style);
-
         return {
             component: section,
             cleanup: () => {
                 cleanupSubscription(); // Clean up the subscription
-                style.remove();
             }
         };
     }

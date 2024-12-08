@@ -92,7 +92,7 @@ export const AuthService = {
     },
 
     isAuthenticated: async (): Promise<boolean> => {
-        const auth = await stateManager.getState('auth');
+        const auth = await stateManager.get<Token & { timestamp: number }>('auth');
         if (!auth?.accessToken) {
             return false;
         }

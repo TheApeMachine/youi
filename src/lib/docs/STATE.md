@@ -1,187 +1,171 @@
 # State Management
 
-YouI provides a unified state management system that intelligently handles different data sources and synchronization patterns.
+YouI uses a worker-based state management system with support for multiple backends and real-time updates.
 
 ## Core Concepts
 
--   **Multiple Backends**: Support for MongoDB, IndexedDB, HTTP APIs, and CRDT
--   **Automatic Synchronization**: Configure how data syncs between backends
--   **Smart Caching**: Automatic caching in IndexedDB when enabled
--   **Real-time Updates**: Support for real-time data through CRDT
+### Worker-Based Processing
+
+-   State operations handled in a dedicated Web Worker
+-   Asynchronous state updates and reads
+-   Message queue system for reliable communication
+
+### Multiple Backends
+
+-   **IndexedDB**: Local persistence using localforage
+-   **MongoDB**: Server-side persistence
+-   **HTTP**: REST API integration
+-   **CRDT**: Real-time collaborative state
+
+### State Configuration
+
+```typescript
+interface StateConfig {
+    primary?: "mongo" | "indexeddb" | "http" | "crdt";
+    sync?: Array<"mongo" | "indexeddb" | "http" | "crdt">;
+    cache?: boolean;
+    realtime?: boolean;
+}
+```
 
 ## Basic Usage
 
 ```typescript
 import { stateManager } from "@/lib/state";
 
-// Get data (automatically uses configured backend)
-const user = await stateManager.get("user");
+// Initialize state manager
+await stateManager.init();
 
-// Update data
-await stateManager.set("preferences", { theme: "dark" });
+// Read state
+const value = await stateManager.get<T>("key");
 
-// Partial updates
-await stateManager.update("user", { lastSeen: Date.now() });
+// Write state
+await stateManager.set("key", value);
+
+// Update state (merge for objects)
+await stateManager.update("key", partialValue);
 
 // Subscribe to changes
-const unsubscribe = stateManager.subscribe("chat", (messages) => {
-    console.log("New messages:", messages);
+const unsubscribe = stateManager.subscribe("key", (value) => {
+    console.log("State updated:", value);
 });
 
-// Later: cleanup subscription
+// Cleanup subscription
 unsubscribe();
 ```
 
-## Configuration Examples
+## Backend Configuration
 
-### User Data with Local Cache
-
-```typescript
-// Configuration
-{
-    'user': {
-        primary: 'mongo',      // Store in MongoDB
-        sync: ['indexeddb'],   // Sync to IndexedDB
-        cache: true           // Enable caching
-    }
-}
-
-// Usage
-const user = await stateManager.get('user');  // Checks cache first
-await stateManager.update('user', { status: 'online' });  // Updates MongoDB and cache
-```
-
-### Real-time Chat
+### Local Storage with MongoDB Sync
 
 ```typescript
-// Configuration
-{
-    'chat': {
-        primary: 'crdt',     // Use CRDT for real-time
-        sync: ['mongo'],     // Persist to MongoDB
-        realtime: true      // Enable real-time updates
-    }
-}
-
-// Usage
-stateManager.subscribe('chat', (messages) => {
-    renderMessages(messages);  // Updates automatically
-});
-
-await stateManager.set('chat', {
-    messages: [...existing, newMessage]
-});  // Syncs to all clients
-```
-
-### Local Preferences
-
-```typescript
-// Configuration
 {
     'preferences': {
-        primary: 'indexeddb'  // Store only locally
+        primary: 'indexeddb',
+        sync: ['mongo'],
+        cache: true
     }
 }
-
-// Usage
-await stateManager.set('preferences', {
-    theme: 'dark',
-    fontSize: 14
-});  // Persists in browser
 ```
 
-### API Data with Caching
+### Real-time Collaborative Data
 
 ```typescript
-// Configuration
+{
+    'document': {
+        primary: 'crdt',
+        sync: ['mongo'],
+        realtime: true
+    }
+}
+```
+
+### API Integration with Caching
+
+```typescript
 {
     'api-data': {
-        primary: 'http',     // Fetch from API
-        cache: true         // Cache responses
+        primary: 'http',
+        cache: true
     }
 }
-
-// Usage
-const data = await stateManager.get('api-data');  // Uses cache if available
 ```
 
-## Advanced Patterns
+## Implementation Details
 
-### Nested Data Structures
+### State Structure
 
 ```typescript
-// Deep updates maintain other fields
-await stateManager.update("user.profile", {
-    avatar: newUrl
-}); // Only updates avatar
+interface StateData {
+    value: any;
+    timestamp: number;
+    version: number;
+}
 
-// Access nested data
-const profile = await stateManager.get("user.profile");
+// Worker message types
+type MessageType = "read" | "write" | "update" | "notify";
 ```
 
-### Batch Operations
+### Backend Interface
 
 ```typescript
-// Update multiple related pieces of state
-await Promise.all([
-    stateManager.update("user", { status: "offline" }),
-    stateManager.update("preferences", { lastSeen: Date.now() })
-]);
+interface StateBackend {
+    get: <T>(key: string) => Promise<T | undefined>;
+    set: (key: string, value: any) => Promise<void>;
+    update: (key: string, value: any) => Promise<void>;
+    subscribe?: (key: string, callback: (value: any) => void) => () => void;
+}
+```
+
+### Nested State Support
+
+```typescript
+// Update nested state
+await stateManager.set("user.profile.avatar", newUrl);
+
+// Read nested state
+const avatar = await stateManager.get("user.profile.avatar");
 ```
 
 ### Error Handling
 
 ```typescript
 try {
-    await stateManager.set("user", userData);
+    await stateManager.set("key", value);
 } catch (error) {
-    // Handle specific backend errors
-    if (error.backend === "mongo") {
-        // Handle MongoDB error
-    }
-}
-```
-
-### Type Safety
-
-```typescript
-interface User {
-    id: string;
-    name: string;
-    profile: {
-        avatar: string;
-    };
-}
-
-// Get with type
-const user = await stateManager.get<User>("user");
-if (user) {
-    console.log(user.profile.avatar); // Type-safe access
+    console.error("State operation failed:", error);
 }
 ```
 
 ## Best Practices
 
-1. **Configure Based on Data Characteristics**
+1. **Backend Selection**
 
-    - Use `mongo` for persistent server data
-    - Use `crdt` for collaborative features
-    - Use `indexeddb` for local-only data
-    - Use `http` for external API data
+    - Use IndexedDB for local-only data
+    - Use MongoDB for server persistence
+    - Use CRDT for real-time collaboration
+    - Use HTTP for API integration
 
-2. **Enable Caching Strategically**
+2. **State Organization**
 
-    - Cache frequently accessed data
-    - Cache slow-to-fetch data
-    - Don't cache rapidly changing data
+    - Use dot notation for nested state
+    - Keep state structures flat when possible
+    - Use descriptive key names
 
-3. **Use Real-time Carefully**
+3. **Performance**
 
-    - Enable for collaborative features
-    - Enable for instant updates
-    - Avoid for infrequently changed data
+    - Enable caching for frequently accessed data
+    - Subscribe only to needed state
+    - Clean up subscriptions when done
 
-4. **Handle Errors Appropriately**
-    - Always catch errors in critical operations
-    - Provide fallbacks for offline scenarios
-    - Log errors for debugging
+4. **Error Handling**
+
+    - Handle backend-specific errors
+    - Provide fallback values
+    - Log operation failures
+
+5. **Type Safety**
+
+    - Use TypeScript generics with get
+    - Define state interfaces
+    - Validate state updates

@@ -12,14 +12,18 @@ export const YouI = {
         console.log('Initializing debug context');
         initializeDebugContext();
 
-        // Initialize all core systems in parallel
+        // Initialize core systems sequentially
         console.log('Initializing core systems');
         try {
-            await Promise.all([
-                routerManager.init().catch(e => console.error('Router init error:', e)),
-                eventManager.init().catch(e => console.error('Event manager init error:', e)),
-                stateManager.init().catch(e => console.error('State manager init error:', e))
-            ]);
+            console.log('Initializing event manager');
+            await eventManager.init().catch(e => console.error('Event manager init error:', e));
+
+            console.log('Initializing state manager');
+            await stateManager.init().catch(e => console.error('State manager init error:', e));
+
+            console.log('Initializing router');
+            await routerManager.init().catch(e => console.error('Router init error:', e));
+
             console.log('Core systems initialized');
         } catch (error) {
             console.error('Error during core systems initialization:', error);

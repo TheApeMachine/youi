@@ -70,6 +70,42 @@
     z-index: 9999;
     pointer-events: none;
     display: flex;
+
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--brand) var(--bg);
+        transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    *::-webkit-scrollbar {
+        height: var(--xs);
+        width: var(--xs);
+    }
+    *::-webkit-scrollbar-track {
+        border-radius: var(--xs);
+        background-color: var(--sb-track-color);
+    }
+
+    *::-webkit-scrollbar-track:hover {
+        background-color: var(--sb-track-color);
+    }
+
+    *::-webkit-scrollbar-track:active {
+        background-color: var(--sb-track-color);
+    }
+
+    *::-webkit-scrollbar-thumb {
+        border-radius: var(--xs);
+        background-color: var(--sb-thumb-color);
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background-color: var(--sb-thumb-color);
+    }
+
+    *::-webkit-scrollbar-thumb:active {
+        background-color: var(--sb-thumb-color);
+    }
 }
 
 /* Toolbox */

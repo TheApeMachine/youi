@@ -290,7 +290,7 @@ jsx is a function that takes a tag, props, and children and returns a Node.
 export const jsx = async (
     tag: JSXElementType,
     props: Props | null,
-    ...children: (Node | string | boolean | null | undefined | Array<Node | string | boolean | null | undefined>)[]
+    ...children: any[]
 ) => {
     // Handle Fragments
     if (tag === Fragment) {
@@ -299,18 +299,25 @@ export const jsx = async (
 
     // Handle function components
     if (typeof tag === 'function') {
-        return handleComponent(tag, props, children);
+        const result = tag(props || {});
+        if (result instanceof Promise) {
+            return await result;
+        }
+        return result;
     }
 
+    // Handle HTML/SVG elements
     const { element, isSVG } = handleSVG(tag);
 
     if (props) {
         handleElementProps(element, props, isSVG);
     }
 
-    await handleChildren(element, children);
-    handleTransitions(element, props);
+    // Handle children
+    for (const child of children.flat()) {
+        await appendChild(element, child);
+    }
 
     return element;
-}
+};
 

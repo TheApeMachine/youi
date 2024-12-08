@@ -19,16 +19,20 @@ const createRouterWorker = () => {
     };
 
     const postResponse = (type: string, payload: any, id?: string) => {
+        console.log('Worker posting response:', { type, payload, id });
         self.postMessage({ type, payload, id });
     };
 
     const handleNavigation = async (payload: { path: string }, id?: string) => {
+        console.log('Worker handling navigation:', payload);
         const path = payload.path || '/';
         const segments = path.split('/').filter(Boolean);
 
         // First segment is always the slide
         const targetSlide = segments[0] || 'home';
         const targetIsland = segments[1];
+
+        console.log('Resolved target:', { targetSlide, targetIsland });
 
         // Update state
         state.currentSlide = targetSlide;
@@ -47,6 +51,7 @@ const createRouterWorker = () => {
     };
 
     const handleUpdateIsland = async (payload: { slide: string; island: string; value: any }, id?: string) => {
+        console.log('Worker handling island update:', payload);
         const { slide, island, value } = payload;
 
         // Store island state
@@ -66,15 +71,18 @@ const createRouterWorker = () => {
     };
 
     const handleGetState = (id?: string) => {
+        console.log('Worker getting state');
         postResponse('state', state, id);
     };
 
     const handleMessage = async (event: MessageEvent<RouterMessage>) => {
         const { type, payload, id } = event.data;
+        console.log('Worker received message:', { type, payload, id });
 
         try {
             switch (type) {
                 case 'init':
+                    console.log('Worker initializing');
                     postResponse('ready', { success: true }, id);
                     break;
                 case 'navigate':
@@ -90,6 +98,7 @@ const createRouterWorker = () => {
                     throw new Error(`Unknown message type: ${type}`);
             }
         } catch (error) {
+            console.error('Worker error:', error);
             postResponse('error', {
                 error: error instanceof Error ? error.message : 'Unknown error'
             }, id);

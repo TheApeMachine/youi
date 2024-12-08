@@ -6,6 +6,7 @@ declare namespace JSX {
 
 declare module "@/lib/template" {
     export const jsx: any;
+    export const Fragment: any;
 }
 
 declare module "@/lib/ui/Component" {

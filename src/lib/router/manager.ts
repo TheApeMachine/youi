@@ -1,6 +1,6 @@
 import { eventManager } from '@/lib/event';
 import { EventPayload } from '@/lib/event/types';
-import { Layout } from '@/lib/ui/layout/Layout';
+import { jsx } from '@/lib/template';
 
 interface RouterState {
     worker: Worker | null;
@@ -24,6 +24,7 @@ export const RouterManager = () => {
 
         state.worker.onmessage = async (event) => {
             const { type, payload, id } = event.data;
+            console.log('Router worker message:', type, payload);
 
             // Handle queued messages
             const queueIndex = state.messageQueue.findIndex(msg => msg.id === id);
@@ -49,10 +50,15 @@ export const RouterManager = () => {
     };
 
     const updateView = async ({ slide, island, isNew }: { slide: string, island?: string, isNew: boolean }) => {
+        console.log('Updating view:', { slide, island, isNew });
         const slidesContainer = document.querySelector('.reveal .slides') as HTMLElement;
-        if (!slidesContainer) return;
+        if (!slidesContainer) {
+            console.error('No slides container found');
+            return;
+        }
 
         let slideSection = document.querySelector(`section[data-slide="${slide}"]`) as HTMLElement;
+        console.log('Found existing slide:', !!slideSection);
 
         if (!slideSection) {
             slideSection = document.createElement('section');
@@ -60,9 +66,24 @@ export const RouterManager = () => {
 
             if (isNew) {
                 try {
+                    console.log('Loading route module:', slide);
                     const module = await import(`@/routes/${slide}.tsx`);
-                    const content = await module.render();
-                    slideSection.appendChild(content);
+                    console.log('Route module loaded:', module);
+                    const Component = module.default;
+                    console.log('Component:', Component);
+                    const element = await Component();
+                    console.log('Component rendered:', element);
+                    
+                    if (element instanceof Node) {
+                        slideSection.appendChild(element);
+                    } else if (element && typeof element === 'object') {
+                        // Handle JSX elements
+                        console.log('Transforming JSX element');
+                        const rendered = await jsx('div', null, element);
+                        slideSection.appendChild(rendered);
+                    } else {
+                        console.error('Route component returned invalid element:', element);
+                    }
                 } catch (error) {
                     console.error(`Error loading slide ${slide}:`, error);
                     slideSection.innerHTML = `<div class="error">Slide not found: ${slide}</div>`;
@@ -70,6 +91,7 @@ export const RouterManager = () => {
             }
 
             slidesContainer.appendChild(slideSection);
+            console.log('Added slide section to container');
             state.reveal?.sync();
         }
 
@@ -113,6 +135,7 @@ export const RouterManager = () => {
     };
 
     const navigate = async (path: string) => {
+        console.log('Navigating to:', path);
         state.isNavigating = true;
         try {
             history.pushState(null, '', path);
@@ -123,6 +146,7 @@ export const RouterManager = () => {
     };
 
     const init = async () => {
+        console.log('Initializing router');
         // Initialize worker
         state.worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
         setupWorkerHandlers();
@@ -141,12 +165,6 @@ export const RouterManager = () => {
             });
             state.worker!.postMessage({ type: 'init', payload: {}, id });
         });
-
-        // Initialize Reveal.js
-        const layout = await Layout({});
-        if (!document.body.querySelector('.reveal')) {
-            document.body.replaceChildren(layout);
-        }
 
         const slidesContainer = document.querySelector('.reveal .slides');
         if (!slidesContainer) throw new Error('Could not find slides container');
@@ -173,6 +191,7 @@ export const RouterManager = () => {
 
         // Handle initial route
         const path = window.location.pathname;
+        console.log('Initial navigation to:', path);
         await navigate(path);
     };
 

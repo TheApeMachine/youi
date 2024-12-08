@@ -5,15 +5,15 @@ const cacheExpirationTime = 60000; // Cache for 60 seconds
 
 // Define the loader that initially returns "loading" state
 export const loader = async (
-    requests: Record<string, Promise<any> | { 
-        url: string, 
-        method?: string, 
+    requests: Record<string, Promise<any> | {
+        url: string,
+        method?: string,
         params?: Record<string, any>,
         headers?: Record<string, string>
     }>
 ): Promise<{ state: "loading" | "error" | "success", results: Record<string, any> }> => {
     const now = Date.now();
-    
+
     const results: Record<string, any> = {};
     try {
         for (const key in requests) {
@@ -22,13 +22,13 @@ export const loader = async (
             // Handle Promise-based requests (like MongoDB queries)
             if (request instanceof Promise) {
                 const cacheKey = `promise:${key}`;
-                
+
                 if (cache[cacheKey] && now - cache[cacheKey].timestamp < cacheExpirationTime) {
                     results[key] = cache[cacheKey].data;
                 } else {
                     const data = await request;
                     results[key] = data;
-                    eventBus.publish("stateChange", {
+                    eventBus.publish("state", "stateChange", {
                         key,
                         value: data
                     });
@@ -40,7 +40,7 @@ export const loader = async (
             // Existing HTTP request handling
             const { url, method = "GET", params, headers } = request;
             const cacheKey = `${method}:${url}:${JSON.stringify(params || {})}`;
-            
+
             // Check cache and expiration
             if (cache[cacheKey] && now - cache[cacheKey].timestamp < cacheExpirationTime) {
                 results[key] = cache[cacheKey].data;
@@ -48,7 +48,7 @@ export const loader = async (
                 const response = await fetchWithParams(url, method, params, headers);
                 const data = await response.json();
                 results[key] = data;
-                eventBus.publish("stateChange", {
+                eventBus.publish("state", "stateChange", {
                     key,
                     value: data
                 });
@@ -59,18 +59,18 @@ export const loader = async (
         return { state: "success", results };
     } catch (error: any) {
         console.error("loader", "error", error)
-        return { 
-            state: "error", 
-            results: error instanceof Error ? error : new Error('An unknown error occurred') 
+        return {
+            state: "error",
+            results: error instanceof Error ? error : new Error('An unknown error occurred')
         };
     }
 };
 
 // Utility function to handle query params or request body based on method
 const fetchWithParams = (
-    url: string, 
-    method: string = "GET", 
-    params?: Record<string, any>, 
+    url: string,
+    method: string = "GET",
+    params?: Record<string, any>,
     headers?: Record<string, string>
 ) => {
     if (method === "GET" && params) {

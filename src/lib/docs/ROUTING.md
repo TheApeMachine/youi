@@ -1,132 +1,121 @@
 # YouI Router
 
-A dynamic, client-side router with built-in transitions and automatic route discovery.
+A slide-based router using Reveal.js for transitions and parallel updates through Dynamic Islands.
 
-## 🚀 Getting Started
+## Core Concepts
 
-Initialize the router in your application:
+### Slide-Based Navigation
 
-```ts
-import { createRouter } from "@/lib/router";
+-   Each route corresponds to a slide in Reveal.js
+-   First segment of the URL determines the slide (e.g., `/` -> `home.tsx`)
+-   Additional segments target specific Dynamic Islands within the slide
 
-const { router, navigateTo } = await createRouter();
-const app = document.getElementById("app");
-if (app) {
-    router(app);
-}
-```
+### Worker-Based Processing
 
-## 📁 Route Structure
+-   Navigation and view updates are handled by a Web Worker
+-   Asynchronous loading of route modules
+-   Message queue system for reliable communication
 
-Routes are automatically discovered from the `@/routes` directory. Each route file should export a `render` function:
+### Dynamic Islands Integration
+
+-   Slides can contain multiple Dynamic Islands
+-   Islands can be updated independently
+-   Parallel updates without full page reloads
+
+## Route Structure
+
+Routes are defined in the `src/routes` directory:
 
 ```tsx
-// @/routes/home.tsx
-export const render = async (params: Record<string, string>) => {
-    return <div>Home Page</div>;
-};
+// src/routes/home.tsx
+import { DynamicIsland } from "@/lib/ui/DynamicIsland";
 
-// @/routes/collection.tsx - Dynamic route
-export const render = async (params: Record<string, string>) => {
-    return <div>Collection {params.id}</div>;
-};
+export default () => <DynamicIsland variant="logo" main={<MainContent />} />;
 ```
 
-### Supported Route Patterns
+### URL Pattern
 
 ```plaintext
-/                   -> home.tsx
-/about              -> about.tsx
-/collection/:id     -> collection.tsx
-/collection/:collection/document/:document -> document.tsx
+/{slide}/{island?}
 ```
 
-## 🔄 Navigation
+-   `slide`: Corresponds to a route file (e.g., `home.tsx`)
+-   `island`: Optional, targets a specific Dynamic Island for updates
 
-### Programmatic Navigation
+## Navigation
 
-```ts
-// Using the global navigation function
-window.navigateTo("/about");
+### Event-Based Navigation
 
-// Using the router instance
-navigateTo("/about", targetElement);
+```typescript
+// Navigate programmatically
+eventManager.emit("navigate", { effect: "/home" });
+
+// Navigate to specific island
+eventManager.emit("navigate", { effect: "/home/settings" });
 ```
 
-### Link Elements
+### Initialization
 
-Add the following data attribute to your links:
+The router automatically:
 
-```html
-<a href="/about" onclick="navigateTo('/about'); return false;">About</a>
-```
+1. Sets up Reveal.js container
+2. Initializes worker communication
+3. Handles initial route navigation
 
-## 🎨 Transitions
+## Implementation Details
 
-The router includes built-in page transitions using GSAP:
+### Worker Communication
 
-```ts
-// Default transition behavior
-exit: (el) => gsap.to(el, { opacity: 0, duration: 0.5, ease: "power2.in" });
-enter: (el) => gsap.from(el, { opacity: 0, duration: 0.5, ease: "power2.out" });
-```
-
-## 🏗️ Layout System
-
-The router automatically wraps your routes in a layout component:
-
-```tsx
-// Custom layout structure
-<Layout>
-    <div class="dynamic-island">
-        <main>{/* Route content is rendered here */}</main>
-    </div>
-</Layout>
-```
-
-## ⚠️ Error Handling
-
-### Built-in 404 Page
-
-The router includes a default 404 page when no matching route is found:
-
-```tsx
-// Custom 404 page can be added at @/routes/404.tsx
-export const render = async () => {
-    return <div>Custom 404 Page</div>;
+```typescript
+// Message Types
+type RouterMessage = {
+    type: 'navigate' | 'updateView' | 'islandUpdated';
+    payload: any;
+    id: string;
 };
+
+// Navigation Flow
+1. Emit navigation event
+2. Worker processes path
+3. Worker sends updateView message
+4. Main thread updates DOM
 ```
 
-### Error Boundary
+### View Updates
 
-Route rendering errors are caught and displayed:
+-   Slides are created/updated dynamically
+-   Components are loaded asynchronously
+-   JSX is transformed and rendered
+-   Dynamic Islands can be updated independently
 
-```html
-<error-boundary>Error Message</error-boundary>
-```
+## Error Handling
 
-## 🛠️ Best Practices
+-   Retry mechanism for Reveal.js initialization
+-   Graceful handling of missing routes
+-   Error boundaries for component failures
+-   Detailed logging for debugging
 
-1. **Route Organization**: Keep route files in the `@/routes` directory with clear, descriptive names
-2. **Dynamic Routes**: Use parameter notation (`:paramName`) for dynamic segments
-3. **Transitions**: Keep transitions subtle and quick for better user experience
-4. **Error Handling**: Always provide fallback UI for error states
-5. **Type Safety**: The router includes TypeScript support for better type checking
+## Best Practices
 
-## 🔍 Route Matching
+1. **Route Organization**
 
-The router uses a sophisticated matching system:
+    - Keep route files simple
+    - Use Dynamic Islands for complex layouts
+    - Handle loading states appropriately
 
-```ts
-// Examples of how routes are matched
-/about              -> matches /about
-/collection/:id     -> matches /collection/123
-/collection/:collection/document/:document
-                    -> matches /collection/blog/document/post-1
-```
+2. **Navigation**
 
-## 🌟 Conclusion
+    - Use event system for navigation
+    - Handle navigation errors gracefully
+    - Consider slide transitions
 
-This routing system provides a seamless, transition-enabled navigation experience with automatic route discovery and error handling. It's designed to work with the YouI framework's performance and developer ergonomics goals.
+3. **Dynamic Islands**
 
-For more complex scenarios, you can extend the routing system by modifying the route discovery process or adding custom transition effects.
+    - Design for parallel updates
+    - Keep island state isolated
+    - Handle island-specific errors
+
+4. **Performance**
+    - Lazy load route components
+    - Optimize slide transitions
+    - Minimize worker message size

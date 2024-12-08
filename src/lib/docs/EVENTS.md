@@ -1,181 +1,209 @@
-# YouI Event System
+# Event System
 
-A powerful and flexible event management system that combines a global event bus with DOM event handling.
+YouI uses a powerful worker-based event system that combines a global event bus with DOM event handling and type-safe event payloads. The system runs in a dedicated Web Worker for performance and reliability.
 
-## 🚀 Getting Started
+## Core Concepts
 
-First, initialize the event management system in your application:
+### Worker-Based Architecture
 
-```ts
-import { eventBus, EventManager } from "@/lib/event";
+-   Events processed in a dedicated Web Worker
+-   Message queue system for reliable delivery
+-   Pattern-based subscription support
+-   Event buffering and retention capabilities
 
-const eventManager = EventManager();
-eventManager.init();
+### Event Types
+
+```typescript
+type EventType =
+    | "dom" // DOM events (click, input, etc.)
+    | "state" // State changes
+    | "route" // Navigation/routing events
+    | "system" // System events (loading, error, etc.)
+    | "custom"; // User-defined events
 ```
 
-## 🎯 Event Bus: Subscribe & Publish
+### Event Payloads
 
-### Basic Subscription
+All events carry a standardized payload structure:
 
-```ts
+```typescript
+interface EventPayload {
+    type: EventType;
+    topic?: string;
+    effect?: string;
+    trigger?: string;
+    data?: any;
+    meta?: {
+        timestamp: number;
+        source: string;
+        target?: string;
+        path?: string[];
+        originalEvent?: Event;
+    };
+}
+```
+
+## Usage
+
+### Basic Event Subscription
+
+```typescript
+import { eventBus } from "@/lib/event";
+
+// Subscribe to specific events
 eventBus.subscribe("stateChange", (payload) => {
     console.log("State changed:", payload);
 });
-```
 
-### Conditional Subscription
-
-```ts
-// Only trigger when specific conditions are met
-eventBus.subscribe(
-    "stateChange",
-    (payload) => {
-        console.log("Login state changed:", payload);
-    },
-    (payload) => payload.key === "isLoggedIn"
-);
-
-// Multiple subscribers for the same event
-eventBus.subscribe(
-    "userAction",
-    (payload) => {
-        console.log("User performed action:", payload);
-    },
-    (payload) => payload.type === "click"
-);
+// Pattern-based subscription
+eventBus.subscribePattern("state.*", (payload) => {
+    console.log("State event:", payload);
+});
 ```
 
 ### Publishing Events
 
-```ts
+```typescript
 // Basic event publishing
-eventBus.publish("stateChange", { key: "isLoggedIn", value: true });
+eventBus.publish("stateChange", {
+    type: "state",
+    data: { key: "theme", value: "dark" }
+});
 
-// Publishing with complex payload
-eventBus.publish("userAction", {
-    type: "click",
-    target: "submitButton",
-    timestamp: Date.now(),
-    data: { formId: "login-form" }
+// DOM event with effect
+eventBus.publish("click", {
+    type: "dom",
+    effect: "submenu",
+    trigger: "click",
+    meta: {
+        source: "navigation",
+        originalEvent: event
+    }
 });
 ```
 
-### Event Queuing
+### DOM Event Integration
 
-The event system includes automatic event queuing to handle race conditions where events might be published before subscribers are ready:
-
-```ts
-// Event published before any subscribers
-eventBus.publish("earlyEvent", { data: "important" });
-
-// Later subscription will still receive the queued event
-eventBus.subscribe("earlyEvent", (payload) => {
-    console.log("Received queued event:", payload);
-});
-```
-
-Events are:
-
-- Automatically queued if published before subscribers exist
-- Processed in order when subscribers are added
-- Cleared from queue after processing
-- Logged for debugging purposes
-
-## 🖱️ DOM Event Handling
-
-### Basic DOM Event Attributes
-
-Add data attributes to your HTML elements to enable automatic event handling:
+The event system automatically handles DOM events through data attributes:
 
 ```html
-<!-- Basic click event -->
-<button data-event="buttonClicked" data-trigger="click">Click Me</button>
-
-<!-- Event with variant -->
-<div data-event="hover" data-trigger="mouseenter" data-variant="primary">
-    Hover Me
-</div>
-
-<!-- Directional event -->
-<div data-event="scroll" data-trigger="wheel" data-direction="vertical">
-    Scroll Me
-</div>
+<button data-trigger="click" data-event="menu" data-effect="submenu">
+    Menu
+</button>
 ```
 
-### Custom Event Handlers
+### System Events
 
-```ts
-// Add custom event handler
-eventManager.addEvent("mousemove", (event) => {
-    console.log("Mouse position:", event.clientX, event.clientY);
+Built-in system events for common operations:
+
+-   `navigate`: Handle route changes
+-   `status`: Display toast notifications
+-   `system`: System-level operations
+
+```typescript
+// Navigation example
+eventBus.publish("navigate", {
+    type: "route",
+    effect: "/dashboard"
 });
 
-// Scoped event listener
-const container = document.querySelector(".container");
-if (container instanceof HTMLElement) {
-    eventManager.addScopedEventListener(container, "scroll", (event) => {
-        console.log("Container scrolled");
+// Status notification
+eventBus.publish("status", {
+    type: "system",
+    data: {
+        variant: "success",
+        title: "Success",
+        message: "Operation completed"
+    }
+});
+```
+
+## Best Practices
+
+1. **Event Naming**
+
+    - Use descriptive topic names
+    - Follow the pattern `category.action` for hierarchical events
+    - Keep names consistent across the application
+
+2. **Payload Design**
+
+    - Include only necessary data
+    - Use typed payloads when possible
+    - Include source and target information for debugging
+
+3. **Subscription Management**
+
+    - Clean up subscriptions when components unmount
+    - Use pattern matching for related events
+    - Handle errors in event callbacks
+
+4. **Performance**
+
+    - Use pattern subscriptions sparingly
+    - Avoid heavy processing in event callbacks
+    - Consider debouncing frequent events
+
+5. **Debugging**
+    - Enable debug mode for event logging
+    - Use meta information for tracing
+    - Monitor event patterns for optimization
+
+## Debug Tools
+
+The event system includes built-in debugging capabilities:
+
+-   Event stream monitoring
+-   Active subscription tracking
+-   Pattern matching visualization
+-   Performance metrics
+
+Enable debug mode to access these tools:
+
+```typescript
+import { eventManager } from "@/lib/event";
+
+eventManager.init({ debug: true });
+```
+
+## Error Handling
+
+The event system includes robust error handling:
+
+```typescript
+try {
+    eventBus.publish("criticalOperation", {
+        type: "system",
+        data: operationData
+    });
+} catch (error) {
+    eventBus.publish("status", {
+        type: "system",
+        data: {
+            variant: "error",
+            title: "Error",
+            message: error.message
+        }
     });
 }
 ```
 
-## 🏗️ Component Lifecycle Management
+## Integration with State Management
 
-Track when elements are added to or removed from the DOM:
+The event system seamlessly integrates with the state manager:
 
-```ts
-const myElement = document.createElement("div");
-myElement.setAttribute("data-event", "myCustomEvent");
-
-eventManager.manageComponentLifecycle(
-    myElement,
-    () => {
-        console.log("Element mounted");
-        // Setup component-specific listeners
-    },
-    () => {
-        console.log("Element unmounted");
-        // Cleanup listeners
+```typescript
+// Listen for state changes
+eventBus.subscribe("stateChange", (payload) => {
+    if (payload.topic === "theme") {
+        updateTheme(payload.data);
     }
-);
-
-// Example usage
-document.body.appendChild(myElement); // Triggers mount
-document.body.removeChild(myElement); // Triggers unmount
-```
-
-## 🔄 State Management Integration
-
-The event system automatically integrates with the state manager:
-
-```ts
-// State changes through events
-eventBus.publish("stateChange", {
-    key: "theme",
-    value: "dark"
 });
 
-// Listen for specific state changes
-eventBus.subscribe(
-    "stateChange",
-    (payload) => {
-        console.log("Theme changed to:", payload.value);
-    },
-    (payload) => payload.key === "theme"
-);
+// Update state through events
+eventBus.publish("stateChange", {
+    type: "state",
+    topic: "theme",
+    data: { mode: "dark" }
+});
 ```
-
-## 🛠️ Best Practices
-
-1. **Event Naming**: Use descriptive, action-based names (e.g., `userLoggedIn`, `dataLoaded`, `modalClosed`)
-2. **Error Handling**: Event listeners are automatically wrapped in try-catch blocks
-3. **Conditional Subscriptions**: Use conditions to filter events and reduce unnecessary callback executions
-4. **Cleanup**: Always remove event listeners when components are unmounted
-5. **Type Safety**: The system includes TypeScript support for better type checking
-6. **Event Queuing**: Let the system handle race conditions by utilizing the built-in event queue
-
-## 🌟 Conclusion
-
-This event system provides a robust foundation for handling both application-level events and DOM interactions. It combines the flexibility of a publish/subscribe pattern with the convenience of declarative DOM event handling.
-
-For more complex scenarios or custom implementations, you can extend the system using the provided methods or create custom event handlers as needed.

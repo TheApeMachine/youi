@@ -1,6 +1,7 @@
 import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
-import { eventBus, type EventPayload } from "../event";
+import { eventBus } from "../event";
+import { EventPayload } from "../event/types";
 import { Header } from "./layout/Header";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
@@ -28,12 +29,12 @@ export const Flyout = Component({
         let isClosed = true;
 
         const mouseMoveHandler = (e: EventPayload) => {
-            const originalEvent = e.originalEvent as MouseEvent;
+            const originalEvent = e.meta?.originalEvent as MouseEvent;
 
-            if (originalEvent.clientY <= 50 && isClosed) {
+            if (originalEvent?.clientY <= 50 && isClosed) {
                 isOpen = true;
                 isClosed = false;
-            } else if (originalEvent.clientY > 50 && isOpen) {
+            } else if (originalEvent?.clientY > 50 && isOpen) {
                 isOpen = false;
                 isClosed = true;
             } else {

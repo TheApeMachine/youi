@@ -2,7 +2,7 @@ import { jsx } from "@/lib/template";
 import { Component } from "@/lib/ui/Component";
 
 export const Profile = Component({
-    render: (props) => (
+    render: (props: { groupUser: { ImageURL: string; FirstName: string } }) => (
         <li>
             <div class="row left avatar-container">
                 <img

@@ -12,50 +12,65 @@ const initialState: WorkerState = {
 
 self.onmessage = (event) => handleMessage(initialState, event);
 
+const handleSubscribe = (state: WorkerState, payload: HandlerPayload, id: string) => {
+    const { eventName, handlerId } = payload;
+    if (isPattern(eventName)) {
+        addSubscription(state.patternHandlers, eventName, handlerId);
+    } else {
+        addSubscription(state.handlers, eventName, handlerId);
+    }
+    postResponse('success', { registered: true }, id);
+}
+
+const handleUnsubscribe = (state: WorkerState, payload: HandlerPayload, id: string) => {
+    const { eventName, handlerId } = payload;
+    if (isPattern(eventName)) {
+        removeSubscription(state.patternHandlers, eventName, handlerId);
+    } else {
+        removeSubscription(state.handlers, eventName, handlerId);
+    }
+    postResponse('success', { unregistered: true }, id);
+}
+
+const handlePublish = (state: WorkerState, payload: EventDispatchPayload, id: string) => {
+    const { eventName, event: ev } = payload;
+
+    // Dispatch to exact matches
+    const exactHandlers = state.handlers.get(eventName);
+    if (exactHandlers && exactHandlers.size > 0) {
+        postResponse('event', { eventName, event: ev }, id);
+    }
+
+    // Dispatch to pattern matches
+    for (const [pattern, patternSet] of state.patternHandlers.entries()) {
+        if (patternSet.size > 0 && matchesPattern(pattern, eventName)) {
+            postResponse('event', { eventName: pattern, event: ev }, id);
+        }
+    }
+
+    postResponse('success', { published: true }, id);
+}
+
 const handleMessage = async (state: WorkerState, event: MessageEvent<EventMessage>) => {
     const { type, payload, id } = event.data;
 
     try {
         switch (type) {
             case 'subscribe': {
-                const { eventName, handlerId } = payload as HandlerPayload;
-                if (isPattern(eventName)) {
-                    addSubscription(state.patternHandlers, eventName, handlerId);
-                } else {
-                    addSubscription(state.handlers, eventName, handlerId);
-                }
-                postResponse('success', { registered: true }, id);
+                if (!id) throw new Error('No ID provided');
+                handleSubscribe(state, payload as HandlerPayload, id);
                 break;
             }
 
             case 'unsubscribe': {
-                const { eventName, handlerId } = payload as HandlerPayload;
-                if (isPattern(eventName)) {
-                    removeSubscription(state.patternHandlers, eventName, handlerId);
-                } else {
-                    removeSubscription(state.handlers, eventName, handlerId);
-                }
-                postResponse('success', { unregistered: true }, id);
+                if (!id) throw new Error('No ID provided');
+                handleUnsubscribe(state, payload as HandlerPayload, id);
                 break;
             }
 
             case 'publish': {
-                const { eventName, event: ev } = payload as EventDispatchPayload;
-
-                // Dispatch to exact matches
-                const exactHandlers = state.handlers.get(eventName);
-                if (exactHandlers && exactHandlers.size > 0) {
-                    postResponse('event', { eventName, event: ev }, id);
-                }
-
-                // Dispatch to pattern matches
-                for (const [pattern, patternSet] of state.patternHandlers.entries()) {
-                    if (patternSet.size > 0 && matchesPattern(pattern, eventName)) {
-                        postResponse('event', { eventName: pattern, event: ev }, id);
-                    }
-                }
-
-                postResponse('success', { published: true }, id);
+                if (!id) throw new Error('No ID provided');
+                handlePublish(state, payload as EventDispatchPayload, id);
                 break;
             }
 
@@ -104,7 +119,7 @@ const matchesPattern = (pattern: string, topic: string): boolean => {
             // '**' can match one or more segments, so we consider the rest matched
             // if we've reached '**' and it's the last part of the pattern.
             // If pattern ends with '**', it's basically a prefix match beyond this point.
-            return i === patternParts.length - 1 ? true : false;
+            return i === patternParts.length - 1;
         }
         if (part === '*') return topicParts[i] !== undefined;
         return part === topicParts[i];

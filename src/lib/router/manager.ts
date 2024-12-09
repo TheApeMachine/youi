@@ -1,8 +1,10 @@
 import { eventManager } from '@/lib/event';
 import { EventPayload } from '@/lib/event/types';
 import { AuthService } from '@/lib/auth';
-import { animate, stagger } from 'motion';
-import { DynamicIslandSection } from "@/lib/ui/dynamic-island/variants";
+import gsap from 'gsap';
+import { Flip } from 'gsap/Flip';
+
+gsap.registerPlugin(Flip);
 
 // Public routes that don't require authentication
 const publicRoutes = ['/login', '/signup', '/forgot-password'];
@@ -123,7 +125,6 @@ export const RouterManager = () => {
         const module = await import(`/src/routes/islands/${route}.tsx`);
         type SectionKey = 'header' | 'aside' | 'main' | 'article' | 'footer';
 
-        // Store the component functions, don't execute them yet
         const sections: Record<SectionKey, (() => Promise<JSX.Element>) | null> = {
             header: module.Header || null,
             aside: module.Aside || null,
@@ -134,50 +135,76 @@ export const RouterManager = () => {
 
         console.log("Available sections:", Object.keys(sections).filter(k => sections[k as SectionKey]));
 
-        // Get the variant config first to determine which properties to animate
         const { variants } = await import('@/lib/ui/dynamic-island/variants');
         const config = module.variant ? variants[module.variant] : null;
 
         const island = document.querySelector(`[data-island="${islandId}"]`) as HTMLElement;
         if (!island) return;
 
+        const states = []
+
+        states.push(Flip.getState(island), {
+            props: "all"
+        });
+
+        if (config) {
+            gsap.set(island, config.styles);
+        }
+
         // Create an array of update promises
-        const updatePromises = (["header", "aside", "main", "article", "footer"] as SectionKey[])
-            .map(section => {
-                const element = island.querySelector(section) as HTMLElement;
-                if (sections[section]) {
-                    return sections[section]!().then(async content => {
-                        // Get the current children
-                        const oldChildren = Array.from(element.children);
+        ["header", "aside", "main", "article", "footer"].forEach(async (section) => {
+            const element = island.querySelector(section) as HTMLElement;
+            if (!element) return;
 
-                        // Add new content
-                        element.append(content);
+            // Take a snapshot of the current state
+            states.push(Flip.getState(element, {
+                props: "all"
+            }));
 
-                        // Animate simultaneously
-                        await Promise.all([
-                            animate(
-                                content as HTMLElement,
-                                { x: [20, 0] },
-                                { duration: 3, ease: 'easeOut', delay: stagger(0.3) }
-                            ),
+            const sectionElement = island.querySelector(section) as HTMLElement;
+            if (!sectionElement) return;
 
-                            ...oldChildren.map(child =>
-                                animate(
-                                    child as HTMLElement,
-                                    { x: [0, -20] },
-                                    { duration: 3, ease: 'easeOut', delay: stagger(0.3) }
-                                )
-                            )
-                        ]);
+            const sectionConfig = config?.[section as SectionKey];
+            if (sectionConfig) {
+                gsap.set(sectionElement, sectionConfig.styles);
+            }
+            const sectionContent = sections[section as SectionKey];
+            if (sectionContent) {
+                const newContent = await sectionContent();
+                element.replaceChildren(newContent);
+            } else if (element.children.length > 0) {
+                element.replaceChildren();
+            }
 
-                        // Clean up old content after animation
-                        oldChildren.forEach(child => child.remove());
+            states.push(Flip.getState(element));
+        });
+
+        states.forEach((flipState) => {
+            Flip.from(flipState as ReturnType<typeof Flip.getState>, {
+                duration: 0.6,
+                ease: "power2.inOut",
+                scale: true,
+                absolute: true,
+                onLeave: (el) => {
+                    gsap.fromTo(el, {
+                        opacity: 1,
+                    }, {
+                        opacity: 0,
+                        duration: 0.6,
+                        ease: "power2.inOut"
+                    });
+                },
+                onEnter: (el) => {
+                    gsap.fromTo(el, {
+                        opacity: 0,
+                    }, {
+                        opacity: 1,
+                        duration: 0.6,
+                        ease: "power2.inOut"
                     });
                 }
             });
-
-        // Wait for all content updates to complete
-        await Promise.all(updatePromises);
+        });
     };
 
     const sendWorkerMessage = async (type: string, payload: any): Promise<any> => {
@@ -207,7 +234,7 @@ export const RouterManager = () => {
             }
 
             // Parse the path to handle dynamic islands
-            const [slide, islandId, islandRoute] = path.split('/').filter(Boolean);
+            const [_, islandId, islandRoute] = path.split('/').filter(Boolean);
 
             if (islandId && islandRoute) {
                 // Handle dynamic island update

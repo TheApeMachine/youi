@@ -1,28 +1,29 @@
+import { onMount } from "@/lib/lifecycle";
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
 import * as echarts from "echarts";
-import { EChartsOption } from "echarts";
+import type { PieSeriesOption } from "echarts/charts";
+import type { EChartsOption } from "echarts";
 
-export const Donut = Component({
-    render: () => <div id="donut-chart" class="chart-container"></div>,
-    effect: () => {
-        const chartDom = document.getElementById("donut-chart");
-        if (!chartDom) return;
+export default () => {
+    const chartRef = document.createElement("div");
+    chartRef.id = "donut-chart";
+    chartRef.className = "chart-container";
 
+    onMount(chartRef, () => {
         // Only initialize if no instance exists
-        let myChart = echarts.getInstanceByDom(chartDom);
+        let myChart = echarts.getInstanceByDom(chartRef);
         if (!myChart) {
-            myChart = echarts.init(chartDom);
+            myChart = echarts.init(chartRef);
         }
 
         // Add resize observer
         const resizeObserver = new ResizeObserver(() => {
             myChart?.resize();
         });
-        resizeObserver.observe(chartDom);
+        resizeObserver.observe(chartRef);
 
         // Chart configuration
-        let option: EChartsOption;
+        let option: EChartsOption & { series: PieSeriesOption[] };
 
         option = {
             tooltip: {
@@ -68,10 +69,11 @@ export const Donut = Component({
 
         option && myChart.setOption(option);
 
-        // Cleanup
         return () => {
             resizeObserver.disconnect();
-            myChart.dispose();
+            myChart?.dispose();
         };
-    }
-});
+    });
+
+    return chartRef;
+};

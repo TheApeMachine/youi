@@ -26,11 +26,17 @@
     --danger-dark: #991b1b;
 
     --success: hsl(142, 76%, 36%);
-    --success-light: hsl(142, 69%, 58%);
+    --success-light: #4ade80;
     --success-dark: hsl(143, 64%, 24%);
 
+    --warning: hsl(62, 100%, 80%);
+    --warning-light: hsl(62, 100%, 90%);
+    --warning-dark: hsl(62, 100%, 70%);
+
+    --important: hsla(0, 66%, 52%, 0.174);
+
     --red: hsl(0, 100%, 80%);
-    --yellow: hsl(62, 100%, 80%);
+    --yellow: #fcff99;
     --green: hsl(122, 100%, 80%);
     --blue: hsl(179, 100%, 80%);
     --purple: #999cff;
@@ -38,13 +44,13 @@
     --white: hsl(0, 0%, 98%);
     --black: hsl(0, 0%, 0%);
 
-    --gradient-dark: linear-gradient(
+    --gradient: linear-gradient(
         to right,
         var(--bg-glass-tint),
         var(--bg-glass)
     );
 
-    --gradient-dark-vertical: linear-gradient(
+    --gradient-vertical: linear-gradient(
         to bottom,
         var(--bg-glass-tint),
         var(--bg-glass)
@@ -82,6 +88,8 @@
     --ring-double-purple: 0 0 0 4px var(--purple);
 
     --border-muted: 1px solid var(--muted);
+    --border-brand: 1px solid var(--brand);
+    --border-danger: 1px solid var(--danger);
 
     --transition-time: 0.2s;
     --transition-time-long: 0.5s;
@@ -120,6 +128,155 @@ body.light {
         var(--bg-glass-tint),
         var(--bg-glass)
     );
+}
+
+.bg {
+    background: var(--bg);
+}
+
+.bg-muted {
+    background: var(--muted);
+}
+
+.bg-brand {
+    background: var(--brand);
+}
+
+.bg-brand-light {
+    background: var(--brand-light);
+}
+
+.bg-brand-dark {
+    background: var(--brand-dark);
+}
+
+.bg-danger {
+    background: var(--danger);
+}
+
+.bg-danger-light {
+    background: var(--danger-light);
+}
+
+.bg-danger-dark {
+    background: var(--danger-dark);
+}
+
+.bg-success {
+    background: var(--success);
+}
+
+.bg-success-light {
+    background: var(--success-light);
+}
+
+.bg-success-dark {
+    background: var(--success-dark);
+}
+
+.bg-red {
+    background: var(--red);
+}
+
+.bg-yellow {
+    background: var(--yellow);
+}
+
+.bg-green {
+    background: var(--green);
+}
+
+.bg-blue {
+    background: var(--blue);
+}
+
+.bg-purple {
+    background: var(--purple);
+}
+
+.bg-pink {
+    background: var(--pink);
+}
+
+.bg-white {
+    background: var(--white);
+}
+
+.bg-black {
+    background: var(--black);
+}
+
+.bg-transparent {
+    background: var(--transparent);
+}
+
+.bg-glass {
+    background: var(--bg-glass);
+}
+
+.bg-glass-tint {
+    background: var(--bg-glass-tint);
+}
+
+.bg-gradient {
+    background: var(--gradient);
+}
+
+.bg-gradient-vertical {
+    background: var(--gradient-vertical);
+}
+
+.icon-yellow {
+    color: var(--yellow);
+}
+
+.surface {
+    --is-valid: 0;
+    --is-invalid: 0;
+    background: linear-gradient(var(--surface), var(--surface)) padding-box,
+        linear-gradient(var(--danger), var(--danger))
+            calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
+        linear-gradient(var(--success), var(--success))
+            calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
+        var(--surface);
+
+    border: 2px solid transparent;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    max-width: 100%;
+    width: 100cqi;
+    color: var(--fg);
+    outline: none;
+    font-weight: 200;
+    box-shadow: var(--surface-shadow);
+}
+
+.radius-unit {
+    border-radius: var(--unit);
+}
+
+.radius-xs {
+    border-radius: var(--xs);
+}
+
+.radius-sm {
+    border-radius: var(--sm);
+}
+
+.radius-md {
+    border-radius: var(--md);
+}
+
+.radius-lg {
+    border-radius: var(--lg);
+}
+
+.radius-xl {
+    border-radius: var(--xl);
+}
+
+.radius-xxl {
+    border-radius: var(--xxl);
 }
 
 [data-trigger="click"] {

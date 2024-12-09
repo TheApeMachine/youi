@@ -6,3 +6,35 @@
         transform: rotate(360deg);
     }
 }
+
+@keyframes ellipsis-dot-1 {
+    from {
+        visibility: hidden;
+    }
+    25%,
+    to {
+        visibility: visible;
+    }
+}
+
+@keyframes ellipsis-dot-2 {
+    from,
+    25% {
+        visibility: hidden;
+    }
+    50%,
+    to {
+        visibility: visible;
+    }
+}
+
+@keyframes ellipsis-dot-3 {
+    from,
+    50% {
+        visibility: hidden;
+    }
+    75%,
+    to {
+        visibility: visible;
+    }
+}

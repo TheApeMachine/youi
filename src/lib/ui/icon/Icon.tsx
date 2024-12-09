@@ -1,11 +1,16 @@
 import { jsx } from "@/lib/template";
-import { Color } from "@/lib/ui/types";
 
 interface IconProps {
     icon: string;
-    color?: Color;
+    color?: string;
 }
 
-export const Icon = ({ icon, color = "fg" }: IconProps) => (
-    <span class={`material-symbols-rounded icon`}>{icon}</span>
-);
+export default ({ icon, color }: IconProps) => {
+    const colorClass = color ? ` icon-${color}` : "";
+
+    return (
+        <span class={`material-symbols-rounded icon ${colorClass}`}>
+            {icon}
+        </span>
+    );
+};

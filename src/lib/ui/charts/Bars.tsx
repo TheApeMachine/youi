@@ -1,7 +1,7 @@
+import { onMount } from "@/lib/lifecycle";
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
 import * as echarts from "echarts";
-import { EChartsOption, GraphicComponentOption } from "echarts";
+import type { EChartOption } from "echarts";
 
 interface BarsProps {
     id: string;
@@ -9,32 +9,27 @@ interface BarsProps {
     total: number;
 }
 
-export const Bars = Component({
-    render: ({ id }: BarsProps) => <div id={id} class="chart-container"></div>,
-    effect: ({ id, completed, total }: BarsProps) => {
-        const chartDom = document.getElementById(id);
-        if (!chartDom) return;
+export default ({ id, completed, total }: BarsProps) => {
+    const chartRef = document.createElement("div");
+    chartRef.id = id;
+    chartRef.className = "chart-container";
 
-        let myChart = echarts.getInstanceByDom(chartDom);
+    onMount(chartRef, () => {
+        let myChart = echarts.getInstanceByDom(chartRef);
         if (!myChart) {
-            myChart = echarts.init(chartDom);
+            myChart = echarts.init(chartRef);
         }
 
         const resizeObserver = new ResizeObserver(() => {
             myChart?.resize();
         });
-        resizeObserver.observe(chartDom);
+        resizeObserver.observe(chartRef);
 
         const remaining = total - completed;
         const completedPercentage = Math.round((completed / total) * 100);
         const remainingPercentage = Math.round((remaining / total) * 100);
 
-        console.log("Percentages:", {
-            completedPercentage,
-            remainingPercentage
-        });
-
-        const option: EChartsOption = {
+        const option: EChartOption = {
             grid: {
                 left: "3%",
                 right: "3%",
@@ -85,11 +80,13 @@ export const Bars = Component({
             ]
         };
 
-        option && myChart.setOption(option);
+        myChart.setOption(option);
 
         return () => {
             resizeObserver.disconnect();
-            myChart.dispose();
+            myChart?.dispose();
         };
-    }
-});
+    });
+
+    return chartRef;
+};

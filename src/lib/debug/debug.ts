@@ -71,6 +71,7 @@ export const createDebugOverlay = (): DebugOverlay => {
         debug: console.debug
     };
     let isMinimized = false;
+    let isVisible = false;
     let activeModules = new Map<ModuleId, DebugModuleInstance>();
     let globalAddLog: ((entry: DebugEntry) => void) | null = null;
 
@@ -78,7 +79,19 @@ export const createDebugOverlay = (): DebugOverlay => {
     const overlayInstance = overlay();
     const { rootContainer, contentGrid, toolbox } = overlayInstance;
 
+    // Initially hide the debug overlay
+    rootContainer.style.display = 'none';
     document.documentElement.appendChild(rootContainer);
+
+    // Add keyboard event listener for toggle
+    const handleKeyPress = (e: KeyboardEvent) => {
+        if (e.key === 'd' && !e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
+            isVisible = !isVisible;
+            rootContainer.style.display = isVisible ? 'flex' : 'none';
+        }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
 
     const loadModule = async (moduleId: ModuleId, index: number) => {
         try {
@@ -184,6 +197,7 @@ export const createDebugOverlay = (): DebugOverlay => {
             activeModules.forEach(instance => instance.cleanup?.());
             activeModules.clear();
             rootContainer.remove();
+            document.removeEventListener('keydown', handleKeyPress);
 
             Object.entries(originalConsole).forEach(([method, fn]) => {
                 (console[method as ConsoleMethod] as any) = fn;

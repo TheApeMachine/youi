@@ -1,5 +1,30 @@
 import { EventPayload, EventMessage } from './types';
 
+const handleEvent = (data: any): any => {
+    return {
+        type: data.type,
+        timeStamp: data.timeStamp,
+        target: data.target instanceof HTMLElement ? {
+            id: data.target.id,
+            className: data.target.className,
+            tagName: data.target.tagName,
+            value: 'value' in data.target ? (data.target as HTMLInputElement).value : undefined
+        } : null
+    };
+}
+
+const handleObject = (data: any): any => {
+    const serialized: Record<string, any> = {};
+    for (const [key, value] of Object.entries(data)) {
+        try {
+            serialized[key] = structuredClone(value);
+        } catch {
+            serialized[key] = serializeEventData(value);
+        }
+    }
+    return serialized;
+}
+
 const serializeEventData = (data: any): any => {
     // Try using structuredClone directly if available
     try {
@@ -7,16 +32,7 @@ const serializeEventData = (data: any): any => {
     } catch {
         // Fallback recursive serialization if structuredClone fails
         if (data instanceof Event) {
-            return {
-                type: data.type,
-                timeStamp: data.timeStamp,
-                target: data.target instanceof HTMLElement ? {
-                    id: data.target.id,
-                    className: data.target.className,
-                    tagName: data.target.tagName,
-                    value: 'value' in data.target ? (data.target as HTMLInputElement).value : undefined
-                } : null
-            };
+            return handleEvent(data);
         }
 
         if (Array.isArray(data)) {
@@ -24,15 +40,7 @@ const serializeEventData = (data: any): any => {
         }
 
         if (typeof data === 'object' && data !== null) {
-            const serialized: Record<string, any> = {};
-            for (const [key, value] of Object.entries(data)) {
-                try {
-                    serialized[key] = structuredClone(value);
-                } catch {
-                    serialized[key] = serializeEventData(value);
-                }
-            }
-            return serialized;
+            return handleObject(data);
         }
 
         return data;
@@ -134,8 +142,6 @@ export const createEventManager = () => {
     };
 
     worker.onmessage = handleMessage;
-
-    const isPattern = (topic: string) => topic.includes('*');
 
     return {
         init: async () => {

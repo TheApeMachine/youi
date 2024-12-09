@@ -1,6 +1,6 @@
 import { jsx } from "@/lib/template";
 import { createEventProps } from "@/lib/event/dom";
-import { Icon } from "@/lib/ui/icon/Icon";
+import Icon from "@/lib/ui/icon/Icon";
 
 export type ButtonVariant =
     | "primary"

@@ -1,5 +1,4 @@
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
 
 interface LinkProps {
     children: Node | Node[];
@@ -7,12 +6,10 @@ interface LinkProps {
     className?: string;
 }
 
-export const Link = Component({
-    render: ({ children, href, className = "" }: LinkProps) => {
-        return (
-            <a href={href} className={className}>
-                {children}
-            </a>
-        );
-    }
-});
+export const Link = ({ children, href, className = "" }: LinkProps) => {
+    return (
+        <a href={href} className={className}>
+            {children}
+        </a>
+    );
+}

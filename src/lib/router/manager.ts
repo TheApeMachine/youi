@@ -1,6 +1,11 @@
 import { eventManager } from '@/lib/event';
 import { EventPayload } from '@/lib/event/types';
-import { jsx } from '@/lib/template';
+import { AuthService } from '@/lib/auth';
+import { animate, stagger } from 'motion';
+import { DynamicIslandSection } from "@/lib/ui/dynamic-island/variants";
+
+// Public routes that don't require authentication
+const publicRoutes = ['/login', '/signup', '/forgot-password'];
 
 interface RouterState {
     worker: Worker | null;
@@ -24,12 +29,9 @@ export const RouterManager = () => {
 
         state.worker.onmessage = async (event) => {
             const { type, payload, id } = event.data;
-            console.log('Router worker message received:', { type, payload, id });
 
-            // Handle queued messages
             const queueIndex = state.messageQueue.findIndex(msg => msg.id === id);
             if (queueIndex !== -1) {
-                console.log('Found queued message, resolving');
                 const { resolve } = state.messageQueue[queueIndex];
                 state.messageQueue.splice(queueIndex, 1);
                 resolve(payload);
@@ -43,11 +45,9 @@ export const RouterManager = () => {
             try {
                 switch (type) {
                     case 'updateView':
-                        console.log('Processing updateView message:', payload);
                         await updateView(payload);
                         break;
                     case 'islandUpdated':
-                        console.log('Processing islandUpdated message:', payload);
                         await updateIsland(payload);
                         break;
                     case 'error':
@@ -63,47 +63,36 @@ export const RouterManager = () => {
     };
 
     const updateView = async ({ slide, island, isNew }: { slide: string, island?: string, isNew: boolean }) => {
-        console.log('updateView called with:', { slide, island, isNew });
+        console.log("Updating view", slide, island, isNew);
         const slidesContainer = document.querySelector('.reveal .slides') as HTMLElement;
         if (!slidesContainer) {
             console.error('No slides container found');
             return;
         }
-        console.log('Found slides container');
 
         let slideSection = document.querySelector(`section[data-slide="${slide}"]`) as HTMLElement;
-        console.log('Existing slide section:', slideSection ? 'found' : 'not found');
 
         if (!slideSection || isNew) {
-            console.log('Creating/updating slide section for:', slide);
             if (!slideSection) {
                 slideSection = document.createElement('section');
                 slideSection.dataset.slide = slide;
                 slidesContainer.appendChild(slideSection);
-                console.log('Created new slide section');
             }
 
             try {
-                console.log(`Importing route module for: ${slide}`);
                 const module = await import(`/src/routes/${slide}.tsx`);
-                console.log('Route module loaded:', module);
                 const Component = module.default;
 
                 if (!Component) {
                     throw new Error(`No default export found in ${slide} module`);
                 }
 
-                console.log('Creating component instance');
                 const element = Component();
-                console.log('Component instance created:', element);
 
                 if (element instanceof Node) {
-                    console.log('Appending Node element');
                     slideSection.replaceChildren(element);
                 } else if (element && typeof element === 'object') {
-                    console.log('Transforming JSX element');
                     const rendered = await element;
-                    console.log('JSX transformed:', rendered);
                     slideSection.replaceChildren(rendered);
                 } else {
                     throw new Error(`Invalid element type: ${typeof element}`);
@@ -117,11 +106,9 @@ export const RouterManager = () => {
         }
 
         const slideIndex = Array.from(slidesContainer.children).indexOf(slideSection);
-        console.log('Navigating to slide index:', slideIndex);
         state.reveal?.slide(slideIndex);
 
         if (island) {
-            console.log('Updating island state:', island);
             await sendWorkerMessage('updateIsland', {
                 slide,
                 island,
@@ -130,21 +117,67 @@ export const RouterManager = () => {
         }
     };
 
-    const updateIsland = async ({ slide, island, data }: { slide: string, island: string, data: any }) => {
-        const slideElement = document.querySelector(`section[data-slide="${slide}"]`);
-        if (!slideElement) return;
+    const updateIsland = async ({ islandId, route }: { islandId: string, route: string }) => {
+        console.log("Updating island", islandId, route);
 
-        const islandElement = slideElement.querySelector(`[data-island="${island}"]`);
-        if (!islandElement) return;
+        const module = await import(`/src/routes/islands/${route}.tsx`);
+        type SectionKey = 'header' | 'aside' | 'main' | 'article' | 'footer';
 
-        if (typeof data === 'function') {
-            const content = await data();
-            islandElement.replaceChildren(content);
-        } else if (data instanceof Node) {
-            islandElement.replaceChildren(data);
-        } else {
-            islandElement.textContent = String(data);
-        }
+        // Store the component functions, don't execute them yet
+        const sections: Record<SectionKey, (() => Promise<JSX.Element>) | null> = {
+            header: module.Header || null,
+            aside: module.Aside || null,
+            main: module.Main || null,
+            article: module.Article || null,
+            footer: module.Footer || null
+        };
+
+        console.log("Available sections:", Object.keys(sections).filter(k => sections[k as SectionKey]));
+
+        // Get the variant config first to determine which properties to animate
+        const { variants } = await import('@/lib/ui/dynamic-island/variants');
+        const config = module.variant ? variants[module.variant] : null;
+
+        const island = document.querySelector(`[data-island="${islandId}"]`) as HTMLElement;
+        if (!island) return;
+
+        // Create an array of update promises
+        const updatePromises = (["header", "aside", "main", "article", "footer"] as SectionKey[])
+            .map(section => {
+                const element = island.querySelector(section) as HTMLElement;
+                if (sections[section]) {
+                    return sections[section]!().then(async content => {
+                        // Get the current children
+                        const oldChildren = Array.from(element.children);
+
+                        // Add new content
+                        element.append(content);
+
+                        // Animate simultaneously
+                        await Promise.all([
+                            animate(
+                                content as HTMLElement,
+                                { x: [20, 0] },
+                                { duration: 3, ease: 'easeOut', delay: stagger(0.3) }
+                            ),
+
+                            ...oldChildren.map(child =>
+                                animate(
+                                    child as HTMLElement,
+                                    { x: [0, -20] },
+                                    { duration: 3, ease: 'easeOut', delay: stagger(0.3) }
+                                )
+                            )
+                        ]);
+
+                        // Clean up old content after animation
+                        oldChildren.forEach(child => child.remove());
+                    });
+                }
+            });
+
+        // Wait for all content updates to complete
+        await Promise.all(updatePromises);
     };
 
     const sendWorkerMessage = async (type: string, payload: any): Promise<any> => {
@@ -158,22 +191,43 @@ export const RouterManager = () => {
     };
 
     const navigate = async (path: string) => {
-        console.log('Starting navigation to:', path);
+        console.log("Navigating to", path);
         state.isNavigating = true;
         try {
-            history.pushState(null, '', path);
-            console.log('Sending navigation message to worker');
-            await sendWorkerMessage('navigate', { path });
-            console.log('Navigation complete');
+            // Check authentication for protected routes
+            const isPublicRoute = publicRoutes.some(route => path.startsWith(route));
+            const isAuthenticated = await AuthService.isAuthenticated();
+
+            if (!isPublicRoute && !isAuthenticated) {
+                // Redirect to login if trying to access protected route while not authenticated
+                path = '/login';
+            } else if (path === '/login' && isAuthenticated) {
+                // Redirect to home if trying to access login while authenticated
+                path = '/';
+            }
+
+            // Parse the path to handle dynamic islands
+            const [slide, islandId, islandRoute] = path.split('/').filter(Boolean);
+
+            if (islandId && islandRoute) {
+                // Handle dynamic island update
+                await updateIsland({
+                    islandId,
+                    route: islandRoute
+                });
+            } else {
+                // Regular slide navigation
+                history.pushState(null, '', path);
+                await sendWorkerMessage('navigate', { path });
+            }
         } catch (error) {
-            console.error('Navigation failed:', error);
-        } finally {
+            console.error('Error in navigate:', error);
             state.isNavigating = false;
         }
+        state.isNavigating = false;
     };
 
     const init = async () => {
-        console.log('Initializing router');
         // Initialize worker
         state.worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
         setupWorkerHandlers();
@@ -193,7 +247,6 @@ export const RouterManager = () => {
             state.worker!.postMessage({ type: 'init', payload: {}, id });
         });
 
-        console.log('Worker initialized, checking for slides container');
         const slidesContainer = document.querySelector('.reveal .slides');
         if (!slidesContainer) {
             console.error('Could not find slides container, creating it');
@@ -203,12 +256,8 @@ export const RouterManager = () => {
             slides.className = 'slides';
             reveal.appendChild(slides);
             document.body.appendChild(reveal);
-        } else {
-            console.log('Found existing slides container');
         }
 
-        // Initialize Reveal.js
-        console.log('Checking Reveal.js initialization');
         let retries = 0;
         const maxRetries = 3;
 
@@ -217,7 +266,6 @@ export const RouterManager = () => {
             if (state.reveal) {
                 break;
             }
-            console.log(`Reveal.js not found, retrying (${retries + 1}/${maxRetries})...`);
             await new Promise(resolve => setTimeout(resolve, 1000));
             retries++;
         }
@@ -228,7 +276,6 @@ export const RouterManager = () => {
         }
 
         if (!state.reveal.isReady()) {
-            console.log('Initializing Reveal.js');
             await state.reveal.initialize({
                 hash: false,
                 autoSlide: 0,
@@ -237,13 +284,9 @@ export const RouterManager = () => {
                 layout: false,
                 ready: () => console.log('Reveal.js ready callback fired')
             });
-            console.log('Reveal.js initialization complete');
-        } else {
-            console.log('Reveal.js already initialized');
         }
 
         // Setup event listeners
-        console.log('Setting up navigation event listener');
         eventManager.subscribe('navigate', async (payload: EventPayload) => {
             if (!state.isNavigating && payload.data) {
                 await navigate(payload.data);
@@ -252,7 +295,6 @@ export const RouterManager = () => {
 
         // Handle initial route
         const path = window.location.pathname;
-        console.log('Triggering initial navigation to:', path);
         await navigate(path);
     };
 

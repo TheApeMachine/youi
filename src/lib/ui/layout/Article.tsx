@@ -1,21 +1,9 @@
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
-import { Button } from "@/lib/ui/Button";
-import { Flex } from "../Flex";
-import { Icon } from "../icon/Icon";
 
-export const Article = Component({
-    render: async () => (
+export const Article = ({ children }: { children: JSX.Element }) => {
+    return (
         <article>
-            <Icon icon="arrow_left" />
-            <Flex direction="column" className="flyout" fullHeight>
-                <Button variant="animoji" icon="videocam" className="icon" />
-                <Button
-                    variant="animoji"
-                    icon="auto_awesome"
-                    className="icon"
-                />
-            </Flex>
+            {children}
         </article>
-    )
-});
+    );
+};

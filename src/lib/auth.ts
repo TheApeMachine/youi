@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import auth0, { Auth0Error, Auth0UserProfile } from "auth0-js";
-import { eventBus } from "@/lib/event";
+import { eventManager } from "@/lib/event";
 import { stateManager } from "@/lib/state";
 
 export type Token = {
@@ -22,10 +22,9 @@ export type User = {
     email_verified?: boolean;
 };
 
-// Add after the type definitions, before auth initialization
 const handleAuthError = (error: Auth0Error, defaultMessage: string) => {
     const message = error.description ?? defaultMessage;
-    eventBus.publish("system", "status", {
+    eventManager.publish("system", "status", {
         variant: "error",
         title: "Error",
         message
@@ -44,27 +43,36 @@ export const auth = new auth0.Authentication({
 // Auth service
 export const AuthService = {
     // Login with username and password
-    login: async (username: string, password: string): Promise<void> => {
+    login: async (username: string, password: string): Promise<Token> => {
         return new Promise((resolve, reject) => {
             auth.login({
                 realm: "Username-Password-Authentication",
                 username,
                 password
-            }, (error: Auth0Error | null, result?: Token) => {
+            }, async (error: Auth0Error | null, result?: Token) => {
                 if (error) {
                     return reject(handleAuthError(error, "Login failed"));
                 }
                 if (result) {
-                    console.log("login", result);
-                    eventBus.publish("state", "stateChange", {
-                        key: "auth",
-                        value: {
-                            ...result,
-                            timestamp: Date.now()
-                        }
-                    });
+                    // Store the token with timestamp
+                    const tokenData = {
+                        ...result,
+                        timestamp: Date.now()
+                    };
+                    
+                    await stateManager.set('auth', tokenData);
+                    
+                    // Get and store user info
+                    try {
+                        const user = await AuthService.getUserInfo(result.accessToken);
+                        await stateManager.set('user', user);
+                        resolve(result);
+                    } catch (error) {
+                        reject(error);
+                    }
+                } else {
+                    reject(new Error("No token returned"));
                 }
-                resolve();
             });
         });
     },
@@ -72,17 +80,14 @@ export const AuthService = {
     // Get user details
     getUserInfo: async (accessToken: string): Promise<User> => {
         return new Promise((resolve, reject) => {
-            auth.userInfo(accessToken, (error: Auth0Error | null, result?: Auth0UserProfile) => {
+            auth.userInfo(accessToken, async (error: Auth0Error | null, result?: Auth0UserProfile) => {
                 if (error) {
                     return reject(handleAuthError(error, "Error fetching user info"));
                 }
 
                 if (result) {
                     const user = result as User;
-                    eventBus.publish("state", "stateChange", {
-                        key: "authUser",
-                        value: user
-                    });
+                    await stateManager.set('user', user);
                     resolve(user);
                 } else {
                     reject(new Error("No user info returned"));
@@ -103,11 +108,8 @@ export const AuthService = {
         const now = Date.now();
 
         if (now - tokenTimestamp > expirationTime) {
-            // Token is expired
-            eventBus.publish("state", "stateChange", {
-                key: "auth",
-                value: null
-            });
+            // Token is expired, clear auth state
+            await AuthService.logout();
             return false;
         }
 
@@ -115,17 +117,11 @@ export const AuthService = {
     },
 
     // Logout
-    logout: () => {
-        eventBus.publish("state", "stateChange", {
-            key: "auth",
-            value: null
-        });
-        eventBus.publish("state", "stateChange", {
-            key: "authUser",
-            value: null
-        });
+    logout: async () => {
+        await stateManager.set('auth', null);
+        await stateManager.set('user', null);
 
-        eventBus.publish("state", "status", {
+        eventManager.publish("system", "status", {
             variant: "success",
             title: "Logged out",
             message: "You have been logged out successfully"

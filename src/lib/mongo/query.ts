@@ -159,7 +159,6 @@ export const from = (collection: string): QueryBuilder => {
         where: (conditions: Record<string, any>) => {
             // First handle array field queries
             const arrayProcessed = Object.entries(conditions).reduce((acc, [key, value]) => {
-                console.log("here", acc, key, value)
                 // Handle $in operator specially
                 if (value && typeof value === 'object' && '$in' in value) {
                     // Ensure we have an array

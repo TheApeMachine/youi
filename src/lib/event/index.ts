@@ -1,45 +1,42 @@
-import { EventPayload } from './types';
+import { EventPayload, EventMessage } from './types';
 
 const serializeEventData = (data: any): any => {
-    if (!data) return data;
-
-    // Handle common non-serializable objects
-    if (data instanceof Event) {
-        return {
-            type: data.type,
-            timeStamp: data.timeStamp,
-            // Add any other relevant event properties
-            target: data.target instanceof HTMLElement ? {
-                id: data.target.id,
-                className: data.target.className,
-                tagName: data.target.tagName,
-                value: 'value' in data.target ? (data.target as HTMLInputElement).value : undefined
-            } : null
-        };
-    }
-
-    // Handle arrays
-    if (Array.isArray(data)) {
-        return data.map(item => serializeEventData(item));
-    }
-
-    // Handle objects
-    if (typeof data === 'object') {
-        const serialized: Record<string, any> = {};
-        for (const [key, value] of Object.entries(data)) {
-            try {
-                // Test if the value can be cloned
-                structuredClone(value);
-                serialized[key] = value;
-            } catch {
-                // If it can't be cloned, try to serialize it
-                serialized[key] = serializeEventData(value);
-            }
+    // Try using structuredClone directly if available
+    try {
+        return structuredClone(data);
+    } catch {
+        // Fallback recursive serialization if structuredClone fails
+        if (data instanceof Event) {
+            return {
+                type: data.type,
+                timeStamp: data.timeStamp,
+                target: data.target instanceof HTMLElement ? {
+                    id: data.target.id,
+                    className: data.target.className,
+                    tagName: data.target.tagName,
+                    value: 'value' in data.target ? (data.target as HTMLInputElement).value : undefined
+                } : null
+            };
         }
-        return serialized;
-    }
 
-    return data;
+        if (Array.isArray(data)) {
+            return data.map(item => serializeEventData(item));
+        }
+
+        if (typeof data === 'object' && data !== null) {
+            const serialized: Record<string, any> = {};
+            for (const [key, value] of Object.entries(data)) {
+                try {
+                    serialized[key] = structuredClone(value);
+                } catch {
+                    serialized[key] = serializeEventData(value);
+                }
+            }
+            return serialized;
+        }
+
+        return data;
+    }
 };
 
 export const createEventManager = () => {
@@ -53,8 +50,10 @@ export const createEventManager = () => {
         reject: (error: any) => void;
     }>();
 
+    // Now the main thread just stores callbacks keyed by eventName (exact or pattern)
+    // We rely on the worker to do all pattern matches and return the eventName accordingly.
     const handlers = new Map<string, Set<(payload: EventPayload) => void>>();
-    const patternHandlers = new Map<string, Set<(payload: EventPayload) => void>>();
+
     const ready = initialize();
 
     async function initialize(): Promise<void> {
@@ -79,55 +78,27 @@ export const createEventManager = () => {
         });
     }
 
-    const matchesPattern = (pattern: string, topic: string): boolean => {
-        if (pattern === '*') return true;
-        if (pattern === topic) return true;
-
-        const patternParts = pattern.split('.');
-        const topicParts = topic.split('.');
-
-        if (patternParts.length !== topicParts.length && !pattern.includes('*')) {
-            return false;
-        }
-
-        return patternParts.every((part, i) => {
-            if (part === '*') return true;
-            if (part === '**') return true;
-            return part === topicParts[i];
-        });
-    };
-
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = (event: MessageEvent<EventMessage>) => {
         const { type, payload, id } = event.data;
 
-        if (type === 'event' && payload.eventName) {
+        if (type === 'event' && 'eventName' in payload && 'event' in payload) {
             const callbacks = handlers.get(payload.eventName);
-            callbacks?.forEach(callback => {
-                try {
-                    callback(payload.event);
-                } catch (error) {
-                    console.error('Error in event callback:', error);
-                }
-            });
-
-            patternHandlers.forEach((callbacks, pattern) => {
-                if (matchesPattern(pattern, payload.eventName)) {
-                    callbacks.forEach(callback => {
-                        try {
-                            callback(payload.event);
-                        } catch (error) {
-                            console.error('Error in pattern event callback:', error);
-                        }
-                    });
-                }
-            });
+            if (callbacks && callbacks.size > 0) {
+                callbacks.forEach(callback => {
+                    try {
+                        callback(payload.event);
+                    } catch (error) {
+                        console.error('Error in event callback:', error);
+                    }
+                });
+            }
         }
 
         if (id && messageQueue.has(id)) {
             const { resolve, reject } = messageQueue.get(id)!;
             messageQueue.delete(id);
 
-            if (type === 'error') {
+            if (type === 'error' && 'error' in payload) {
                 reject(new Error(payload.error));
             } else {
                 resolve(payload);
@@ -138,7 +109,6 @@ export const createEventManager = () => {
     const sendMessage = async (type: string, payload: any): Promise<any> => {
         await ready;
 
-        // Serialize the payload before sending
         const serializedPayload = serializeEventData(payload);
 
         return new Promise((resolve, reject) => {
@@ -164,6 +134,8 @@ export const createEventManager = () => {
     };
 
     worker.onmessage = handleMessage;
+
+    const isPattern = (topic: string) => topic.includes('*');
 
     return {
         init: async () => {
@@ -191,22 +163,6 @@ export const createEventManager = () => {
                     .catch(error => console.error('Unsubscribe error:', error));
             };
         },
-        subscribePattern: async (pattern: string, handler: (payload: EventPayload) => void) => {
-            if (!patternHandlers.has(pattern)) {
-                patternHandlers.set(pattern, new Set());
-            }
-            patternHandlers.get(pattern)!.add(handler);
-
-            return () => {
-                const callbacks = patternHandlers.get(pattern);
-                if (callbacks) {
-                    callbacks.delete(handler);
-                    if (callbacks.size === 0) {
-                        patternHandlers.delete(pattern);
-                    }
-                }
-            };
-        },
         publish: async (type: string, topic: string, data: any) => {
             await sendMessage('publish', { eventName: topic, event: { type, data } });
         }
@@ -226,9 +182,6 @@ export const eventBus = {
     ...eventManager,
     subscribe: (topic: string, callback: (payload: EventPayload) => void) => {
         return eventManager.subscribe(topic, callback);
-    },
-    subscribePattern: (pattern: string, callback: (payload: EventPayload) => void) => {
-        return eventManager.subscribePattern(pattern, callback);
     },
     unsubscribe: async (topic: string, callback: (payload: EventPayload) => void) => {
         const cleanup = await eventManager.subscribe(topic, callback);

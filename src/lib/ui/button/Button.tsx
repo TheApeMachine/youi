@@ -60,8 +60,8 @@ export default async ({
             type={type}
             class={classes}
             disabled={disabled || loading}
-            onClick={onClick}
             {...eventProps}
+            onClick={onClick}
             {...props}
         >
             {icon && <Icon icon={icon} color={color} />}

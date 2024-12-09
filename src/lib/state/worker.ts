@@ -1,7 +1,7 @@
 import localforage from 'localforage';
 
 interface StateMessage {
-    type: 'read' | 'write' | 'update' | 'notify';
+    type: 'read' | 'write' | 'update' | 'notify' | 'remove';
     payload: any;
     id?: string;
 }
@@ -125,6 +125,13 @@ const createStateWorker = () => {
         postResponse('notify', { success: true }, id);
     };
 
+    const handleRemove = async (key: string, id?: string) => {
+        state.delete(key);
+        updateStateKeys();
+        await persistState();
+        postResponse('remove', { success: true }, id);
+    };
+
     const initializeState = async () => {
         try {
             const savedState = await localforage.getItem('app_state');
@@ -163,6 +170,9 @@ const createStateWorker = () => {
                     break;
                 case 'notify':
                     handleNotify(payload, id);
+                    break;
+                case 'remove':
+                    await handleRemove(payload, id);
                     break;
                 default:
                     throw new Error(`Unknown message type: ${type}`);

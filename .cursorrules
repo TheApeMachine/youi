@@ -1,82 +1,10 @@
-/**
- * Project Architecture Guidelines
- * 
- * This file defines the core architectural rules and patterns
- * for AI assistance in this project.
- */
+1. You have tools available to you, use them!
+2. Always search through the codebase before attempting to implement something.
+3. If you are unsure about something, ask!
+4. Only make small, targeted changes each time, rather than sweeping changes.
+5. NEVER remove or touch code that isn't relevant to the feature you are working on.
+6. Functional components only, no classes.
 
-export const ARCHITECTURE_RULES = {
-    components: {
-        type: 'functional-only',
-        framework: 'custom-jsx',
-        typescript: true,
-        pattern: `
-            import { jsx } from "@/lib/template";
-            import { Component } from "../Component";
+This project uses a custom JSX framework, with a state manager and event manager.
 
-            export const ExampleComponent = Component({
-                effect?: () => {
-                    // Optional: Side effects (subscriptions, etc)
-                    eventBus.subscribe("eventName", (payload: EventPayload) => {
-                        // Handle event
-                    });
-                },
-                render: (props) => {
-                    return <div>{/* content */}</div>;
-                }
-            });
-        `
-    },
-
-    eventHandling: {
-        pattern: 'declarative',
-        implementation: {
-            trigger: 'data-trigger',
-            event: 'data-event',
-            effect: 'data-effect',
-            topic: 'data-topic'
-        },
-        example: `
-            <button
-                data-trigger="click"
-                data-event="eventName"
-                data-effect="effectName"
-                data-topic="topicName"
-            >
-                Action
-            </button>
-        `
-    },
-
-    aiGuidelines: {
-        changeManagement: [
-            'Make minimal, targeted changes',
-            'Prefer small, precise updates over large refactors',
-            'Break large changes into smaller steps'
-        ],
-        decisionMaking: [
-            'Remember you are agentic, and you can search the code base for information. ALWAYS search the code deeply before making assumptions.',
-            'Never make assumptions about implementation',
-            'Ask clarifying questions when context is missing',
-            'Base decisions on concrete evidence only',
-            'State limitations explicitly when unsure'
-        ],
-        codeQuality: [
-            'Maintain consistent TypeScript types',
-            'Follow existing patterns',
-            'Document non-obvious logic',
-            'Consider performance implications'
-        ],
-        contextRequirements: [
-            'Request file structure when needed',
-            'Verify dependencies before suggesting solutions',
-            'Understand event bus architecture'
-        ],
-        errorHandling: [
-            'Consider all error cases',
-            'Implement appropriate type checking',
-            'Provide meaningful error messages',
-            'Handle edge cases appropriately'
-        ]
-    }
-};
+DATA ATTRIBUTES FOR EVENTS ARE NO LONGER USED!

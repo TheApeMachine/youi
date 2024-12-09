@@ -31,6 +31,7 @@
         "lib-jitsi-meet": "^1.0.6",
         "localforage": "^1.10.0",
         "luxon": "^3.5.0",
+        "motion": "^11.13.1",
         "realm-web": "^2.0.1",
         "reveal.js": "^5.1.0",
         "three": "^0.170.0",

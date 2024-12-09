@@ -141,17 +141,11 @@ export const createDebugOverlay = (): DebugOverlay => {
             }, { once: true });
         });
 
-        console.log('YouI is ready, loading debug modules...');
-
-        // Now load the modules
         let index = 0;
         for (const moduleId of DEFAULT_MODULES) {
             await loadModule(moduleId, index);
             index++;
         }
-
-        console.log('Finished loading all default modules');
-        console.log('Active modules:', Array.from(activeModules.keys()));
     };
 
     // Start initialization

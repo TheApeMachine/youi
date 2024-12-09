@@ -8,6 +8,7 @@ export const Flex = async ({
     justify = "start",
     gap = false,
     grow = false,
+    pad = false,
     className,
     ...props
 }: {
@@ -17,6 +18,7 @@ export const Flex = async ({
     justify?: Justification;
     gap?: boolean | Unit;
     grow?: boolean;
+    pad?: boolean | Unit;
     className?: string;
 }) => {
     // If gap is a boolean, it should become gap-unit
@@ -24,12 +26,12 @@ export const Flex = async ({
     const alignClass = align ? `align-${align}` : "";
     const justifyClass = justify ? `justify-${justify}` : "";
     const growClass = grow ? "flex-grow" : "";
+    const padClass = typeof pad === "boolean" ? "pad-unit" : `pad-${pad}`;
 
     return (
         <div
-            className={`flex ${direction} ${
-                gap ? gapClass : ""
-            } ${alignClass} ${justifyClass} ${growClass} ${className}`}
+            className={`flex ${direction} ${gap ? gapClass : ""
+                } ${alignClass} ${justifyClass} ${growClass} ${pad ? padClass : ""} ${className}`}
             {...props}
         >
             {children}
@@ -101,12 +103,14 @@ export const Column = async ({
 
 export const Center = async ({
     children,
-    grow = true,
+    grow = false,
+    pad = false,
     className,
     ...props
 }: {
     children: JSX.Element;
     grow?: boolean;
+    pad?: boolean | Unit;
     className?: string;
 }) => {
     return (
@@ -114,6 +118,7 @@ export const Center = async ({
             align="center"
             justify="center"
             grow={grow}
+            pad={pad}
             className={className}
             {...props}
         >

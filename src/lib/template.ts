@@ -191,8 +191,7 @@ const handleEventAndRef = (element: Element, name: string, value: any): boolean 
 
     // Handle regular event listeners through the event system
     if (name.startsWith('on') && typeof value === 'function') {
-        const eventName = name.slice(2).toLowerCase();
-        const props = { [`on${eventName.charAt(0).toUpperCase()}${eventName.slice(1)}`]: value };
+        const props = { [name]: value };
         registerEventHandlers(element, props);
         return true;
     }
@@ -248,6 +247,7 @@ const handleFragment = async (children: any[]) => {
     }
     return fragment;
 };
+
 const appendChild = async (element: Element, child: any) => {
     // Skip falsy values but keep 0
     if (child === false || child === null || child === undefined) return;
@@ -264,20 +264,6 @@ const appendChild = async (element: Element, child: any) => {
         element.appendChild(child);
     } else {
         element.appendChild(document.createTextNode(String(child)));
-    }
-};
-
-const handleChildren = async (element: Element, children: any[]) => {
-    // Wait for all children to resolve in order
-    for (const child of children.flat()) {
-        if (Array.isArray(child)) {
-            // Handle nested arrays in order
-            for (const subChild of child) {
-                await appendChild(element, subChild);
-            }
-        } else {
-            await appendChild(element, child);
-        }
     }
 };
 
@@ -353,6 +339,7 @@ export const jsx = async (
         }
     }
 
+    handleTransitions(element, props);
     return element;
 };
 

@@ -7,14 +7,8 @@ import "@/assets/themes/styles.css";
 export const YouI = {
     isReady: false,
     init: async () => {
-        console.log('YouI initialization starting');
-
-        // Initialize debug context first
-        console.log('Initializing debug context');
         initializeDebugContext();
 
-        // Initialize core systems in parallel
-        console.log('Initializing core systems');
         try {
             await Promise.all([
                 eventManager.init().catch(e => console.error('Event manager init error:', e)),
@@ -22,9 +16,6 @@ export const YouI = {
                 routerManager.init().catch(e => console.error('Router init error:', e))
             ]);
 
-            console.log('Core systems initialized');
-
-            // Set ready flag and dispatch event
             YouI.isReady = true;
             document.dispatchEvent(new CustomEvent('youi:ready'));
         } catch (error) {

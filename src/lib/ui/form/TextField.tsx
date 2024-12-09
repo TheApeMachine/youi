@@ -1,4 +1,5 @@
 import { jsx } from "@/lib/template";
+import { createEventProps } from "@/lib/event/dom";
 
 export default async ({
     type = "text",
@@ -7,6 +8,7 @@ export default async ({
     error,
     required = false,
     onChange,
+    onBlur,
     ...props
 }: {
     type?: "text" | "email" | "password";
@@ -15,10 +17,16 @@ export default async ({
     error?: string;
     required?: boolean;
     onChange?: (value: string) => void;
+    onBlur?: (value: string) => void;
 }) => {
     const handleChange = (event: InputEvent) => {
         const target = event.target as HTMLInputElement;
         onChange?.(target.value);
+    };
+
+    const handleBlur = (event: FocusEvent) => {
+        const target = event.target as HTMLInputElement;
+        onBlur?.(target.value);
     };
 
     return (
@@ -30,6 +38,7 @@ export default async ({
                 required={required}
                 className={error ? "error" : ""}
                 onInput={handleChange}
+                onBlur={handleBlur}
                 {...props}
             />
             {error && <div className="error-message">{error}</div>}

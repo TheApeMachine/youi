@@ -23,7 +23,6 @@
     font-family: var(--font-family);
     font-weight: 600;
     cursor: pointer;
-    transition: var(--transition-all);
     background: var(--surface);
     color: var(--fg);
 }
@@ -170,4 +169,11 @@ input.error {
 
 input.error:focus {
     box-shadow: 0 0 0 2px var(--danger-light);
+}
+
+.random-image {
+    background-image: url("https://picsum.photos/1024/768?grayscale&blur=2");
+    background-size: cover;
+    background-position: center;
+    height: 100%;
 }

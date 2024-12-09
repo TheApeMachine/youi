@@ -48,8 +48,6 @@ const animateCircleDepth = (element: Element | null, expanded: boolean) => {
 
 export const Circle = Component({
     effect: ({ rootElement }) => {
-        console.log("Circle component mounted, setting up event listener");
-
         let rotationInterval: number | null = null;
 
         const rotateMemberDisplay = () => {
@@ -147,8 +145,6 @@ export const Circle = Component({
 
         // Handle circle-click events to expand/collapse circles and load members
         eventBus.subscribe("circle-click", async (e: EventPayload) => {
-            console.log("Circle click event received:", e);
-
             if (!rootElement) return;
 
             if (!e.effect) {
@@ -231,7 +227,6 @@ export const Circle = Component({
             }
 
             // Fetch group members if expanding
-            console.log("Fetching members for group:", e.effect);
             const members = await from("User")
                 .whereArrayField("Groups", { _id: e.effect })
                 .exec();
@@ -245,7 +240,6 @@ export const Circle = Component({
             );
 
             if (unloadedMembers.length > 0) {
-                console.log("Preloading new images:", unloadedMembers.length);
                 const imagePromises = unloadedMembers.map((member) => {
                     return new Promise((resolve, reject) => {
                         const img = new Image();
@@ -269,7 +263,6 @@ export const Circle = Component({
 
                 try {
                     await Promise.all(imagePromises);
-                    console.log("New images preloaded");
                 } catch (error) {
                     console.error("Error preloading images:", error);
                 }
@@ -463,7 +456,6 @@ export const Circle = Component({
                     '[data-event="circle-click"]'
                 ) as SVGElement;
                 if (clickable) {
-                    console.log("SVG click detected:", clickable.dataset);
                     eventBus.publish("circle-click", {
                         effect: clickable.dataset.effect,
                         topic: clickable.dataset.topic,
@@ -476,9 +468,6 @@ export const Circle = Component({
 
         // Cleanup on unmount
         return () => {
-            console.log(
-                "Circle component unmounting, cleaning up event listener"
-            );
             eventBus.unsubscribe("circle-click", () => {});
             if (rootElement) {
                 rootElement.removeEventListener("click", () => {});
@@ -498,12 +487,6 @@ export const Circle = Component({
         const selectedGroup = stateManager.getState("selectedGroup");
         const expandedGroup = stateManager.getState("expandedGroup");
         const groupMembersMap = stateManager.getState("groupMembersMap") || {};
-
-        console.log("Render state:", {
-            selectedGroup,
-            expandedGroup,
-            groupMembersMap
-        });
 
         // Layout calculations
         const groups = (user.Groups || []) as Group[];

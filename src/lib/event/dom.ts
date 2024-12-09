@@ -29,36 +29,27 @@ const initializeEventType = (eventName: DOMEventName) => {
 
 // Register event handlers for an element
 export const registerEventHandlers = (element: Element, props: ComponentEventProps) => {
-    // Initialize handler map for this element if needed
     if (!handlerMap.has(element)) {
         handlerMap.set(element, new Map());
     }
     const elementHandlers = handlerMap.get(element)!;
 
-    // Process each event prop
-    Object.entries(props).forEach(([propName, handler]) => {
+    for (const [propName, handler] of Object.entries(props)) {
         if (propName.startsWith('on') && typeof handler === 'function') {
-            const eventName = propName.slice(2).toLowerCase();
+            const eventName = propName.slice(2).toLowerCase() as DOMEventName;
 
-            // Initialize event type if needed
-            initializeEventType(eventName as DOMEventName);
+            initializeEventType(eventName);
 
-            // Add handler to map
             if (!elementHandlers.has(eventName)) {
                 elementHandlers.set(eventName, new Set());
             }
             elementHandlers.get(eventName)!.add(handler);
-
-            // Register with event manager
-            eventManager.subscribe(eventName, handler);
         }
-    });
+    }
 
-    // Return cleanup function
+    // Cleanup function
     return () => {
-        if (handlerMap.has(element)) {
-            handlerMap.delete(element);
-        }
+        handlerMap.delete(element);
     };
 };
 
@@ -70,19 +61,27 @@ export const createEventProps = (topic: string): ComponentEventProps => ({
         });
     },
     onInput: (event) => {
-        const target = event.target as HTMLInputElement;
+        const target = event.target as HTMLInputElement | null;
+        if (!target) return;
+
         eventManager.publish('dom', `${topic}.input`, {
             value: target.value,
             originalEvent: event
         });
     },
     onChange: (event) => {
-        const target = event.target as HTMLInputElement;
+        const target = event.target as HTMLInputElement | null;
+        if (!target) return;
+
         eventManager.publish('dom', `${topic}.change`, {
             value: target.value,
             checked: target.checked,
             originalEvent: event
         });
     },
-    // Add more event handlers as needed
-}); 
+    onBlur: (event) => {
+        eventManager.publish('dom', `${topic}.blur`, {
+            originalEvent: event
+        });
+    }
+});

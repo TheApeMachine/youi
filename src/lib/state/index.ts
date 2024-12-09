@@ -127,11 +127,26 @@ export const createStateManager = () => {
         };
     };
 
+    const remove = async (key: string): Promise<void> => {
+        try {
+            await sendWorkerMessage('remove', { key });
+            // Publish state removal event
+            eventManager.publish('state', 'remove', {
+                type: 'stateRemove',
+                data: { key }
+            });
+        } catch (error) {
+            console.error(`Failed to remove ${key}:`, error);
+            throw error;
+        }
+    };
+
     return {
         get,
         set,
         update,
         subscribe,
+        remove,
         init: async () => {
             await initWorker();
         }

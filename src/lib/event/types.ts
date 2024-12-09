@@ -17,7 +17,6 @@ export type DOMEventName =
 
 export type EventHandler<T = any> = (event: T) => void;
 
-// Specific event handler types
 export type ClickHandler = EventHandler<MouseEvent>;
 export type InputHandler = EventHandler<InputEvent>;
 export type ChangeHandler = EventHandler<Event>;
@@ -26,12 +25,10 @@ export type FocusHandler = EventHandler<FocusEvent>;
 export type MouseHandler = EventHandler<MouseEvent>;
 export type KeyboardHandler = EventHandler<KeyboardEvent>;
 
-// Base event props interface
 export interface BaseEventProps {
     [key: string]: EventHandler | undefined;
 }
 
-// Specific event props interface that extends base
 export interface ComponentEventProps extends BaseEventProps {
     onClick?: ClickHandler;
     onInput?: InputHandler;
@@ -66,6 +63,6 @@ export type EventMessageType =
 
 export interface EventMessage {
     type: EventMessageType;
-    payload: HandlerPayload | EventDispatchPayload | { success?: boolean; error?: string };
+    payload: HandlerPayload | EventDispatchPayload | { success?: boolean; error?: string; published?: boolean; registered?: boolean; unregistered?: boolean };
     id?: string;
-} 
+}

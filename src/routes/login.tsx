@@ -5,11 +5,41 @@ import Form from "@/lib/ui/form/Form";
 import Button from "@/lib/ui/button/Button";
 import { Text } from "@/lib/ui/Text";
 import Card from "@/lib/ui/card/Card";
+import { eventManager } from "@/lib/event";
+import { routerManager } from "@/lib/router/manager";
 
 export default async () => {
+    // Check if already authenticated
+    const isAuthenticated = await AuthService.isAuthenticated();
+    if (isAuthenticated) {
+        routerManager.navigate('/');
+        return null;
+    }
+
+    const handleSubmit = async (values: Record<string, any>) => {
+        try {
+            await AuthService.login(values.email, values.password);
+            
+            await eventManager.publish('auth', 'login.success', {
+                email: values.email
+            });
+
+            // Use router for navigation
+            routerManager.navigate('/');
+        } catch (error) {
+            await eventManager.publish('auth', 'login.error', {
+                error: String(error)
+            });
+        }
+    };
+
+    const handleSocialLogin = async (provider: string) => {
+        await eventManager.publish('auth', 'social.login', { provider });
+    };
+
     return (
-        <Row>
-            <Center>
+        <Row grow>
+            <Center pad="xxl" grow>
                 <Card>
                     <Text variant="h1" color="brand">
                         Fan App
@@ -17,9 +47,7 @@ export default async () => {
                     <p>Sign in to continue</p>
 
                     <Form
-                        onSubmit={() => {
-                            console.log("submit");
-                        }}
+                        onSubmit={handleSubmit}
                         fields={{
                             email: {
                                 type: "email",
@@ -48,26 +76,33 @@ export default async () => {
                                 variant="icon"
                                 color="muted"
                                 icon="android"
+                                onClick={() => handleSocialLogin('android')}
                             />
-                            <Button variant="icon" color="muted" icon="code" />
+                            <Button
+                                variant="icon"
+                                color="muted"
+                                icon="code"
+                                onClick={() => handleSocialLogin('github')}
+                            />
                             <Button
                                 variant="icon"
                                 color="muted"
                                 icon="flutter_dash"
+                                onClick={() => handleSocialLogin('google')}
                             />
                         </Row>
                     </Column>
 
                     <Column>
                         <p>
-                            Don't have an account? <a href="/signup">Sign up</a>
+                            Don't have an account? <a onClick={() => routerManager.navigate('/signup')}>Sign up</a>
                         </p>
                     </Column>
                 </Card>
             </Center>
-            <Column className="random-image" grow>
+            <Center className="random-image" grow>
                 <img src="/public/logo.png" alt="logo" class="logo" />
-            </Column>
+            </Center>
         </Row>
     );
 };

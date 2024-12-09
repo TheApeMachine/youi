@@ -45,10 +45,6 @@ export const Layout = Component({
                     <div class="slides"></div>
                 </div>
             </main>
-            <Dialog>
-                <Navigation items={navigation} />
-            </Dialog>
-            <Toaster />
         </div>
     )
 });

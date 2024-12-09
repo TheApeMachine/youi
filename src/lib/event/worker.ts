@@ -1,12 +1,16 @@
 import { EventMessage, HandlerPayload, EventDispatchPayload } from './types';
 
 interface WorkerState {
-    handlers: Map<string, Set<string>>;
+    handlers: Map<string, Set<string>>; // exact eventName -> handlerId
+    patternHandlers: Map<string, Set<string>>; // pattern -> handlerId
 }
 
 const initialState: WorkerState = {
-    handlers: new Map()
+    handlers: new Map(),
+    patternHandlers: new Map()
 };
+
+self.onmessage = (event) => handleMessage(initialState, event);
 
 const handleMessage = async (state: WorkerState, event: MessageEvent<EventMessage>) => {
     const { type, payload, id } = event.data;
@@ -15,19 +19,21 @@ const handleMessage = async (state: WorkerState, event: MessageEvent<EventMessag
         switch (type) {
             case 'subscribe': {
                 const { eventName, handlerId } = payload as HandlerPayload;
-                if (!state.handlers.has(eventName)) {
-                    state.handlers.set(eventName, new Set());
+                if (isPattern(eventName)) {
+                    addSubscription(state.patternHandlers, eventName, handlerId);
+                } else {
+                    addSubscription(state.handlers, eventName, handlerId);
                 }
-                state.handlers.get(eventName)?.add(handlerId);
                 postResponse('success', { registered: true }, id);
                 break;
             }
 
             case 'unsubscribe': {
                 const { eventName, handlerId } = payload as HandlerPayload;
-                state.handlers.get(eventName)?.delete(handlerId);
-                if (state.handlers.get(eventName)?.size === 0) {
-                    state.handlers.delete(eventName);
+                if (isPattern(eventName)) {
+                    removeSubscription(state.patternHandlers, eventName, handlerId);
+                } else {
+                    removeSubscription(state.handlers, eventName, handlerId);
                 }
                 postResponse('success', { unregistered: true }, id);
                 break;
@@ -35,10 +41,20 @@ const handleMessage = async (state: WorkerState, event: MessageEvent<EventMessag
 
             case 'publish': {
                 const { eventName, event: ev } = payload as EventDispatchPayload;
-                const handlers = state.handlers.get(eventName);
-                if (handlers?.size) {
-                    postResponse('event', { eventName, event: ev });
+
+                // Dispatch to exact matches
+                const exactHandlers = state.handlers.get(eventName);
+                if (exactHandlers && exactHandlers.size > 0) {
+                    postResponse('event', { eventName, event: ev }, id);
                 }
+
+                // Dispatch to pattern matches
+                for (const [pattern, patternSet] of state.patternHandlers.entries()) {
+                    if (patternSet.size > 0 && matchesPattern(pattern, eventName)) {
+                        postResponse('event', { eventName: pattern, event: ev }, id);
+                    }
+                }
+
                 postResponse('success', { published: true }, id);
                 break;
             }
@@ -53,10 +69,50 @@ const handleMessage = async (state: WorkerState, event: MessageEvent<EventMessag
     }
 };
 
+const addSubscription = (map: Map<string, Set<string>>, key: string, handlerId: string) => {
+    if (!map.has(key)) {
+        map.set(key, new Set());
+    }
+    map.get(key)!.add(handlerId);
+};
+
+const removeSubscription = (map: Map<string, Set<string>>, key: string, handlerId: string) => {
+    const set = map.get(key);
+    if (set) {
+        set.delete(handlerId);
+        if (set.size === 0) {
+            map.delete(key);
+        }
+    }
+};
+
+const isPattern = (eventName: string): boolean => {
+    return eventName.includes('*');
+};
+
+const matchesPattern = (pattern: string, topic: string): boolean => {
+    if (pattern === '*') return true;
+    if (pattern === topic) return true;
+
+    const patternParts = pattern.split('.');
+    const topicParts = topic.split('.');
+
+    // If pattern includes '**', it's a multi-level wildcard
+    // Otherwise we match part by part
+    return patternParts.every((part, i) => {
+        if (part === '**') {
+            // '**' can match one or more segments, so we consider the rest matched
+            // if we've reached '**' and it's the last part of the pattern.
+            // If pattern ends with '**', it's basically a prefix match beyond this point.
+            return i === patternParts.length - 1 ? true : false;
+        }
+        if (part === '*') return topicParts[i] !== undefined;
+        return part === topicParts[i];
+    });
+};
+
 const postResponse = (type: string, payload: any, id?: string) => {
     self.postMessage({ type, payload, id });
 };
 
-// Initialize worker
-self.onmessage = (event) => handleMessage(initialState, event);
-postResponse('ready', { success: true }); 
+postResponse('ready', { success: true });

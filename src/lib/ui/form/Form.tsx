@@ -5,15 +5,15 @@ import TextField from "./TextField";
 
 export type Field = {
     type:
-        | "email"
-        | "password"
-        | "text"
-        | "number"
-        | "date"
-        | "checkbox"
-        | "select"
-        | "textarea"
-        | "file";
+    | "email"
+    | "password"
+    | "text"
+    | "number"
+    | "date"
+    | "checkbox"
+    | "select"
+    | "textarea"
+    | "file";
     label: string;
     required: boolean;
     value?: any;
@@ -28,46 +28,26 @@ export interface FormState {
     isValid: boolean;
 }
 
-const validateField = (
-    name: string,
-    value: any,
-    field: Field
-): string | undefined => {
-    console.log(`[Form] Validating field ${name}:`, { value, field });
-
+const isFieldValid = (value: any, field: Field): boolean => {
     if (field.required && (!value || value.trim() === "")) {
-        console.log(`[Form] Field ${name} failed required validation`);
-        return `${field.label} is required`;
+        return false;
     }
-    if (
-        field.type === "email" &&
-        value &&
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-    ) {
-        console.log(`[Form] Field ${name} failed email validation`);
-        return "Invalid email address";
+    if (field.type === "email" && value && value.trim() !== "") {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     }
-
-    console.log(`[Form] Field ${name} passed validation`);
-    return undefined;
+    return true;
 };
 
-const validateForm = (
-    values: Record<string, any>,
-    fields: Record<string, Field>
-): Record<string, string> => {
-    console.log(`[Form] Validating form:`, { values, fields });
-
-    const errors: Record<string, string> = {};
-    Object.entries(fields).forEach(([name, field]) => {
-        const error = validateField(name, values[name], field);
-        if (error) {
-            errors[name] = error;
+const getFieldError = (value: any, field: Field): string | undefined => {
+    if (field.required && (!value || value.trim() === "")) {
+        return `${field.label} is required`;
+    }
+    if (field.type === "email" && value && value.trim() !== "") {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            return "Invalid email address";
         }
-    });
-
-    console.log(`[Form] Form validation result:`, { errors });
-    return errors;
+    }
+    return undefined;
 };
 
 export default async ({
@@ -81,8 +61,6 @@ export default async ({
     buttons?: Record<string, JSX.Element>;
     id?: string;
 }) => {
-    console.log(`[Form] Initializing form ${id}:`, { fields, buttons });
-
     const formState: FormState = {
         values: Object.fromEntries(
             Object.entries(fields).map(([name, field]) => [
@@ -96,26 +74,21 @@ export default async ({
         isValid: true
     };
 
-    // Set initial state and subscribe to changes
     const stateKey = `form:${id}`;
-    console.log(`[Form] Setting initial state:`, formState);
     await stateManager.set(stateKey, formState);
+
+    // Cleanup function to remove form state
+    const cleanup = async () => {
+        try {
+            await stateManager.remove(stateKey);
+        } catch (error) {
+            console.error("Error cleaning up form state:", error);
+        }
+    };
 
     const getFormState = async (): Promise<FormState> => {
         const state = await stateManager.get<FormState>(stateKey);
-        if (!state) {
-            console.error(`[Form] No state found for form ${id}`);
-            return formState;
-        }
-        return state;
-    };
-
-    const publishEvent = (eventType: string, eventData: any) => {
-        console.log(`[Form] Publishing event:`, { eventType, eventData });
-        eventManager.publish("events", `form.${eventType}`, {
-            type: `form.${eventType}`,
-            data: eventData
-        });
+        return state ?? formState;
     };
 
     const updateFieldValidation = (name: string, error?: string) => {
@@ -144,131 +117,142 @@ export default async ({
     };
 
     const handleFieldChange = async (name: string, value: string) => {
-        console.log(`[Form] Field change: ${name}`, { value });
-
         const currentState = await getFormState();
-        console.log(`[Form] Current state before field change:`, currentState);
+        const field = fields[name];
 
+        // Update values
         const newValues = { ...currentState.values, [name]: value };
-        const error = validateField(name, value, fields[name]);
-        const newErrors = { ...currentState.errors };
 
-        if (error) {
-            newErrors[name] = error;
-        } else {
-            delete newErrors[name];
-        }
+        // Check if field is valid (for immediate feedback)
+        const isValid = isFieldValid(value, field);
 
+        // Update state
         const newState = {
+            ...currentState,
             values: newValues,
-            errors: newErrors,
-            touched: { ...currentState.touched, [name]: true },
-            isSubmitting: currentState.isSubmitting,
-            isValid: Object.keys(newErrors).length === 0
+            isValid: true // We'll recalc on blur/submit
         };
 
-        console.log(`[Form] New state after field change:`, newState);
         await stateManager.update(stateKey, newState);
 
-        // Update field validation state in DOM
+        // Publish event so that other parts of the app know a field changed
+        await eventManager.publish('form', `form:${id}.fieldChange`, { name, value, isValid });
+
+        // Clear any existing error message while typing
+        updateFieldValidation(name, undefined);
+    };
+
+    const handleFieldBlur = async (name: string) => {
+        const currentState = await getFormState();
+        const field = fields[name];
+        const value = currentState.values[name];
+
+        // Validate field on blur
+        const error = getFieldError(value, field);
+
+        // Update touched state and errors
+        const newState = {
+            ...currentState,
+            touched: { ...currentState.touched, [name]: true },
+            errors: {
+                ...currentState.errors,
+                ...(error ? { [name]: error } : {})
+            }
+        };
+
+        if (!error) {
+            delete newState.errors[name];
+        }
+
+        newState.isValid = Object.keys(newState.errors).length === 0;
+
+        await stateManager.update(stateKey, newState);
         updateFieldValidation(name, error);
 
-        publishEvent("field.change", {
-            field: name,
-            value,
-            error,
-            state: newState
-        });
+        // Publish field blur event
+        await eventManager.publish('form', `form:${id}.fieldBlur`, { name, value, error });
     };
 
     const handleSubmit = async (event: SubmitEvent) => {
-        console.log(`[Form] Form submission started`);
         event.preventDefault();
-
         const currentState = await getFormState();
-        console.log(`[Form] Current state before submission:`, currentState);
 
-        // Mark all fields as touched on submit attempt
-        const touchedState = {
-            ...currentState,
-            touched: Object.keys(fields).reduce(
-                (acc, name) => ({ ...acc, [name]: true }),
-                {}
-            )
-        };
-        await stateManager.update(stateKey, touchedState);
+        // Mark all fields as touched
+        const newTouched = Object.keys(fields).reduce(
+            (acc, name) => ({ ...acc, [name]: true }),
+            {}
+        );
 
-        const errors = validateForm(currentState.values, fields);
+        // Validate all fields
+        const errors: Record<string, string> = {};
+        Object.entries(fields).forEach(([name, field]) => {
+            const error = getFieldError(currentState.values[name], field);
+            if (error) {
+                errors[name] = error;
+            }
+        });
+
         const isValid = Object.keys(errors).length === 0;
 
-        console.log(`[Form] Submission validation:`, { isValid, errors });
-
         if (!isValid) {
-            const newState = { ...touchedState, errors, isValid: false };
-            console.log(`[Form] Form invalid, updating state:`, newState);
+            const newState = {
+                ...currentState,
+                touched: newTouched,
+                errors,
+                isValid: false
+            };
 
             await stateManager.update(stateKey, newState);
 
-            // Update all field validation states in DOM
+            // Update validation UI for all fields
             Object.entries(errors).forEach(([name, error]) => {
                 updateFieldValidation(name, error);
             });
 
-            publishEvent("validation", {
+            // Publish form submit attempt event with errors
+            await eventManager.publish('form', `form:${id}.submit`, {
+                values: currentState.values,
                 errors,
-                state: newState
+                isValid: false
             });
+
             return;
         }
 
         try {
             const submittingState = {
-                ...touchedState,
+                ...currentState,
+                touched: newTouched,
                 isSubmitting: true,
                 isValid: true
             };
-            console.log(
-                `[Form] Starting submission, updating state:`,
-                submittingState
-            );
 
             await stateManager.update(stateKey, submittingState);
-
-            publishEvent("submit.start", {
-                values: currentState.values,
-                state: submittingState
-            });
-
-            console.log(`[Form] Calling onSubmit handler`);
             await onSubmit(currentState.values);
 
-            const completedState = { ...submittingState, isSubmitting: false };
-            console.log(
-                `[Form] Submission complete, updating state:`,
-                completedState
-            );
+            // Clean up form state after successful submission
+            await cleanup();
 
-            await stateManager.update(stateKey, completedState);
-
-            publishEvent("submit.success", {
+            // Publish successful submit event
+            await eventManager.publish('form', `form:${id}.submit`, {
                 values: currentState.values,
-                state: completedState
+                errors: {},
+                isValid: true
             });
         } catch (error) {
-            console.error(`[Form] Submission error:`, error);
-
             const errorState = {
-                ...touchedState,
+                ...currentState,
+                touched: newTouched,
                 isSubmitting: false,
                 isValid: false
             };
-            console.log(`[Form] Updating state after error:`, errorState);
 
             await stateManager.update(stateKey, errorState);
 
-            publishEvent("submit.error", {
-                error,
-                state: errorState
+            // Publish failed submit event
+            await eventManager.publish('form', `form:${id}.submitError`, {
+                values: currentState.values,
+                error: String(error),
             });
         }
     };
@@ -276,7 +260,7 @@ export default async ({
     const renderForm = async () => {
         const currentState = await getFormState();
 
-        return (
+        const form = (
             <form onSubmit={handleSubmit} id={id} noValidate>
                 {Object.entries(fields).map(([name, field]) => (
                     <div key={name} className="form-field">
@@ -287,6 +271,7 @@ export default async ({
                             value={currentState.values[name] || ""}
                             required={field.required}
                             onChange={(value) => handleFieldChange(name, value)}
+                            onBlur={() => handleFieldBlur(name)}
                         />
                     </div>
                 ))}
@@ -294,6 +279,8 @@ export default async ({
                     Object.entries(buttons).map(([name, button]) => button)}
             </form>
         );
+
+        return form;
     };
 
     return renderForm();

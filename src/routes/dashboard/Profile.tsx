@@ -5,16 +5,20 @@ import { Image } from "@/lib/ui/Image";
 import { Link } from "@/lib/ui/Link";
 import { Text } from "@/lib/ui/Text";
 
-export default (user: any) => {
+export default (dbUser: any) => {
     return (
         <Column background="surface" radius grow>
             <Center>
-                <Image className="avatar xxl" src={user.ImageURL} alt="Avatar" />
+                <Image
+                    className="avatar xxl"
+                    src={dbUser.user.ImageURL}
+                    alt="Avatar"
+                />
             </Center>
 
             <Center grow>
                 <Text variant="h3" color="text-default">
-                    Daniel Owen van Dommelen
+                    {`${dbUser.user.FirstName} ${dbUser.user.LastName}`}
                 </Text>
             </Center>
             <Row align="end" justify="evenly">

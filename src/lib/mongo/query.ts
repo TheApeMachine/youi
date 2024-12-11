@@ -66,10 +66,13 @@ export const query = async ({
             }
         }
 
-        return results;
+        // Return first item if limit is 1
+        return limit === 1 ? results[0] || null : results;
     }
 
-    return fetchCollection(collection, options);
+    const results = await fetchCollection(collection, options);
+    // Return first item if limit is 1
+    return limit === 1 ? results[0] || null : results;
 };
 
 // Type for the smart query builder
@@ -163,8 +166,8 @@ export const from = (collection: string): QueryBuilder => {
                 if (value && typeof value === 'object' && '$in' in value) {
                     // Ensure we have an array
                     const inArray = Array.isArray(value.$in) ? value.$in : [value.$in];
-                    acc[key] = { 
-                        $in: Array.isArray(inArray) ? inArray.map(v => 
+                    acc[key] = {
+                        $in: Array.isArray(inArray) ? inArray.map(v =>
                             typeof v === 'string' && isUUID(v) ? ToBinary(v) : v
                         ) : [inArray]
                     };
@@ -194,7 +197,7 @@ export const from = (collection: string): QueryBuilder => {
                 if (value && typeof value === 'object' && '$elemMatch' in value) {
                     return {
                         ...acc,
-                        [key]: { 
+                        [key]: {
                             $elemMatch: convertToBinary(value.$elemMatch)
                         }
                     };

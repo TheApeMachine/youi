@@ -1,5 +1,4 @@
 import { jsx } from "@/lib/template";
-import { Component } from "../Component";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
 import { createEditor } from "lexical";
@@ -33,11 +32,8 @@ interface MessageProps {
     container?: HTMLElement;
 }
 
-export const Message = Component({
-    effect: ({
-        rootElement,
-        ...props
-    }: MessageProps & { rootElement: HTMLElement }) => {
+export const Message = () => {
+    const onMount = () => {
         const messageId = `message-${props.message.timestamp}`;
 
         // Wait for the content element to be available
@@ -69,8 +65,9 @@ export const Message = Component({
                     props.message.content?.toString() ?? "";
             }
         });
-    },
-    render: async (props: MessageProps) => (
+    };
+
+    return (
         <Flex
             direction="column"
             alignSelf="start"
@@ -120,5 +117,5 @@ export const Message = Component({
                 </Flex>
             </Flex>
         </Flex>
-    )
-});
+    );
+};

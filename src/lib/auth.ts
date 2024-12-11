@@ -59,16 +59,16 @@ export const AuthService = {
                         ...result,
                         timestamp: Date.now()
                     };
-                    
+
                     await stateManager.set('auth', tokenData);
-                    
+
                     // Get and store user info
                     try {
                         const user = await AuthService.getUserInfo(result.accessToken);
-                        await stateManager.set('user', user);
+                        await stateManager.set('authUser', user);
                         resolve(result);
                     } catch (error) {
-                        reject(error);
+                        reject(new Error(error instanceof Error ? error.message : "Unknown error"));
                     }
                 } else {
                     reject(new Error("No token returned"));
@@ -87,7 +87,6 @@ export const AuthService = {
 
                 if (result) {
                     const user = result as User;
-                    await stateManager.set('user', user);
                     resolve(user);
                 } else {
                     reject(new Error("No user info returned"));

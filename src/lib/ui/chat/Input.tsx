@@ -1,5 +1,4 @@
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
 import { createEmptyHistoryState, registerHistory } from "@lexical/history";
 import { HeadingNode, QuoteNode, registerRichText } from "@lexical/rich-text";
 import { mergeRegister } from "@lexical/utils";
@@ -9,11 +8,11 @@ import { eventBus } from "@/lib/event";
 import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
 import { Flex } from "../Flex";
-import { Button } from "../button/Button";
+import Button from "../button/Button";
 import { Popover } from "../Popover";
 
-export const Input = Component({
-    effect: () => {
+export const Input = () => {
+    const onMount = () => {
         const { user } = stateManager.getState("user");
         let userData: any | null = null;
         from("User")
@@ -83,11 +82,11 @@ export const Input = Component({
                 });
             }
         });
-    },
-    render: ({ variant }: { variant: "chat" | "timeline" }) => (
+    };
+    return (
         <Flex justify="space-between" fullWidth>
             <Flex id="lexical-editor" fullWidth contentEditable></Flex>
             <Button variant="icon" color="muted" icon="send" />
         </Flex>
-    )
-});
+    );
+};

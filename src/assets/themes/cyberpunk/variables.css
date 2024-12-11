@@ -1,0 +1,117 @@
+:root {
+    /* Spacing */
+    --space-xxs: 0.25rem;
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-xxl: 3rem;
+
+    /* Radius */
+    --radius-xxs: var(--space-xxs);
+    --radius-xs: var(--space-xs);
+    --radius-sm: var(--space-sm);
+    --radius-md: var(--space-md);
+    --radius-lg: var(--space-lg);
+    --radius-xl: var(--space-xl);
+    --radius-xxl: var(--space-xxl);
+
+    /* Colors - Raw */
+    --color-primary-50: hsl(286, 100%, 96%);
+    --color-primary-100: hsl(286, 100%, 90%);
+    --color-primary-200: hsl(286, 100%, 85%);
+    --color-primary-300: hsl(286, 100%, 76%);
+    --color-primary-400: hsl(286, 100%, 71%);
+    --color-primary-500: hsl(286, 100%, 66%);
+    --color-primary-600: hsl(286, 100%, 56%);
+    --color-primary-700: hsl(286, 100%, 46%);
+    --color-primary-800: hsl(286, 100%, 36%);
+    --color-primary-900: hsl(286, 100%, 26%);
+
+    /* Neon accent colors */
+    --color-neon-pink: hsl(315, 100%, 65%);
+    --color-neon-blue: hsl(195, 100%, 65%);
+    --color-neon-purple: hsl(270, 100%, 65%);
+    --color-neon-yellow: hsl(60, 100%, 65%);
+
+    /* Dark theme modifications */
+    --color-bg: hsl(260, 15%, 8%);
+    --color-bg-offset: hsl(260, 15%, 12%);
+    --color-bg-muted: hsl(260, 15%, 16%);
+    --color-bg-transparent: hsla(260, 15%, 8%, 0.8);
+
+    --color-text: hsl(260, 15%, 95%);
+    --color-text-offset: hsl(260, 15%, 85%);
+    --color-text-muted: hsl(260, 15%, 65%);
+
+    --color-border: hsl(286, 50%, 30%);
+    --color-accent: var(--color-neon-pink);
+
+    /* Surface treatments */
+    --surface: var(--color-bg);
+    --surface-border: 1px solid var(--color-neon-pink);
+    --surface-border-radius: 2px;
+    --surface-shadow: 0 0 10px var(--color-neon-pink),
+        0 0 20px hsla(315, 100%, 65%, 0.3),
+        0 0 30px hsla(315, 100%, 65%, 0.2);
+
+    /* Button styles */
+    --button-shadow: 0 0 10px var(--color-neon-pink),
+        0 0 20px hsla(315, 100%, 65%, 0.3);
+    --button-gradient: linear-gradient(135deg,
+            var(--color-neon-pink) 0%,
+            var(--color-neon-purple) 100%);
+    --button-active-shadow: 0 0 5px var(--color-neon-pink);
+    --button-active-gradient: linear-gradient(135deg,
+            var(--color-neon-purple) 0%,
+            var(--color-neon-pink) 100%);
+    --button-hover-transform: translateY(-2px) scale(1.02);
+    --button-active-transform: scale(0.98);
+    --button-icon-radius: 0;
+
+    /* Card styles */
+    --card-padding: var(--space-lg);
+    --card-radius: 4px;
+    --card-shadow: 0 0 20px hsla(315, 100%, 65%, 0.2);
+
+    /* Input styles */
+    --input-border: 1px solid var(--color-neon-pink);
+    --input-shadow: 0 0 10px hsla(315, 100%, 65%, 0.2);
+
+    /* Ring effect */
+    --ring: 0 0 0 1px var(--color-neon-pink),
+        0 0 0 3px hsla(315, 100%, 65%, 0.3);
+
+    /* Gradients */
+    --gradient-horizontal: linear-gradient(90deg,
+            var(--color-bg) 0%,
+            var(--color-bg-offset) 50%,
+            var(--color-bg) 100%);
+
+    --gradient-vertical: linear-gradient(180deg,
+            var(--color-bg-offset) 0%,
+            var(--color-bg) 100%);
+
+    /* Animation timings */
+    --transition-short: 100ms;
+    --transition-medium: 200ms;
+    --transition-long: 400ms;
+
+    /* Animation curves */
+    --ease-out: cubic-bezier(0.1, 0.5, 0.2, 1);
+    --ease-in: cubic-bezier(0.6, 0, 0.9, 0.5);
+    --ease-in-out: cubic-bezier(0.5, 0, 0.2, 1);
+}
+
+/* No light theme for cyberpunk - it's dark mode only */
+:root[data-theme="light"] {
+    /* Inherit dark theme values */
+    --color-bg: hsl(260, 15%, 8%);
+    --color-bg-offset: hsl(260, 15%, 12%);
+    --color-bg-muted: hsl(260, 15%, 16%);
+    --color-text: hsl(260, 15%, 95%);
+    --color-text-offset: hsl(260, 15%, 85%);
+    --color-text-muted: hsl(260, 15%, 65%);
+    --color-border: hsl(286, 50%, 30%);
+}

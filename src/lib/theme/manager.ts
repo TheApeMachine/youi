@@ -28,6 +28,7 @@ const initializeThemes = () => {
     registerTheme('glassmorphic', '/src/assets/themes/glassmorphic/styles.css', false);
     registerTheme('neobrutalism', '/src/assets/themes/neobrutalism/style.css', false);
     registerTheme('softui', '/src/assets/themes/softui/styles.css', false);
+    registerTheme('cyberpunk', '/src/assets/themes/cyberpunk/styles.css', false);
 };
 
 // Public functions

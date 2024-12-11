@@ -7,9 +7,10 @@ import { EmojiNode, registerEmojiPlugin } from "@/lib/plugins/EmojiPlugin";
 import { eventBus } from "@/lib/event";
 import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
-import { Flex } from "../Flex";
+import { Column, Flex, Row } from "../Flex";
 import Button from "../button/Button";
 import { Popover } from "../Popover";
+import { ButtonGroup } from "../button/ButtonGroup";
 
 export const Input = () => {
     const onMount = () => {
@@ -84,9 +85,63 @@ export const Input = () => {
         });
     };
     return (
-        <Flex justify="space-between" fullWidth>
-            <Flex id="lexical-editor" fullWidth contentEditable></Flex>
-            <Button variant="icon" color="muted" icon="send" />
-        </Flex>
+        <Column background="surface" pad="md">
+            <Row>
+                <ButtonGroup>
+                    <Button variant="icon" color="muted" icon="format_bold" />
+                    <Button variant="icon" color="muted" icon="format_italic" />
+                </ButtonGroup>
+                <ButtonGroup>
+                    <Button
+                        variant="icon"
+                        size="sm"
+                        color="muted"
+                        icon="format_strikethrough"
+                    />
+                    <Button
+                        variant="icon"
+                        size="sm"
+                        color="muted"
+                        icon="format_list_bulleted"
+                    />
+                    <Button
+                        variant="icon"
+                        size="sm"
+                        color="muted"
+                        icon="format_list_numbered"
+                    />
+                </ButtonGroup>
+                <ButtonGroup>
+                    <Button variant="icon" color="muted" icon="format_quote" />
+                    <Button
+                        variant="icon"
+                        color="muted"
+                        icon="format_align_left"
+                    />
+                    <Button
+                        variant="icon"
+                        size="sm"
+                        color="muted"
+                        icon="format_align_center"
+                    />
+                    <Button
+                        variant="icon"
+                        size="sm"
+                        color="muted"
+                        icon="format_align_right"
+                    />
+                    <Button
+                        variant="icon"
+                        size="sm"
+                        color="muted"
+                        icon="format_align_justify"
+                    />
+                </ButtonGroup>
+            </Row>
+            <Row justify="between" grow>
+                <Row id="lexical-editor" contentEditable grow></Row>
+                <Button variant="icon" color="muted" icon="send" />
+            </Row>
+        </Column>
     );
 };

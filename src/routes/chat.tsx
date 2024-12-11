@@ -5,26 +5,71 @@ import { messaging } from "@/lib/ui/chat/messaging";
 import { Input } from "@/lib/ui/chat/Input";
 import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
-import { eventBus, EventPayload } from "@/lib/event";
-import { Column, Flex, Row } from "@/lib/ui/Flex";
-import { List } from "@/lib/ui/List";
-import Button from "@/lib/ui/button/Button";
-import { ListItem } from "@/lib/ui/list/List";
+import { eventBus } from "@/lib/event";
+import { Column } from "@/lib/ui/Flex";
+import { List, ListItem } from "@/lib/ui/list/List";
+import { User } from "@/types/mongo/User";
+import { Badge } from "@/lib/ui/Badge";
+import { Text } from "@/lib/ui/Text";
+import { Grid, GridItem } from "@/lib/ui/grid/Grid";
+import { Message } from "@/lib/ui/chat/Message";
+
+interface Auth0User {
+    sub: string;
+}
 
 export default async () => {
-    const onMount = () => {
-        eventBus.subscribe("group-select", (e: EventPayload) => {
-            if (!e.effect) return;
+    const authUser = await stateManager.get<Auth0User>("authUser");
+    const dbUser = (await from("User")
+        .where({ Auth0UserId: authUser?.sub })
+        .limit(1)
+        .exec()) as User[];
+
+    const chatGroups = dbUser?.Groups?.filter((g) => g.HasChat) || [];
+
+    eventBus.subscribe(
+        "group-select",
+        (payload: { type: string; data: any }) => {
+            console.log(payload);
+            if (!payload.data) return;
+
+            from("Chat")
+                .where({ GroupId: payload.data })
+                .exec()
+                .then((chats) => {
+                    if (chats && chats.length > 0) {
+                        const chat = chats[0];
+                        // Then get messages for this chat
+                        from("Message")
+                            .where({ ChatId: chat._id })
+                            .sortBy("Created", "desc")
+                            .limit(20)
+                            .exec()
+                            .then((messages) => {
+                                console.log(messages);
+                                const chatMessages =
+                                    document.getElementById("chat-messages");
+                                if (chatMessages) {
+                                    chatMessages.innerHTML = "";
+                                    messages.forEach(async (message) => {
+                                        chatMessages.appendChild(
+                                            await jsx(Message, { message })
+                                        );
+                                    });
+                                }
+                            });
+                    }
+                });
 
             from("User")
-                .whereArrayField("Groups", { _id: e.effect })
+                .whereArrayField("Groups", { _id: payload.data })
                 .exec()
                 .then((users) => {
                     const groupMemberList =
                         document.getElementById("group-members");
                     if (groupMemberList) {
                         groupMemberList.innerHTML = "";
-                        users.forEach(async (groupUser: any) => {
+                        users.forEach(async (groupUser: User) => {
                             groupMemberList.appendChild(
                                 await jsx(Profile, { groupUser })
                             );
@@ -36,26 +81,63 @@ export default async () => {
             if (!provider) return;
 
             messaging(provider, ydoc);
-        });
-    };
-
-    const authUser = await stateManager.get("authUser");
-    const dbUser = await from("User")
-        .where({ Auth0UserId: authUser?.sub })
-        .limit(1)
-        .exec();
-
-    console.log(dbUser);
+        }
+    );
 
     return (
-        <Row>
-            <Column>
-                <List>
-                    {dbUser?.user?.Groups?.map((group) => (
-                        <ListItem>{group.GroupName}</ListItem>
+        <Grid columns="1fr 2fr" gap="xxl" grow>
+            <GridItem column="1" direction="column" gap="md">
+                <List gap="xs" pad="md">
+                    {chatGroups.map((group) => (
+                        <ListItem
+                            onClick={() => {
+                                eventBus.publish(
+                                    "group",
+                                    "group-select",
+                                    group._id
+                                );
+                            }}
+                            pad="sm"
+                            background="bg"
+                            radius="xs"
+                        >
+                            <Text
+                                variant="span"
+                                icon="group"
+                                color="text-primary"
+                            >
+                                {group.GroupName}
+                            </Text>
+                            <Badge color="brand-light">
+                                <Text color="highlight">3</Text>
+                            </Badge>
+                        </ListItem>
                     ))}
                 </List>
-            </Column>
-        </Row>
+                <List id="group-members" gap="xs" pad="md">
+                    <ListItem>
+                        <Text>Create Group</Text>
+                    </ListItem>
+                </List>
+            </GridItem>
+            <GridItem
+                column="2"
+                direction="column"
+                background="gradient-vertical"
+                pad="xxl"
+                radius="sm"
+                fullHeight
+                grow
+            >
+                <Column
+                    id="chat-messages"
+                    direction="column"
+                    grow
+                    fullHeight
+                    scrollable
+                ></Column>
+                <Input />
+            </GridItem>
+        </Grid>
     );
 };

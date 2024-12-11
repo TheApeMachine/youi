@@ -4,10 +4,10 @@ export const Profile = (props: {
     groupUser: { ImageURL: string; FirstName: string };
 }) => (
     <li>
-        <div class="row left avatar-container">
+        <div class="row left avatar md">
             <img
                 alt="avatar"
-                class="ring-darker"
+                class="image"
                 src={props.groupUser.ImageURL + "&width=64"}
             />
             <div class="status online"></div>

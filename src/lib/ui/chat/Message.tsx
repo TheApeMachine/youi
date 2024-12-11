@@ -1,42 +1,30 @@
 import { jsx } from "@/lib/template";
-import { WebsocketProvider } from "y-websocket";
-import * as Y from "yjs";
 import { createEditor } from "lexical";
-import { Reaction } from "./types";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { EmojiNode } from "@/lib/plugins/EmojiPlugin";
-import { Flex } from "@/lib/ui/Flex";
-import { Image } from "@/lib/ui/Image";
+import { Column } from "@/lib/ui/Flex";
 import { Text } from "@/lib/ui/Text";
+import { Message as MessageType } from "@/types/mongo/Message";
+import { from } from "@/lib/mongo/query";
+import { User } from "@/types/mongo/User";
 
-interface MessageProps {
-    message: {
-        content: any;
-        sender: number;
-        senderName?: string;
-        senderAvatar?: string;
-        timestamp: number;
-        reactions?: Record<string, Reaction>;
-        thread?: {
-            replyCount: number;
-            lastReply?: any;
-            replies: any[];
-        };
+export const Message = async (props: { message: MessageType }) => {
+    const user = (await from("User")
+        .where({ _id: props.message.UserId })
+        .limit(1)
+        .exec()) as User[];
+
+    const formatMessage = (text: string) => {
+        return text.split("\n").map((line, i) => (
+            <Text variant="span" color="text">
+                {line}
+            </Text>
+        ));
     };
-    isCurrentUser: boolean;
-    isThreadReply?: boolean;
-    provider: WebsocketProvider | null;
-    reactions: Y.Map<Record<string, Reaction>>;
-    getCurrentUserId: () => number;
-    addThreadReply: (parentTimestamp: number, replyContent: any) => void;
-    container?: HTMLElement;
-}
 
-export const Message = () => {
     const onMount = () => {
-        const messageId = `message-${props.message.timestamp}`;
+        const messageId = `message-${props.message.Created}`;
 
-        // Wait for the content element to be available
         requestAnimationFrame(() => {
             const contentElement = document.getElementById(messageId);
             if (!contentElement) return;
@@ -44,7 +32,7 @@ export const Message = () => {
             const editor = createEditor({
                 namespace: "chat-message",
                 nodes: [HeadingNode, QuoteNode, EmojiNode],
-                editable: false, // Read-only mode
+                editable: false,
                 onError: (error: Error) => {
                     console.error("Message editor error:", error);
                 }
@@ -53,69 +41,23 @@ export const Message = () => {
             editor.setRootElement(contentElement);
 
             try {
-                // Parse and set the editor state from the stored content
-                const editorState = editor.parseEditorState(
-                    props.message.content
-                );
+                const editorState = editor.parseEditorState(props.message.Text);
                 editor.setEditorState(editorState);
             } catch (error) {
                 console.error("Failed to parse message content:", error);
-                // Fallback to displaying raw content if parsing fails
-                contentElement.textContent =
-                    props.message.content?.toString() ?? "";
+                contentElement.textContent = props.message.Text ?? "";
             }
         });
     };
 
     return (
-        <Flex
-            direction="column"
-            alignSelf="start"
-            background="transparent"
-            gradient="dark"
-            pad="md"
-            radius="xs"
-            className={`message ${props.isCurrentUser ? "message-self" : ""}`}
-        >
-            <Flex gap="unit" align="start" background="transparent">
-                <Image
-                    alt={props.message.senderName}
-                    className="avatar"
-                    src={props.message.senderAvatar ?? ""}
-                />
-                <Flex
-                    direction="column"
-                    gap="unit"
-                    background="transparent"
-                    fullWidth
-                >
-                    <Flex
-                        justify="space-between"
-                        background="transparent"
-                        align="center"
-                    >
-                        <Text variant="h6">
-                            {props.message.senderName ?? ""}
-                        </Text>
-                        <Text variant="sub">
-                            {new Date(
-                                props.message.timestamp
-                            ).toLocaleString() ?? ""}
-                        </Text>
-                    </Flex>
-                    <Flex
-                        className="message-content"
-                        background="transparent"
-                        pad="sm"
-                        radius="xs"
-                    >
-                        <div
-                            id={`message-${props.message.timestamp}`}
-                            className="lexical-content"
-                        />
-                    </Flex>
-                </Flex>
-            </Flex>
-        </Flex>
+        <Column background="bg">
+            <Text variant="span" color="text-primary">
+                {user?.[0]?.FirstName || "Unknown User"}
+            </Text>
+            <Text variant="span" color="text-offset">
+                {formatMessage(props.message.Text)}
+            </Text>
+        </Column>
     );
 };

@@ -1,0 +1,53 @@
+export type User = {
+    _id: string
+    Created: string
+    Updated: string
+    Deleted: any
+    FirstName: string
+    LastName: string
+    email: string
+    Location: string
+    Department: string
+    Function: string
+    JoinDate: string
+    LeaveDate: any
+    BirthDay: string
+    Auth0UserId: string
+    Roles: Array<number>
+    ImageURL: string
+    Accounts: Array<string>
+    Groups: Array<{
+        _id: string
+        Created: string
+        Updated: string
+        Deleted: any
+        _Etag: string
+        AccountId: string
+        GroupName: string
+        IsAccountGroup: boolean
+        IsPrivate: boolean
+        HasChat: boolean
+        ParentGroupId: any
+        Roles: Array<number>
+        ImageURL?: string
+        JoinDate: string
+        IsGeneratedGroup?: boolean
+        IsAutoAssignedGroup?: boolean
+    }>
+    IsNonActive: boolean
+    IsOfDuty: boolean
+    MustBeErased: any
+    MemberOfAccounts: Array<{
+        AccountId: string
+        AccountName: any
+        Location: any
+        Department: any
+        Function: any
+        JoinDate: string
+        LeaveDate: any
+        IsNonActive: boolean
+        IsOfDuty: boolean
+        MustBeErased: any
+    }>
+    FreeForm: any
+}

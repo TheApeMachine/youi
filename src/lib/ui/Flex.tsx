@@ -11,7 +11,9 @@ interface FlexProps {
     grow?: boolean;
     pad?: boolean | Unit;
     radius?: boolean | Unit;
+    scrollable?: boolean;
     text?: "left" | "center" | "right";
+    fullHeight?: boolean;
     className?: string;
 }
 
@@ -25,6 +27,8 @@ export const Flex = async ({
     grow = false,
     pad = false,
     radius = false,
+    fullHeight = false,
+    scrollable = false,
     text = "left",
     className,
     ...props
@@ -38,6 +42,8 @@ export const Flex = async ({
     const textClass = text ? `text-${text}` : "";
     const radiusClass =
         typeof radius === "boolean" ? "radius-xs" : `radius-${radius}`;
+    const fullHeightClass = fullHeight ? "full-height" : "";
+    const scrollableClass = scrollable ? "scrollable" : "";
 
     return (
         <div
@@ -45,7 +51,7 @@ export const Flex = async ({
                 gap ? gapClass : ""
             } ${alignClass} ${justifyClass} ${growClass} ${
                 pad ? padClass : ""
-            } ${backgroundClass} ${radiusClass} ${textClass} ${className}`}
+            } ${backgroundClass} ${radiusClass} ${textClass} ${className} ${fullHeightClass} ${scrollableClass}`}
             {...props}
         >
             {children}
@@ -105,6 +111,8 @@ export const Column = async ({
     background = "transparent",
     text = "left",
     radius = false,
+    fullHeight = false,
+    scrollable = false,
     children,
     className,
     ...props
@@ -117,6 +125,8 @@ export const Column = async ({
     background?: Background;
     text?: "left" | "center" | "right";
     radius?: boolean | Unit;
+    fullHeight?: boolean;
+    scrollable?: boolean;
     children: JSX.Element;
     className?: string;
 }) => {
@@ -130,7 +140,9 @@ export const Column = async ({
             grow={grow}
             background={background}
             radius={radius}
+            fullHeight={fullHeight}
             text={text}
+            scrollable={scrollable}
             className={className}
             {...props}
         >

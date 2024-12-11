@@ -168,31 +168,31 @@
     justify-content: space-evenly;
 }
 
-.p-xxs {
+.pad-xxs {
     padding: var(--space-xxs);
 }
 
-.p-xs {
+.pad-xs {
     padding: var(--space-xs);
 }
 
-.p-sm {
+.pad-sm {
     padding: var(--space-sm);
 }
 
-.p-md {
+.pad-md {
     padding: var(--space-md);
 }
 
-.p-lg {
+.pad-lg {
     padding: var(--space-lg);
 }
 
-.p-xl {
+.pad-xl {
     padding: var(--space-xl);
 }
 
-.p-xxl {
+.pad-xxl {
     padding: var(--space-xxl);
 }
 
@@ -248,11 +248,11 @@
     left: 0;
 }
 
-.w-full {
+.full-width {
     width: 100%;
 }
 
-.h-full {
+.full-height {
     height: 100%;
 }
 
@@ -354,6 +354,10 @@
     background: var(--color-bg-offset);
 }
 
+.bg-muted {
+    background: var(--color-bg-muted);
+}
+
 .bg-selection {
     background: var(--color-selection);
 }
@@ -380,7 +384,8 @@
 }
 
 .shadow-lg {
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+        0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 /* States */
@@ -407,6 +412,10 @@
     }
 }
 
+.scrollable {
+    overflow-y: auto;
+}
+
 /* Cursor */
 .cursor-pointer {
     cursor: pointer;
@@ -431,8 +440,10 @@
     --is-valid: 0;
     --is-invalid: 0;
     background: linear-gradient(var(--surface), var(--surface)) padding-box,
-        linear-gradient(var(--color-danger), var(--color-danger)) calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
-        linear-gradient(var(--color-success), var(--color-success)) calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
+        linear-gradient(var(--color-danger), var(--color-danger))
+            calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
+        linear-gradient(var(--color-success), var(--color-success))
+            calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
         var(--surface);
 
     border: var(--surface-border);

@@ -5,7 +5,17 @@ import Icon from "@/lib/ui/icon/Icon";
 interface TextProps {
     id?: string;
     interactive?: boolean;
-    variant?: "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "sub" | "span" | undefined;
+    variant?:
+        | "p"
+        | "h1"
+        | "h2"
+        | "h3"
+        | "h4"
+        | "h5"
+        | "h6"
+        | "sub"
+        | "span"
+        | undefined;
     color?: string;
     iconColor?: Color;
     icon?: string;
@@ -28,7 +38,7 @@ export const Text = ({
     const props = {
         id,
         class: `text text-${variant} ${className} text-${text} ${color}`,
-        "data-interactive": interactive,
+        "data-interactive": interactive
     };
 
     switch (variant) {
@@ -76,10 +86,10 @@ export const Text = ({
             );
         case "p":
             return (
-                <span {...props}>
+                <p {...props}>
                     {icon && <Icon icon={icon} color={iconColor} />}
                     {children}
-                </span>
+                </p>
             );
         case "sub":
             return (

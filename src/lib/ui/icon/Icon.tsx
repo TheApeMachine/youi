@@ -6,7 +6,7 @@ interface IconProps {
 }
 
 export default ({ icon, color }: IconProps) => {
-    const colorClass = color ? ` icon-${color}` : "";
+    const colorClass = color ? ` text-${color}` : "";
 
     return (
         <span class={`material-symbols-rounded icon ${colorClass}`}>

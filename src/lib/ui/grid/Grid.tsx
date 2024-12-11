@@ -31,7 +31,9 @@ interface GridItemProps {
     radius?: boolean | Unit;
     className?: string;
     order?: { sm?: number; md?: number; lg?: number };
-    direction?: 'row' | 'column';
+    direction?: "row" | "column";
+    grow?: boolean;
+    fullHeight?: boolean;
 }
 
 export const Grid = async ({
@@ -52,29 +54,42 @@ export const Grid = async ({
 }: GridProps) => {
     const classes = {
         grid: true,
-        [`grid-cols-${columns}`]: typeof columns === 'number',
-        [`grid-rows-${rows}`]: typeof rows === 'number',
-        'grid-rows-auto': rows === 'auto',
-        'grid-areas-main': areas === 'main',
-        [`gap-${gap === true ? 'md' : gap}`]: gap,
+        [`grid-cols-${columns}`]: typeof columns === "number",
+        [`grid-rows-${rows}`]: typeof rows === "number",
+        "grid-rows-auto": rows === "auto",
+        "grid-areas-main": areas === "main",
+        [`gap-${gap === true ? "md" : gap}`]: gap,
         [`row-gap-${rowGap}`]: rowGap,
         [`column-gap-${columnGap}`]: columnGap,
         [`align-${align}`]: align,
         [`justify-${justify}`]: justify,
         [background as string]: background,
-        [`pad-${pad === true ? 'md' : pad}`]: pad,
-        [`radius-${radius === true ? 'md' : radius}`]: radius,
+        [`pad-${pad === true ? "md" : pad}`]: pad,
+        [`radius-${radius === true ? "md" : radius}`]: radius,
         grow: grow,
         [className]: className
     };
 
-    const style = areas && areas !== 'main' ? {
-        gridTemplateAreas: `"${areas.join('" "')}"`,
-        gridTemplateColumns: typeof columns === 'string' && columns !== '1' ? columns : undefined,
-        gridTemplateRows: typeof rows === 'string' && rows !== 'auto' ? rows : undefined
-    } : undefined;
+    const style =
+        areas && areas !== "main"
+            ? {
+                  gridTemplateAreas: `"${areas.join('" "')}"`,
+                  gridTemplateColumns:
+                      typeof columns === "string" && columns !== "1"
+                          ? columns
+                          : undefined,
+                  gridTemplateRows:
+                      typeof rows === "string" && rows !== "auto"
+                          ? rows
+                          : undefined
+              }
+            : undefined;
 
-    return <div className={classes} style={style}>{children}</div>;
+    return (
+        <div className={classes} style={style}>
+            {children}
+        </div>
+    );
 };
 
 export const GridItem = async ({
@@ -86,6 +101,8 @@ export const GridItem = async ({
     align,
     justify,
     pad,
+    grow,
+    fullHeight,
     background,
     radius,
     order,
@@ -93,18 +110,20 @@ export const GridItem = async ({
     className = ""
 }: GridItemProps) => {
     const classes = {
-        'grid-item': true,
-        'row': direction === 'row',
-        'column': direction === 'column',
+        "grid-item": true,
+        row: direction === "row",
+        column: direction === "column",
         [`grid-area-${area}`]: area,
         [`order-sm-${order?.sm}`]: order?.sm,
         [`order-md-${order?.md}`]: order?.md,
         [`order-lg-${order?.lg}`]: order?.lg,
         [`align-${align}`]: align,
         [`justify-${justify}`]: justify,
-        [`pad-${pad === true ? 'md' : pad}`]: pad,
+        [`pad-${pad === true ? "md" : pad}`]: pad,
         [background as string]: background,
-        [`radius-${radius === true ? 'md' : radius}`]: radius,
+        [`radius-${radius === true ? "md" : radius}`]: radius,
+        [`flex-grow`]: grow,
+        [`full-height`]: fullHeight,
         [className]: className
     };
 
@@ -113,5 +132,9 @@ export const GridItem = async ({
         gridRow: row
     };
 
-    return <div className={classes} style={style}>{children}</div>;
+    return (
+        <div className={classes} style={style}>
+            {children}
+        </div>
+    );
 };

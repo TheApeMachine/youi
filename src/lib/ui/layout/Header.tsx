@@ -16,6 +16,7 @@ export const Header = () => {
                 { label: "Glassmorphism", value: "glassmorphic" },
                 { label: "Soft UI", value: "softui" },
                 { label: "Neo-Brutalism", value: "neobrutalism" },
+                { label: "Cyberpunk", value: "cyberpunk" },
             ]} onChange={handleThemeChange}>
                 Layout
             </Dropdown>

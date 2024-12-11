@@ -1,68 +1,10 @@
 import { eventManager } from '@/lib/event';
+import { getWorker, initWorkerCommunication, sendWorkerMessage } from './worker-instance';
 
 export const createStateManager = () => {
     const subscribers = new Map<string, Set<(value: any) => void>>();
-    let worker: Worker | null = null;
-    let messageId = 0;
-    const messageQueue = new Map<string, { resolve: Function, reject: Function }>();
+    let cleanup: (() => void) | null = null;
 
-    // Add worker initialization
-    const initWorker = async () => {
-        worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
-
-        worker.onmessage = (event) => {
-            const { type, payload, id } = event.data;
-
-            if (type === 'ready') {
-                return;
-            }
-
-            // Handle queued promises
-            if (id && messageQueue.has(id)) {
-                const { resolve, reject } = messageQueue.get(id)!;
-                messageQueue.delete(id);
-
-                if (type === 'error') {
-                    reject(new Error(payload.error));
-                } else {
-                    resolve(payload);
-                }
-                return;
-            }
-
-            // Handle notifications
-            if (type === 'notify') {
-                const callbacks = subscribers.get(payload.key);
-                callbacks?.forEach(callback => callback(payload.value));
-            }
-        };
-
-        // Wait for worker to be ready
-        await new Promise<void>((resolve, reject) => {
-            const timeout = setTimeout(() => reject(new Error('Worker initialization timeout')), 5000);
-
-            worker!.addEventListener('message', function onReady(event) {
-                if (event.data.type === 'ready') {
-                    clearTimeout(timeout);
-                    worker!.removeEventListener('message', onReady);
-                    resolve();
-                }
-            });
-        });
-    };
-
-    // Add worker message helper
-    const sendWorkerMessage = async (type: string, payload: any): Promise<any> => {
-        if (!worker) throw new Error('Worker not initialized');
-
-        return new Promise((resolve, reject) => {
-            const id = String(messageId++);
-            messageQueue.set(id, { resolve, reject });
-            worker!.postMessage({ type, payload, id });
-        });
-    };
-
-    // Modify get to use worker
     const get = async <T>(key: string): Promise<T | undefined> => {
         try {
             const response = await sendWorkerMessage('read', key);
@@ -73,7 +15,6 @@ export const createStateManager = () => {
         }
     };
 
-    // Modify set to use worker
     const set = async (key: string, value: any): Promise<void> => {
         try {
             await sendWorkerMessage('write', { key, value });
@@ -83,7 +24,6 @@ export const createStateManager = () => {
         }
     };
 
-    // Modify update to use worker
     const update = async (key: string, value: any): Promise<void> => {
         try {
             await sendWorkerMessage('update', { key, value });
@@ -105,7 +45,6 @@ export const createStateManager = () => {
         }
     };
 
-    // Modify subscribe to use worker
     const subscribe = (key: string, callback: (value: any) => void): () => void => {
         if (!subscribers.has(key)) {
             subscribers.set(key, new Set());
@@ -148,7 +87,12 @@ export const createStateManager = () => {
         subscribe,
         remove,
         init: async () => {
-            await initWorker();
+            cleanup = initWorkerCommunication();
+            // Wait for worker to be ready
+            await sendWorkerMessage('ready');
+        },
+        destroy: () => {
+            cleanup?.();
         }
     };
 };

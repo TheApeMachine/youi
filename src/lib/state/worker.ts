@@ -1,10 +1,7 @@
-import localforage from 'localforage';
+/// <reference lib="webworker" />
+declare const self: SharedWorkerGlobalScope;
 
-interface StateMessage {
-    type: 'read' | 'write' | 'update' | 'notify' | 'remove';
-    payload: any;
-    id?: string;
-}
+import localforage from 'localforage';
 
 interface StateData {
     value: any;
@@ -12,47 +9,63 @@ interface StateData {
     version: number;
 }
 
-const createStateWorker = () => {
-    const state = new Map<string, StateData>();
-    const subscribers = new Map<string, string[]>();
-    let version = 0;
+interface StateMessage {
+    type: 'read' | 'write' | 'update' | 'notify' | 'remove';
+    payload: any;
+    id?: string;
+}
 
-    const updateStateKeys = () => {
-        const keys = Array.from(state.keys()).filter(key => key !== '__state_keys__');
-        state.set('__state_keys__', {
-            value: keys,
-            timestamp: Date.now(),
-            version: version++
-        });
-    };
+// Track all connected ports
+const ports = new Set<MessagePort>();
 
-    const postResponse = (type: string, payload: any, id?: string) => {
-        self.postMessage({ type, payload, id });
-    };
+// Shared state between all connections
+const state = new Map<string, StateData>();
+const subscribers = new Map<string, string[]>();
+let version = 0;
 
-    const persistState = async () => {
-        const stateObj: Record<string, any> = {};
-        for (const [key, data] of state.entries()) {
-            if (key !== '__state_keys__') {
-                stateObj[key] = data.value;
-            }
+const updateStateKeys = () => {
+    const keys = Array.from(state.keys()).filter(key => key !== '__state_keys__');
+    state.set('__state_keys__', {
+        value: keys,
+        timestamp: Date.now(),
+        version: version++
+    });
+};
+
+const postResponse = (type: string, payload: any, id?: string, targetPort?: MessagePort) => {
+    const message = { type, payload, id };
+    if (targetPort) {
+        targetPort.postMessage(message);
+    } else {
+        // Broadcast to all ports
+        ports.forEach(port => port.postMessage(message));
+    }
+};
+
+const persistState = async () => {
+    const stateObj: Record<string, any> = {};
+    for (const [key, data] of state.entries()) {
+        if (key !== '__state_keys__') {
+            stateObj[key] = data.value;
         }
-        await localforage.setItem('app_state', stateObj);
-    };
+    }
+    await localforage.setItem('app_state', stateObj);
+};
 
-    const handleRead = async (key: string, id?: string) => {
-        const stateData = state.get(key);
-        postResponse('read', {
-            key,
-            value: stateData?.value,
-            metadata: stateData ? {
-                timestamp: stateData.timestamp,
-                version: stateData.version
-            } : undefined
-        }, id);
-    };
+const handleRead = async (key: string, id?: string, port?: MessagePort) => {
+    const stateData = state.get(key);
+    postResponse('read', {
+        key,
+        value: stateData?.value,
+        metadata: stateData ? {
+            timestamp: stateData.timestamp,
+            version: stateData.version
+        } : undefined
+    }, id, port);
+};
 
-    const handleWrite = async (payload: { key: string; value: any }, id?: string) => {
+const handleWrite = async (payload: { key: string; value: any }, id?: string, port?: MessagePort) => {
+    try {
         const { key, value } = payload;
 
         if (key.includes('.')) {
@@ -83,10 +96,16 @@ const createStateWorker = () => {
 
         updateStateKeys();
         await persistState();
-        postResponse('write', { success: true }, id);
-    };
+        postResponse('write', { success: true }, id, port);
+    } catch (error) {
+        postResponse('error', { 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+        }, id, port);
+    }
+};
 
-    const handleUpdate = async (payload: { key: string; value: any }, id?: string) => {
+const handleUpdate = async (payload: { key: string; value: any }, id?: string, port?: MessagePort) => {
+    try {
         const { key, value } = payload;
         const existing = state.get(key);
 
@@ -104,88 +123,112 @@ const createStateWorker = () => {
         const subs = subscribers.get(key) || [];
         if (subs.length > 0) {
             const stateData = state.get(key)!;
-            postResponse('notify', {
-                key,
-                value: stateData.value,
-                metadata: {
-                    timestamp: stateData.timestamp,
-                    version: stateData.version
-                },
-                subscribers: subs
+            ports.forEach(port => {
+                postResponse('notify', {
+                    key,
+                    value: stateData.value,
+                    metadata: {
+                        timestamp: stateData.timestamp,
+                        version: stateData.version
+                    }
+                }, undefined, port);
             });
         }
 
-        postResponse('update', { success: true }, id);
-    };
+        postResponse('update', { success: true }, id, port);
+    } catch (error) {
+        postResponse('error', { 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+        }, id, port);
+    }
+};
 
-    const handleNotify = (payload: { key: string; subscriber: string }, id?: string) => {
-        const { key, subscriber } = payload;
-        const subs = subscribers.get(key) || [];
-        subscribers.set(key, [...subs, subscriber]);
-        postResponse('notify', { success: true }, id);
-    };
+const handleNotify = (payload: { key: string; subscriber: string }, id?: string, port?: MessagePort) => {
+    const { key, subscriber } = payload;
+    const subs = subscribers.get(key) || [];
+    subscribers.set(key, [...subs, subscriber]);
+    postResponse('notify', { success: true }, id, port);
+};
 
-    const handleRemove = async (key: string, id?: string) => {
+const handleRemove = async (key: string, id?: string, port?: MessagePort) => {
+    try {
         state.delete(key);
         updateStateKeys();
         await persistState();
-        postResponse('remove', { success: true }, id);
-    };
-
-    const initializeState = async () => {
-        try {
-            const savedState = await localforage.getItem('app_state');
-            if (savedState && typeof savedState === 'object') {
-                Object.entries(savedState).forEach(([key, value]) => {
-                    state.set(key, {
-                        value,
-                        timestamp: Date.now(),
-                        version: version++
-                    });
-                });
-            }
-            updateStateKeys();
-            postResponse('ready', { success: true });
-        } catch (error) {
-            postResponse('ready', {
-                success: false,
-                error: error instanceof Error ? error.message : 'Unknown error'
-            });
-        }
-    };
-
-    const handleMessage = async (event: MessageEvent<StateMessage>) => {
-        const { type, payload, id } = event.data;
-
-        try {
-            switch (type) {
-                case 'read':
-                    await handleRead(payload, id);
-                    break;
-                case 'write':
-                    await handleWrite(payload, id);
-                    break;
-                case 'update':
-                    await handleUpdate(payload, id);
-                    break;
-                case 'notify':
-                    handleNotify(payload, id);
-                    break;
-                case 'remove':
-                    await handleRemove(payload, id);
-                    break;
-                default:
-                    throw new Error(`Unknown message type: ${type}`);
-            }
-        } catch (error) {
-            postResponse('error', {
-                error: error instanceof Error ? error.message : 'Unknown error'
-            }, id);
-        }
-    };
-
-    self.onmessage = handleMessage;
-    initializeState();
+        postResponse('remove', { success: true }, id, port);
+    } catch (error) {
+        postResponse('error', { 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+        }, id, port);
+    }
 };
 
-createStateWorker(); 
+const initializeState = async (port: MessagePort) => {
+    try {
+        const savedState = await localforage.getItem('app_state');
+        if (savedState && typeof savedState === 'object') {
+            Object.entries(savedState).forEach(([key, value]) => {
+                state.set(key, {
+                    value,
+                    timestamp: Date.now(),
+                    version: version++
+                });
+            });
+        }
+        updateStateKeys();
+        postResponse('ready', { success: true }, undefined, port);
+    } catch (error) {
+        postResponse('ready', {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+        }, undefined, port);
+    }
+};
+
+const handleMessage = async (event: MessageEvent<StateMessage>, port: MessagePort) => {
+    const { type, payload, id } = event.data;
+
+    try {
+        switch (type) {
+            case 'read':
+                await handleRead(payload, id, port);
+                break;
+            case 'write':
+                await handleWrite(payload, id, port);
+                break;
+            case 'update':
+                await handleUpdate(payload, id, port);
+                break;
+            case 'notify':
+                handleNotify(payload, id, port);
+                break;
+            case 'remove':
+                await handleRemove(payload, id, port);
+                break;
+            default:
+                throw new Error(`Unknown message type: ${type}`);
+        }
+    } catch (error) {
+        postResponse('error', {
+            error: error instanceof Error ? error.message : 'Unknown error'
+        }, id, port);
+    }
+};
+
+// Handle new connections
+self.onconnect = (e) => {
+    const port = e.ports[0];
+    ports.add(port);
+    
+    port.onmessage = (event) => handleMessage(event, port);
+    
+    // Initialize state for new connection
+    initializeState(port);
+    
+    port.start();
+    
+    // Cleanup when port is closed
+    port.onmessageerror = () => {
+        ports.delete(port);
+    };
+};

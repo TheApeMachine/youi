@@ -1,40 +1,70 @@
-import { reject } from "cypress/types/bluebird";
+import localforage from 'localforage';
+import { StateData, StateMessage } from './worker-types';
 
 let sharedWorker: SharedWorker | null = null;
 
 export const getWorker = () => {
-    if (!sharedWorker) {
-        sharedWorker = new SharedWorker(new URL("@/lib/state/worker.ts", import.meta.url), {
-            type: "module",
-            name: "state-worker"
-        });
-    }
-
-    return sharedWorker;
+  if (!sharedWorker) {
+    sharedWorker = new SharedWorker(new URL('./worker.ts', import.meta.url), { 
+      type: 'module',
+      name: 'state-worker' 
+    });
+  }
+  return sharedWorker;
 };
 
-const initWorker = async () => {
-    sharedWorker = getWorker();
-    sharedWorker.port.start();
+// Map to store message handlers
+const messageHandlers = new Map<string, (data: any) => void>();
 
-    sharedWorker.port.onmessage = (event) => {
-        const { type, payload, id } = event.data;
+// Function to register a message handler
+export const onWorkerMessage = (type: string, handler: (data: any) => void) => {
+    messageHandlers.set(type, handler);
+};
 
-        // TODO: Handle the message
+// Function to remove a message handler
+export const offWorkerMessage = (type: string) => {
+    messageHandlers.delete(type);
+};
+
+// Function to initialize worker communication
+export const initWorkerCommunication = () => {
+    const worker = getWorker();
+    worker.port.start();
+
+    worker.port.onmessage = (event) => {
+        const { type, payload } = event.data;
+        const handler = messageHandlers.get(type);
+        if (handler) {
+            handler(payload);
+        }
     };
 
-    await new Promise<void>((resolve) => {
-        const timeout = setTimeout(() => reject(new Error("Worker not ready")), 5000);
+    // Return cleanup function
+    return () => {
+        messageHandlers.clear();
+        worker.port.close();
+    };
+};
 
-        const onReady = (event: MessageEvent) => {
-            if (event.data.type === "ready") {
-                clearTimeout(timeout);
-                sharedWorker?.port.removeEventListener("message", onReady);
-                resolve();
+// Function to send message to worker
+export const sendWorkerMessage = (type: string, payload?: any) => {
+    const worker = getWorker();
+    return new Promise((resolve, reject) => {
+        const messageId = crypto.randomUUID();
+        
+        const handleResponse = (event: MessageEvent) => {
+            const { id, type: responseType, payload: responsePayload } = event.data;
+            if (id === messageId) {
+                worker.port.removeEventListener('message', handleResponse);
+                if (responseType === 'error') {
+                    reject(new Error(responsePayload.error));
+                } else {
+                    resolve(responsePayload);
+                }
             }
         };
 
-        if (!sharedWorker) return;
-        sharedWorker.port.onmessage = onReady;
+        worker.port.addEventListener('message', handleResponse);
+        worker.port.postMessage({ type, payload, id: messageId });
     });
 };

@@ -279,6 +279,10 @@
                 &.material-symbols-rounded {
                     color: var(--color-text-muted);
                 }
+
+                &:first-child {
+                    flex: 0;
+                }
             }
         }
 

@@ -1,24 +1,26 @@
-import { stateManager } from "@/lib/state";
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
+import { User } from "@/types/mongo/User";
 
-export const Avatar = Component({
-    render: async () => {
-        const user = (
-            await stateManager.get<{ ImageURL: string }[]>("user")
-        )?.[0];
+const sizeMap = {
+    sm: 32,
+    md: 64,
+    lg: 128
+};
 
-        return user?.ImageURL ? (
-            <img
-                src={user.ImageURL + "&w=128"}
-                alt="avatar"
-                class="avatar"
-                data-trigger="click"
-                data-event="menu"
-                data-effect="submenu"
-            />
-        ) : (
-            <span class="material-icons">person</span>
-        );
-    }
-});
+export const Avatar = async (props: {
+    user: User;
+    size: "sm" | "md" | "lg";
+}) => {
+    return props.user?.ImageURL ? (
+        <img
+            src={props.user.ImageURL + "&w=" + sizeMap[props.size]}
+            alt="avatar"
+            class="avatar"
+            data-trigger="click"
+            data-event="menu"
+            data-effect="submenu"
+        />
+    ) : (
+        <span class="material-icons">person</span>
+    );
+};

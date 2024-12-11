@@ -212,6 +212,61 @@ const handleElementProps = (element: Element, props: Props, isSVG: boolean) => {
             return;
         }
 
+        // Handle style objects
+        if (name === 'style') {
+            if (typeof value === 'string') {
+                element.setAttribute('style', value.replace(/"/g, '&quot;'));
+            } else if (Array.isArray(value)) {
+                // Merge all style objects in the array
+                const mergedStyles = value.reduce((acc, styleObj) => {
+                    if (typeof styleObj === 'object' && styleObj !== null) {
+                        return { ...acc, ...styleObj };
+                    }
+                    return acc;
+                }, {});
+                
+                const styleString = Object.entries(mergedStyles)
+                    .filter(([_, val]) => val !== undefined && val !== null)
+                    .map(([key, val]) => {
+                        // Convert camelCase to kebab-case
+                        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                        // Replace double quotes with &quot;
+                        const escapedVal = typeof val === 'string' ? val.replace(/"/g, '&quot;') : val;
+                        return `${cssKey}: ${escapedVal}`;
+                    })
+                    .join('; ');
+                element.setAttribute('style', styleString);
+            } else if (typeof value === 'object' && value !== null) {
+                const styleString = Object.entries(value)
+                    .filter(([_, val]) => val !== undefined && val !== null)
+                    .map(([key, val]) => {
+                        // Convert camelCase to kebab-case
+                        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                        // Replace double quotes with &quot;
+                        const escapedVal = typeof val === 'string' ? val.replace(/"/g, '&quot;') : val;
+                        return `${cssKey}: ${escapedVal}`;
+                    })
+                    .join('; ');
+                element.setAttribute('style', styleString);
+            }
+            return;
+        }
+
+        // Handle className/class objects
+        if ((name === 'className' || name === 'class') && typeof value === 'object' && value !== null) {
+            if (Array.isArray(value)) {
+                const classString = value.filter(Boolean).join(' ');
+                element.setAttribute('class', classString);
+            } else {
+                const classString = Object.entries(value)
+                    .filter(([_, enabled]) => enabled)
+                    .map(([className]) => className)
+                    .join(' ');
+                element.setAttribute('class', classString);
+            }
+            return;
+        }
+
         // Convert camelCase to kebab-case for SVG attributes
         const attrName = name === 'className' ? 'class' :
             isSVG ? name.replace(/([A-Z])/g, '-$1').toLowerCase() : name;

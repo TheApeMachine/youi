@@ -1,0 +1,96 @@
+/* Common Layout Patterns */
+
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-md);
+  padding-right: var(--space-md);
+}
+
+@media (min-width: 640px) {
+  .container { max-width: 640px; }
+}
+@media (min-width: 768px) {
+  .container { max-width: 768px; }
+}
+@media (min-width: 1024px) {
+  .container { max-width: 1024px; }
+}
+@media (min-width: 1280px) {
+  .container { max-width: 1280px; }
+}
+
+/* Sidebar Layout */
+.layout-with-sidebar {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .layout-with-sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Stack Layout */
+.stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.stack > * + * {
+  margin-top: var(--space-md);
+}
+
+/* Split Layout */
+.split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.split > * {
+  flex-grow: 1;
+  flex-basis: calc((30rem - 100%) * 999);
+}
+
+/* Center Content */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Cover Layout */
+.cover {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: var(--space-md);
+}
+
+.cover > :first-child:not(.cover-centered) {
+  margin-top: 0;
+}
+
+.cover > :last-child:not(.cover-centered) {
+  margin-bottom: 0;
+}
+
+.cover-centered {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+/* Grid Auto-fit */
+.auto-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(var(--min-column-size, 250px), 1fr)
+  );
+  gap: var(--space-md);
+}

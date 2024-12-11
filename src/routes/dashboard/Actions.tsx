@@ -8,12 +8,12 @@ import { Text } from "@/lib/ui/Text";
 export default () => (
     <List
         zebra
-        background="bg-gradient-vertical"
+        background="gradient-vertical"
         items={[
             <Link href="/chat">
                 <Text icon="mail">Messages</Text>
                 <Badge color="brand-light">
-                    <Text variant="h6" color="highlight">
+                    <Text color="highlight">
                         3
                     </Text>
                 </Badge>
@@ -23,7 +23,7 @@ export default () => (
                     Recommendations
                 </Text>
                 <Badge color="brand-light">
-                    <Text variant="h6" color="highlight">
+                    <Text color="highlight">
                         3
                     </Text>
                 </Badge>
@@ -31,7 +31,7 @@ export default () => (
             <Link href="/dashboard/profile">
                 <Text icon="send">Invitations</Text>
                 <Badge color="brand-light">
-                    <Text variant="h6" color="highlight">
+                    <Text color="highlight">
                         3
                     </Text>
                 </Badge>
@@ -39,7 +39,7 @@ export default () => (
             <Link href="/dashboard/logout">
                 <Text icon="calendar_month">Events</Text>
                 <Badge color="brand-light">
-                    <Text variant="h6" color="highlight">
+                    <Text color="highlight">
                         3
                     </Text>
                 </Badge>

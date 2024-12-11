@@ -1,39 +1,6 @@
-@import url(reveal.css);
-@import url(drawflow.min.css);
-@import url(reset.css);
-@import url(root.css);
-@import url(theme.css);
-@import url(animation.css);
-@import url(dynamic-island.css);
-@import url(datatable.css);
-@import url(dashboard.css);
-@import url(skeleton.css);
-@import url(dialog.css);
-@import url(button.css);
-@import url(lamp.css);
-@import url(monocle.css);
-@import url(animoji.css);
-@import url(toaster.css);
-@import url(circle.css);
-
-div.random-image {
-    background-image: url("https://picsum.photos/1024/768?grayscale&blur=2");
-    background-size: cover;
-    background-position: center;
-    height: 100%;
-}
-
-img {
-    width: 32px;
-    height: 32px;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-button {
-    cursor: pointer;
-
-    * {
-        pointer-events: none;
-    }
-}
+@import './themes/base/variables.css';
+@import './themes/base/components.css'; 
+@import './themes/base/utilities.css';
+@import './layout/grid.css';
+@import './layout/flex.css';
+@import './layout/patterns.css';

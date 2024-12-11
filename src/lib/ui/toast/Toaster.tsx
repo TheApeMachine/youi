@@ -1,6 +1,5 @@
 import { eventBus } from "@/lib/event";
 import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
 import { EventPayload } from "@/lib/event/types";
 import gsap from "gsap";
 
@@ -10,9 +9,8 @@ type ToastEvent = {
     message: string;
 };
 
-export const Toaster = Component({
-    effect: () => {
-        const toaster = document.getElementById("toaster");
+export default () => {
+    const handleMount = (toaster: HTMLElement) => {
         let timeouts: {
             [key: string]: { id: number; startTime: number; remaining: number };
         } = {};
@@ -142,6 +140,7 @@ export const Toaster = Component({
                 });
             }
         });
-    },
-    render: () => jsx("div", { id: "toaster" })
-});
+    };
+
+    return jsx("div", { id: "toaster", onMount: handleMount });
+};

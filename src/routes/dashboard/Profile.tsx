@@ -1,18 +1,23 @@
 import { jsx } from "@/lib/template";
-import { Column, Row } from "@/lib/ui/Flex";
+import { Center, Column, Row } from "@/lib/ui/Flex";
 import Icon from "@/lib/ui/icon/Icon";
+import { Image } from "@/lib/ui/Image";
 import { Link } from "@/lib/ui/Link";
 import { Text } from "@/lib/ui/Text";
 
 export default (user: any) => {
     return (
         <Column background="surface" radius grow>
-            <Column grow>
-                <Text variant="h3" color="highlight">
-                    {user.name}
+            <Center>
+                <Image className="avatar xxl" src={user.ImageURL} alt="Avatar" />
+            </Center>
+
+            <Center grow>
+                <Text variant="h3" color="text-default">
+                    Daniel Owen van Dommelen
                 </Text>
-            </Column>
-            <Row align="end" justify="space-evenly">
+            </Center>
+            <Row align="end" justify="evenly">
                 <Link
                     href="/dashboard/profile"
                     className="accent-button yellow"

@@ -11,6 +11,7 @@ interface FlexProps {
     grow?: boolean;
     pad?: boolean | Unit;
     radius?: boolean | Unit;
+    text?: "left" | "center" | "right";
     className?: string;
 }
 
@@ -24,15 +25,17 @@ export const Flex = async ({
     grow = false,
     pad = false,
     radius = false,
+    text = "left",
     className,
     ...props
 }: FlexProps) => {
-    const gapClass = typeof gap === "boolean" ? `gap-unit` : `gap-${gap}`;
+    const gapClass = typeof gap === "boolean" ? `gap-md` : `gap-${gap}`;
     const alignClass = align ? `align-${align}` : "";
     const justifyClass = justify ? `justify-${justify}` : "";
     const growClass = grow ? "flex-grow" : "";
     const padClass = typeof pad === "boolean" ? "pad-unit" : `pad-${pad}`;
     const backgroundClass = background ? `${background}` : "";
+    const textClass = text ? `text-${text}` : "";
     const radiusClass =
         typeof radius === "boolean" ? "radius-xs" : `radius-${radius}`;
 
@@ -42,7 +45,7 @@ export const Flex = async ({
                 gap ? gapClass : ""
             } ${alignClass} ${justifyClass} ${growClass} ${
                 pad ? padClass : ""
-            } ${backgroundClass} ${radiusClass} ${className}`}
+            } ${backgroundClass} ${radiusClass} ${textClass} ${className}`}
             {...props}
         >
             {children}
@@ -57,6 +60,7 @@ export const Row = async ({
     grow = false,
     pad = false,
     background = "transparent",
+    text = "left",
     radius = false,
     children,
     className,
@@ -68,6 +72,7 @@ export const Row = async ({
     grow?: boolean;
     pad?: boolean | Unit;
     background?: Background;
+    text?: "left" | "center" | "right";
     radius?: boolean | Unit;
     children: JSX.Element;
     className?: string;
@@ -82,6 +87,7 @@ export const Row = async ({
             grow={grow}
             pad={pad}
             radius={radius}
+            text={text}
             className={className}
             {...props}
         >
@@ -97,6 +103,7 @@ export const Column = async ({
     pad = false,
     grow = false,
     background = "transparent",
+    text = "left",
     radius = false,
     children,
     className,
@@ -108,6 +115,7 @@ export const Column = async ({
     pad?: boolean | Unit;
     grow?: boolean;
     background?: Background;
+    text?: "left" | "center" | "right";
     radius?: boolean | Unit;
     children: JSX.Element;
     className?: string;
@@ -122,6 +130,7 @@ export const Column = async ({
             grow={grow}
             background={background}
             radius={radius}
+            text={text}
             className={className}
             {...props}
         >
@@ -135,6 +144,7 @@ export const Center = async ({
     grow = false,
     pad = false,
     radius = false,
+    text = "center",
     className,
     ...props
 }: {
@@ -142,6 +152,7 @@ export const Center = async ({
     grow?: boolean;
     pad?: boolean | Unit;
     radius?: boolean | Unit;
+    text?: "left" | "center" | "right";
     className?: string;
 }) => {
     return (
@@ -151,6 +162,7 @@ export const Center = async ({
             grow={grow}
             pad={pad}
             radius={radius}
+            text={text}
             className={className}
             {...props}
         >

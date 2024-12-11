@@ -68,46 +68,31 @@ export default async () => {
     const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
     return (
-        <Column background="bg-gradient-vertical" radius grow gap>
-            <Row justify="space-between">
-                <Button variant="text">
-                    <Icon icon="arrow_left" />
-                </Button>
-                <Text variant="h3" color="highlight" className="calendar-date">
+        <Column background="gradient-vertical" className="calendar" radius grow gap>
+            <Row justify="between">
+                <Button variant="icon" icon="arrow_left" />
+                <Text variant="h3" color="brand" className="calendar-date">
                     {currentDate.toLocal().toLocaleString(DateTime.DATE_FULL)}
                 </Text>
-                <Button variant="text">
-                    <Icon icon="arrow_right" />
-                </Button>
+                <Button variant="icon" icon="arrow_right" />
             </Row>
             <Row justify="center" gap>
-                <Button variant="icon">
-                    <Icon icon="calendar_month" />
-                </Button>
-                <Button variant="icon">
-                    <Icon icon="calendar_month" />
-                </Button>
-                <Button variant="icon">
-                    <Icon icon="event_note" />
-                </Button>
-                <Button variant="icon">
-                    <Icon icon="today" />
-                </Button>
-                <Button variant="text">
-                    <Text variant="p">Today</Text>
-                </Button>
+                <Button variant="icon" icon="calendar_month" />
+                <Button variant="icon" icon="event_note" />
+                <Button variant="icon" icon="event_note" />
+                <Button variant="icon" icon="today" />
             </Row>
-            <Column>
+            <Column gap>
                 <Row justify="center" gap>
                     {weekdays.map((day) => (
-                        <Row>
-                            <Text variant="p">{day}</Text>
+                        <Row justify="center" text="center" grow>
+                            <Text variant="span" color="text-brand">{day}</Text>
                         </Row>
                     ))}
                 </Row>
-                <Column justify="space-evenly" gap grow>
+                <Column justify="evenly" gap grow>
                     {Array.from({ length: 6 }, (_, weekIndex) => (
-                        <Row justify="space-evenly" gap grow>
+                        <Row justify="evenly" text="center" gap grow>
                             {Array.from({ length: 7 }, (_, dayIndex) => {
                                 const dayNumber = weekIndex * 7 + dayIndex + 1;
                                 let displayDay;
@@ -138,17 +123,18 @@ export default async () => {
                                     isCurrentMonth;
 
                                 return (
-                                    <Text
-                                        variant="p"
-                                        color={
-                                            isCurrentMonth
-                                                ? "highlight"
-                                                : "muted"
-                                        }
-                                        className="day-text"
-                                    >
-                                        {displayDay.toString()}
-                                    </Text>
+                                    <Row justify="center" text="center" grow>
+                                        <Text
+                                            variant="span"
+                                            color={`${isCurrentMonth
+                                                    ? "text-default"
+                                                    : "text-muted"
+                                                }`}
+                                            className="day-text"
+                                        >
+                                            {displayDay.toString()}
+                                        </Text>
+                                    </Row>
                                 );
                             })}
                         </Row>

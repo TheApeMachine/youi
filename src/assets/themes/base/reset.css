@@ -1,6 +1,6 @@
 @font-face {
     font-family: "Inter";
-    src: url("../fonts/Inter-VariableFont.ttf") format("truetype");
+    src: url("../../fonts/Inter-VariableFont.ttf") format("truetype");
     font-weight: 100 900;
     font-style: normal;
     font-display: swap;
@@ -8,7 +8,7 @@
 
 @font-face {
     font-family: "Fjalla One";
-    src: url("../fonts/FjallaOne-Regular.ttf") format("truetype");
+    src: url("../../fonts/FjallaOne-Regular.ttf") format("truetype");
     font-weight: 200 700;
     font-style: normal;
     font-display: swap;
@@ -16,7 +16,7 @@
 
 @font-face {
     font-family: "Material Symbols Rounded";
-    src: url("../fonts/MaterialSymbolsRounded-VariableFont.woff2")
+    src: url("../../fonts/MaterialSymbolsRounded-VariableFont.woff2")
         format("woff2-variations");
     font-weight: 100 700;
     font-style: normal;
@@ -187,6 +187,10 @@ h6 {
     flex: 1;
     width: 100%;
     height: 100%;
+}
+
+.reveal .slides section {
+    padding: 2rem;
 }
 
 .reveal .progress {

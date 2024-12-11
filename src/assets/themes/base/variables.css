@@ -1,0 +1,146 @@
+:root {
+  /* Spacing */
+  --space-xxs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-xxl: 3rem;
+
+  /* Radius */
+  --radius-xxs: var(--space-xxs);
+  --radius-xs: var(--space-xs);
+  --radius-sm: var(--space-sm);
+  --radius-md: var(--space-md);
+  --radius-lg: var(--space-lg);
+  --radius-xl: var(--space-xl);
+  --radius-xxl: var(--space-xxl);
+
+  /* Colors - Raw */
+  --color-primary-50: hsl(250, 100%, 96%);
+  --color-primary-100: hsl(250, 100%, 90%);
+  --color-primary-200: hsl(250, 100%, 85%);
+  --color-primary-300: hsl(250, 100%, 76%);
+  --color-primary-400: hsl(250, 100%, 71%);
+  --color-primary-500: hsl(250, 100%, 66%);
+  --color-primary-600: hsl(250, 100%, 56%);
+  --color-primary-700: hsl(250, 100%, 46%);
+  --color-primary-800: hsl(250, 100%, 36%);
+  --color-primary-900: hsl(250, 100%, 26%);
+
+  --color-white: hsl(0, 0%, 100%);
+  --color-gray-50: hsl(0, 0%, 98%);
+  --color-gray-100: hsl(0, 0%, 96%);
+  --color-gray-200: hsl(0, 0%, 90%);
+  --color-gray-300: hsl(0, 0%, 83%);
+  --color-gray-400: hsl(0, 0%, 64%);
+  --color-gray-500: hsl(0, 0%, 45%);
+  --color-gray-600: hsl(0, 0%, 32%);
+  --color-gray-700: hsl(0, 0%, 25%);
+  --color-gray-800: hsl(0, 0%, 15%);
+  --color-gray-900: hsl(0, 0%, 9%);
+  --color-black: hsl(0, 0%, 0%);
+
+  --color-success-50: hsl(142, 76%, 96%);
+  --color-success-500: hsl(142, 76%, 36%);
+  --color-success-900: hsl(142, 76%, 16%);
+
+  --color-error-50: hsl(0, 84%, 96%);
+  --color-error-500: hsl(0, 84%, 60%);
+  --color-error-900: hsl(0, 84%, 30%);
+
+  --color-warning-50: hsl(48, 100%, 96%);
+  --color-warning-500: hsl(48, 100%, 60%);
+  --color-warning-900: hsl(48, 100%, 30%);
+
+  /* Semantic Colors */
+  --color-bg: var(--color-gray-900);
+  --color-bg-offset: var(--color-gray-800);
+  --color-bg-transparent: hsla(0, 0%, 0%, 0.25);
+  --color-text: var(--color-gray-100);
+  --color-text-offset: var(--color-gray-300);
+  --color-text-muted: var(--color-gray-500);
+  --color-border: var(--color-gray-700);
+  --color-accent: var(--color-primary-500);
+
+  --color-brand: var(--color-primary-500);
+  --color-danger: var(--color-error-500);
+  --color-success: var(--color-success-500);
+
+  --color-selection: hsla(238, 100%, 80%, 0.25);
+
+  --color-red: hsl(0, 100%, 80%);
+  --color-yellow: #fcff99;
+  --color-green: hsl(122, 100%, 80%);
+  --color-blue: hsl(179, 100%, 80%);
+  --color-purple: hsl(238, 100%, 80%);
+  --color-pink: hsl(302, 100%, 80%);
+
+  /* Component Variables */
+  --button-height-sm: 2rem;
+  --button-height-md: 2.5rem;
+  --button-height-lg: 3rem;
+
+  --input-height: 2.5rem;
+  --input-border: 1px solid var(--color-border);
+
+  --card-padding: var(--space-lg);
+  --card-radius: 0.5rem;
+  --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+
+  --button-shadow: 0 1px hsl(0 0% 100% / 0.35) inset,
+    0 -1px hsl(0 0% 0% / 1) inset,
+    0 10px 20px -5px hsl(0 0% 0% / 1);
+  --button-gradient: none;
+  --button-active-shadow: var(--button-shadow);
+  --button-active-gradient: none;
+  --button-hover-transform: translateY(-2px);
+  --button-active-transform: scale(0.95);
+  --button-icon-radius: var(--radius-xxs);
+
+  --gradient: linear-gradient(to right,
+      var(--color-bg),
+      var(--color-bg-offset));
+
+  --gradient-vertical: linear-gradient(to bottom,
+      var(--color-bg-offset),
+      var(--color-bg));
+
+  --surface: var(--color-black);
+  --surface-border: 2px solid transparent;
+  --surface-border-radius: var(--radius-xxs);
+  --surface-shadow: 0 1px hsl(0 0% 100% / 0.35) inset,
+    0 -1px hsl(0 0% 0% / 1) inset, 0 10px 20px -5px hsl(0 0% 0% / 1);
+
+  --ring: 0 0 0 2px;
+
+  /* Animation */
+  --transition-short: 125ms;
+  --transition-medium: 250ms;
+  --transition-long: 500ms;
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --transition-all-short: all var(--transition-short) var(--ease-out);
+  --transition-all-medium: all var(--transition-medium) var(--ease-out);
+  --transition-all-long: all var(--transition-long) var(--ease-out);
+}
+
+/* Dark theme is default */
+:root {
+  color-scheme: dark;
+}
+
+/* Light theme overrides */
+:root[data-theme="light"] {
+  --color-bg: var(--color-gray-100);
+  --color-bg-offset: var(--color-gray-200);
+  --color-text: var(--color-gray-900);
+  --color-text-offset: var(--color-gray-700);
+  --color-text-muted: var(--color-gray-400);
+  --color-border: var(--color-gray-300);
+
+  color-scheme: light;
+}

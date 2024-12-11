@@ -5,29 +5,30 @@ import Icon from "@/lib/ui/icon/Icon";
 interface TextProps {
     id?: string;
     interactive?: boolean;
-    variant?: "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "sub";
-    color?: Color;
+    variant?: "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "sub" | "span" | undefined;
+    color?: string;
     iconColor?: Color;
     icon?: string;
     className?: string;
     children?: string;
+    text?: "left" | "center" | "right";
 }
 
 export const Text = ({
     id,
     interactive,
-    variant = "p",
+    variant,
     color = "fg",
     icon,
     iconColor,
     className = "",
-    children = ""
+    children = "",
+    text = "left"
 }: TextProps) => {
     const props = {
         id,
-        style: `color: var(--${color})`,
-        class: `text text-${variant} ${className}`,
-        "data-interactive": interactive
+        class: `text text-${variant} ${className} text-${text} ${color}`,
+        "data-interactive": interactive,
     };
 
     switch (variant) {
@@ -73,6 +74,13 @@ export const Text = ({
                     {children}
                 </h6>
             );
+        case "p":
+            return (
+                <span {...props}>
+                    {icon && <Icon icon={icon} color={iconColor} />}
+                    {children}
+                </span>
+            );
         case "sub":
             return (
                 <sub {...props}>
@@ -80,12 +88,14 @@ export const Text = ({
                     {children}
                 </sub>
             );
-        default:
+        case "span":
             return (
-                <p {...props}>
+                <span {...props}>
                     {icon && <Icon icon={icon} color={iconColor} />}
                     {children}
-                </p>
+                </span>
             );
+        default:
+            return children;
     }
 };

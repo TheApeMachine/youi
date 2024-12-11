@@ -1,6 +1,6 @@
 import "../../../test/setup";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Layout } from "../Layout";
+import { Layout } from "../HUD";
 import { AuthService } from "@/lib/auth";
 import { createRouter } from "@/lib/router";
 

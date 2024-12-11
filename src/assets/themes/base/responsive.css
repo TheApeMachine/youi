@@ -1,0 +1,86 @@
+@media (max-width: 640px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto auto;
+        grid-template-areas:
+            "profile"
+            "actions"
+            "activity"
+            "metrics"
+            "calendar";
+    }
+
+    .order-sm-1 {
+        order: 1;
+    }
+
+    .order-sm-2 {
+        order: 2;
+    }
+
+    .order-sm-3 {
+        order: 3;
+    }
+
+    .order-sm-4 {
+        order: 4;
+    }
+
+    .order-sm-5 {
+        order: 5;
+    }
+}
+
+@media (max-width: 768px) {
+    .order-md-1 {
+        order: 1;
+    }
+
+    .order-md-2 {
+        order: 2;
+    }
+
+    .order-md-3 {
+        order: 3;
+    }
+
+    .order-md-4 {
+        order: 4;
+    }
+
+    .order-md-5 {
+        order: 5;
+    }
+}
+
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+            "profile profile"
+            "actions calendar"
+            "activity calendar"
+            "metrics calendar";
+    }
+
+    .order-lg-1 {
+        order: 1;
+    }
+
+    .order-lg-2 {
+        order: 2;
+    }
+
+    .order-lg-3 {
+        order: 3;
+    }
+
+    .order-lg-4 {
+        order: 4;
+    }
+
+    .order-lg-5 {
+        order: 5;
+    }
+}

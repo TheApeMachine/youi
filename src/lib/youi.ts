@@ -1,8 +1,8 @@
 import { eventManager } from "@/lib/event";
-import { routerManager } from "./router/manager";
-import { stateManager } from "./state";
-import { initializeDebugContext } from "./debug/context";
-import "@/assets/themes/styles.css";
+import { routerManager } from "@/lib/router/manager";
+import { stateManager } from "@/lib/state";
+import { initializeDebugContext } from "@/lib/debug/context";
+import { themeManager } from "@/lib/theme/manager";
 
 export const YouI = {
     isReady: false,
@@ -13,7 +13,8 @@ export const YouI = {
             await Promise.all([
                 eventManager.init().catch(e => console.error('Event manager init error:', e)),
                 stateManager.init().catch(e => console.error('State manager init error:', e)),
-                routerManager.init().catch(e => console.error('Router init error:', e))
+                routerManager.init().catch(e => console.error('Router init error:', e)),
+                themeManager.init().catch(e => console.error('Theme manager init error:', e))
             ]);
 
             YouI.isReady = true;

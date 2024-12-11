@@ -17,7 +17,7 @@
     --bg-glass: hsl(255, 5%, 15%, 0.5);
     --bg-glass-tint: hsl(0, 0%, 20%, 0.5);
 
-    --brand: hsl(250, 100%, 66%);
+    --brand: #6f52ff;
     --brand-light: hsl(250, 100%, 76%);
     --brand-dark: hsl(250, 100%, 56%);
 
@@ -35,26 +35,22 @@
 
     --important: hsla(0, 66%, 52%, 0.174);
 
-    --red: hsl(0, 100%, 80%);
-    --yellow: #fcff99;
-    --green: hsl(122, 100%, 80%);
+    --red: #ff9999;
+    --yellow: rgb(252, 255, 153);
+    --green: #99ff9c;
     --blue: hsl(179, 100%, 80%);
     --purple: #999cff;
     --pink: hsl(302, 100%, 80%);
     --white: hsl(0, 0%, 98%);
     --black: hsl(0, 0%, 0%);
 
-    --gradient: linear-gradient(
-        to right,
-        var(--bg-glass-tint),
-        var(--bg-glass)
-    );
+    --gradient: linear-gradient(to right,
+            var(--bg-glass-tint),
+            var(--bg-glass));
 
-    --gradient-vertical: linear-gradient(
-        to bottom,
-        var(--bg-glass-tint),
-        var(--bg-glass)
-    );
+    --gradient-vertical: linear-gradient(to bottom,
+            var(--bg-glass-tint),
+            var(--bg-glass));
 
     --shadow-page: rgba(0, 0, 0, 0.08) 0px 0.9px 4px,
         rgba(0, 0, 0, 0.06) 0px 2.6px 8px, rgba(0, 0, 0, 0.05) 0px 5.7px 12px,
@@ -94,19 +90,16 @@
     --transition-time: 0.2s;
     --transition-time-long: 0.5s;
     --transition-all: all var(--transition-time) ease;
-    --appear: appear var(--transition-time-long)
-        cubic-bezier(0.34, 1.56, 0.64, 1);
+    --appear: appear var(--transition-time-long) cubic-bezier(0.34, 1.56, 0.64, 1);
 
     --on: 0;
     --cord: hsl(0, 0%, calc((60 - (var(--on) * 50)) * 1%));
     --stroke: hsl(0, 0%, calc((60 - (var(--on) * 50)) * 1%));
     --shine: hsla(0, 0%, 100%, calc(0.75 - (var(--on) * 0.5)));
     --cap: hsl(0, 0%, calc((40 + (var(--on) * 30)) * 1%));
-    --filament: hsl(
-        45,
-        calc(var(--on) * 80%),
-        calc((25 + (var(--on) * 75)) * 1%)
-    );
+    --filament: hsl(45,
+            calc(var(--on) * 80%),
+            calc((25 + (var(--on) * 75)) * 1%));
 }
 
 body.light {
@@ -117,17 +110,13 @@ body.light {
     --transparent: hsl(0, 0%, 0%, 0);
     --bg-glass: hsl(0, 0%, 98%, 0.5);
     --bg-glass-tint: hsl(0, 0%, 88%, 0.5);
-    --gradient-dark: linear-gradient(
-        to right,
-        var(--bg-glass-tint),
-        var(--bg-glass)
-    );
+    --gradient-dark: linear-gradient(to right,
+            var(--bg-glass-tint),
+            var(--bg-glass));
 
-    --gradient-dark-vertical: linear-gradient(
-        to bottom,
-        var(--bg-glass-tint),
-        var(--bg-glass)
-    );
+    --gradient-dark-vertical: linear-gradient(to bottom,
+            var(--bg-glass-tint),
+            var(--bg-glass));
 }
 
 .bg {
@@ -234,10 +223,8 @@ body.light {
     --is-valid: 0;
     --is-invalid: 0;
     background: linear-gradient(var(--surface), var(--surface)) padding-box,
-        linear-gradient(var(--danger), var(--danger))
-            calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
-        linear-gradient(var(--success), var(--success))
-            calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
+        linear-gradient(var(--danger), var(--danger)) calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
+        linear-gradient(var(--success), var(--success)) calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
         var(--surface);
 
     border: 2px solid transparent;
@@ -292,6 +279,16 @@ body.light {
     overflow-y: auto;
 }
 
+.foldable {
+    overflow: hidden;
+    height: 0;
+    transition: var(--transition-all);
+
+    &.open {
+        height: auto;
+    }
+}
+
 * {
     scrollbar-width: thin;
     scrollbar-color: var(--brand) var(--bg);
@@ -302,6 +299,7 @@ body.light {
     height: var(--xs);
     width: var(--xs);
 }
+
 *::-webkit-scrollbar-track {
     border-radius: var(--xs);
     background-color: var(--bg);

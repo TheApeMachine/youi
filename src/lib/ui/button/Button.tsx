@@ -40,9 +40,9 @@ export default async ({
 }: ButtonProps) => {
     const eventProps = createEventProps("button");
     const baseClass = "button";
-    const variantClass = `${baseClass}--${variant}`;
-    const colorClass = `${baseClass}--${color}`;
-    const sizeClass = `${baseClass}--${size}`;
+    const variantClass = `${baseClass}-${variant}`;
+    const colorClass = `${baseClass}-${color}`;
+    const sizeClass = `${baseClass}-${size}`;
     const classes = [
         baseClass,
         variantClass,

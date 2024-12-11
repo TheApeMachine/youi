@@ -1,9 +1,24 @@
 import { jsx } from "@/lib/template";
+import { Dropdown } from "@/lib/ui/dropdown/Dropdown";
+import { themeManager } from "@/lib/theme/manager";
+import { eventBus } from "@/lib/event";
 
-export const Header = ({ children }: { children: JSX.Element }) => {
+export const Header = () => {
+    const handleThemeChange = (value: string) => {
+        eventBus.publish("theme", "theme:change", value);
+    };
+
     return (
         <header>
-            {children}
+            <Dropdown options={[
+                { label: "Plastic Fantastic", value: "base" },
+                { label: "Neumorphism", value: "neumorphic" },
+                { label: "Glassmorphism", value: "glassmorphic" },
+                { label: "Soft UI", value: "softui" },
+                { label: "Neo-Brutalism", value: "neobrutalism" },
+            ]} onChange={handleThemeChange}>
+                Layout
+            </Dropdown>
         </header>
     );
 };

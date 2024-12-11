@@ -3,6 +3,7 @@ import { EventPayload } from '@/lib/event/types';
 import { AuthService } from '@/lib/auth';
 import gsap from 'gsap';
 import { Flip } from 'gsap/Flip';
+import HUD from '../ui/layout/HUD';
 
 gsap.registerPlugin(Flip);
 
@@ -217,20 +218,32 @@ export const RouterManager = () => {
         });
     };
 
+    const waitForReady = async (maxAttempts = 5) => {
+        let attempts = 0;
+        while (attempts < maxAttempts && !(window as any).youi?.isReady) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+            console.log(`Waiting for system ready... attempt ${attempts}`);
+        }
+        return (window as any).youi?.isReady;
+    };
+
     const navigate = async (path: string) => {
         console.log("Navigating to", path);
         state.isNavigating = true;
         try {
-            // Check authentication for protected routes
-            const isPublicRoute = publicRoutes.some(route => path.startsWith(route));
-            const isAuthenticated = await AuthService.isAuthenticated();
+            const isReady = await waitForReady();
+            
+            if (isReady) {
+                // Only do auth checks if system is ready
+                const isPublicRoute = publicRoutes.some(route => path.startsWith(route));
+                const isAuthenticated = await AuthService.isAuthenticated();
 
-            if (!isPublicRoute && !isAuthenticated) {
-                // Redirect to login if trying to access protected route while not authenticated
-                path = '/login';
-            } else if (path === '/login' && isAuthenticated) {
-                // Redirect to home if trying to access login while authenticated
-                path = '/';
+                if (!isPublicRoute && !isAuthenticated) {
+                    path = '/login';
+                } else if (path === '/login' && isAuthenticated) {
+                    path = '/';
+                }
             }
 
             // Parse the path to handle dynamic islands
@@ -249,9 +262,9 @@ export const RouterManager = () => {
             }
         } catch (error) {
             console.error('Error in navigate:', error);
+        } finally {
             state.isNavigating = false;
         }
-        state.isNavigating = false;
     };
 
     const init = async () => {
@@ -313,6 +326,10 @@ export const RouterManager = () => {
             });
         }
 
+        // Render the HUD
+        const hud = await HUD();
+        document.body.appendChild(hud);
+
         // Setup event listeners
         eventManager.subscribe('navigate', async (payload: EventPayload) => {
             if (!state.isNavigating && payload.data) {
@@ -333,4 +350,4 @@ export const RouterManager = () => {
 };
 
 // Export singleton instance
-export const routerManager = RouterManager(); 
+export const routerManager = RouterManager();

@@ -1,0 +1,141 @@
+:root {
+    /* Spacing */
+    --space-xxs: 0.25rem;
+    --space-xs: 0.5rem;
+    --space-sm: 0.75rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-xxl: 3rem;
+
+    /* Radius */
+    --radius-xxs: 4px;
+    --radius-xs: 6px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-xxl: 32px;
+
+    /* Colors - Raw */
+    --color-primary-50: hsl(325, 90%, 96%);
+    --color-primary-100: hsl(325, 90%, 90%);
+    --color-primary-200: hsl(325, 90%, 85%);
+    --color-primary-300: hsl(325, 90%, 76%);
+    --color-primary-400: hsl(325, 90%, 71%);
+    --color-primary-500: hsl(325, 90%, 66%);
+    --color-primary-600: hsl(325, 90%, 56%);
+    --color-primary-700: hsl(325, 90%, 46%);
+    --color-primary-800: hsl(325, 90%, 36%);
+    --color-primary-900: hsl(325, 90%, 26%);
+
+    --color-white: hsl(0, 0%, 100%);
+    --color-gray-50: hsl(0, 0%, 98%);
+    --color-gray-100: hsl(0, 0%, 95%);
+    --color-gray-200: hsl(0, 0%, 90%);
+    --color-gray-300: hsl(0, 0%, 85%);
+    --color-gray-400: hsl(0, 0%, 75%);
+    --color-gray-500: hsl(0, 0%, 65%);
+    --color-gray-600: hsl(0, 0%, 45%);
+    --color-gray-700: hsl(0, 0%, 35%);
+    --color-gray-800: hsl(0, 0%, 25%);
+    --color-gray-900: hsl(0, 0%, 15%);
+    --color-black: hsl(0, 0%, 5%);
+
+    --color-success-50: hsl(142, 100%, 96%);
+    --color-success-500: hsl(142, 100%, 50%);
+    --color-success-900: hsl(142, 100%, 30%);
+
+    --color-error-50: hsl(0, 100%, 96%);
+    --color-error-500: hsl(0, 100%, 65%);
+    --color-error-900: hsl(0, 100%, 35%);
+
+    --color-warning-50: hsl(48, 100%, 96%);
+    --color-warning-500: hsl(48, 100%, 50%);
+    --color-warning-900: hsl(48, 100%, 30%);
+
+    /* Semantic Colors */
+    --color-bg: #ffffff;
+    --color-bg-offset: #f7f3f3;
+    --color-bg-transparent: #ffffff;
+    --color-text: var(--color-black);
+    --color-text-offset: var(--color-gray-800);
+    --color-text-muted: var(--color-gray-600);
+    --color-border: var(--color-black);
+    --color-accent: var(--color-primary-600);
+
+    --color-brand: var(--color-primary-500);
+    --color-danger: var(--color-error-500);
+    --color-success: var(--color-success-500);
+
+    --color-selection: hsla(238, 100%, 80%, 0.25);
+
+    --color-red: hsl(0, 100%, 67%);
+    --color-yellow: hsl(48, 100%, 67%);
+    --color-green: hsl(142, 100%, 67%);
+    --color-blue: hsl(200, 100%, 67%);
+    --color-purple: hsl(280, 100%, 67%);
+    --color-pink: hsl(325, 100%, 67%);
+
+    /* Component Variables */
+    --button-height-sm: 2.25rem;
+    --button-height-md: 2.75rem;
+    --button-height-lg: 3.25rem;
+
+    --input-height: 2.75rem;
+    --input-border: 2px solid var(--color-black);
+
+    --card-padding: var(--space-lg);
+    --card-radius: 0px;
+    --card-shadow: 4px 4px 0 0 var(--color-black);
+
+    --button-shadow: 4px 4px 0 0 var(--color-black);
+    --button-gradient: none;
+    --button-active-shadow: 2px 2px 0 0 var(--color-black);
+    --button-active-gradient: none;
+    --button-hover-transform: translate(-2px, -2px);
+    --button-active-transform: translate(2px, 2px);
+
+    --gradient: none;
+    --gradient-vertical: none;
+
+    --surface: var(--color-bg);
+    --surface-border: 2px solid var(--color-black);
+    --surface-border-radius: 0px;
+    --surface-shadow: 4px 4px 0 0 var(--color-black);
+
+    --ring: 0 0 0 2px var(--color-black);
+
+    /* Animation */
+    --transition-short: 50ms;
+    --transition-medium: 100ms;
+    --transition-long: 200ms;
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-in: cubic-bezier(0.8, 0.2, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --transition-all-short: all var(--transition-short) var(--ease-out);
+    --transition-all-medium: all var(--transition-medium) var(--ease-out);
+    --transition-all-long: all var(--transition-long) var(--ease-out);
+
+    /* Add a blur effect for the glassmorphic style */
+    --surface-blur: none;
+}
+
+/* Dark theme is default */
+:root {
+    color-scheme: dark;
+}
+
+/* Light theme overrides */
+:root[data-theme="light"] {
+    --color-bg: #ffffff;
+    --color-bg-offset: #f7f3f3;
+    --color-bg-transparent: #ffffff;
+    --color-text: var(--color-black);
+    --color-text-offset: var(--color-gray-800);
+    --color-text-muted: var(--color-gray-600);
+    --color-border: var(--color-black);
+
+    color-scheme: light;
+}

@@ -86,32 +86,33 @@
     --input-border: none;
 
     --card-padding: var(--space-lg);
-    --card-radius: 16px;
-    --card-shadow: 6px 6px 12px #c8cbd0,
-                   -6px -6px 12px #ffffff;
+    --card-radius: var(--radius-md);
+    --card-shadow: inset 8px 8px 8px #dfe0e4, inset -4px -4px 8px #fdffff;
 
-    --button-shadow: 6px 6px 12px #c8cbd0,
-                    -6px -6px 12px #ffffff;
+    --button-shadow: 6px 6px 12px #c8cbd0, -6px -6px 12px #ffffff;
     --button-gradient: linear-gradient(145deg, #f0f3f9, #dde0e6);
     --button-active-shadow: inset 6px 6px 12px #c8cbd0,
-                           inset -6px -6px 12px #ffffff;
+        inset -6px -6px 12px #ffffff;
     --button-active-gradient: linear-gradient(145deg, #dde0e6, #f0f3f9);
     --button-hover-transform: translateY(-1px);
     --button-active-transform: scale(0.98);
 
-    --gradient: linear-gradient(145deg, 
-        rgba(255, 255, 255, 0.4) 0%, 
-        rgba(255, 255, 255, 0.1) 100%);
-
-    --gradient-vertical: linear-gradient(to bottom,
+    --gradient: linear-gradient(
+        145deg,
         rgba(255, 255, 255, 0.4) 0%,
-        rgba(255, 255, 255, 0.1) 100%);
+        rgba(255, 255, 255, 0.1) 100%
+    );
+
+    --gradient-vertical: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(255, 255, 255, 0.1) 100%
+    );
 
     --surface: var(--color-bg);
     --surface-border: none;
     --surface-border-radius: 16px;
-    --surface-shadow: 6px 6px 12px #c8cbd0,
-                     -6px -6px 12px #ffffff;
+    --surface-shadow: 6px 6px 12px #c8cbd0, -6px -6px 12px #ffffff;
 
     --ring: 0 0 0 2px var(--color-primary-200);
 

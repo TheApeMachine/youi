@@ -87,25 +87,36 @@
 
     --card-padding: var(--space-lg);
     --card-radius: var(--radius-lg);
-    --card-shadow: var(--neu-shadow-medium);
+    --card-shadow: inset 8.71px 8.71px 9px #dfe0e4,
+        inset -8.71px -8.71px 9px #fdffff;
 
     --button-shadow: -2px -7px 10px #f1f1f1, 4px 6px 10px #d4d7da;
-    --button-gradient: linear-gradient(45deg, rgb(228, 232, 236) 0%, rgb(234 234 234) 100%);
-    --button-active-shadow: -2px -7px 10px #d4d7da,
-        4px 6px 10px #f1f1f1,
-        inset -2px -7px 10px #f1f1f1,
-        inset 4px 6px 10px #d4d7da;
-    --button-active-gradient: linear-gradient(45deg, rgb(218, 221, 224) 0%, rgb(241, 241, 241) 100%);
+    --button-gradient: linear-gradient(
+        45deg,
+        rgb(228, 232, 236) 0%,
+        rgb(234 234 234) 100%
+    );
+    --button-active-shadow: -2px -7px 10px #d4d7da, 4px 6px 10px #f1f1f1,
+        inset -2px -7px 10px #f1f1f1, inset 4px 6px 10px #d4d7da;
+    --button-active-gradient: linear-gradient(
+        45deg,
+        rgb(218, 221, 224) 0%,
+        rgb(241, 241, 241) 100%
+    );
     --button-hover-transform: translateY(0px);
     --button-active-transform: scale(0.95);
 
-    --gradient: linear-gradient(to right,
-            var(--color-bg),
-            var(--color-bg-offset));
+    --gradient: linear-gradient(
+        to right,
+        var(--color-bg),
+        var(--color-bg-offset)
+    );
 
-    --gradient-vertical: linear-gradient(to bottom,
-            var(--color-bg-offset),
-            var(--color-bg));
+    --gradient-vertical: linear-gradient(
+        to bottom,
+        var(--color-bg-offset),
+        var(--color-bg)
+    );
 
     --surface: var(--color-bg);
     --surface-border: none;

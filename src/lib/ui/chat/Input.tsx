@@ -139,6 +139,9 @@ export const Input = () => {
                 </ButtonGroup>
             </Row>
             <Row justify="between" grow>
+                <Button variant="icon" color="muted" icon="add_reaction" />
+                <Button variant="icon" color="muted" icon="mic" />
+                <Button variant="icon" color="muted" icon="attach_file" />
                 <Row id="lexical-editor" contentEditable grow></Row>
                 <Button variant="icon" color="muted" icon="send" />
             </Row>

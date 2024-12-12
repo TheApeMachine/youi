@@ -7,6 +7,7 @@ import { Text } from "@/lib/ui/Text";
 import { Message as MessageType } from "@/types/mongo/Message";
 import { from } from "@/lib/mongo/query";
 import { User } from "@/types/mongo/User";
+import { Avatar } from "../profile/Avatar";
 
 export const Message = async (props: { message: MessageType }) => {
     const user = (await from("User")
@@ -51,7 +52,13 @@ export const Message = async (props: { message: MessageType }) => {
     };
 
     return (
-        <Column background="bg">
+        <Column className="message" pad="md" background="bg">
+            <Avatar
+                src={props.message.User.ImageURL + "?w=100"}
+                size="sm"
+                radius="sm"
+                background="bg-offset"
+            />
             <Text variant="span" color="text-primary">
                 {user?.[0]?.FirstName || "Unknown User"}
             </Text>

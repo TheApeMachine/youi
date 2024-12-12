@@ -33,53 +33,48 @@ export default async () => {
             console.log(payload);
             if (!payload.data) return;
 
-            from("Chat")
-                .where({ GroupId: payload.data })
+            from("Message")
+                .include("Chat")
+                .whereArrayField("ChatId", "in", chatIds)
+                .sortBy("Created", "desc")
+                .limit(20)
                 .exec()
-                .then((chats) => {
-                    if (chats && chats.length > 0) {
-                        const chat = chats[0];
-                        // Then get messages for this chat
-                        from("Message")
-                            .where({ ChatId: chat._id })
-                            .sortBy("Created", "desc")
-                            .limit(20)
-                            .exec()
-                            .then((messages) => {
-                                console.log(messages);
-                                const chatMessages =
-                                    document.getElementById("chat-messages");
-                                if (chatMessages) {
-                                    chatMessages.innerHTML = "";
-                                    messages.forEach(async (message) => {
-                                        chatMessages.appendChild(
-                                            await jsx(Message, { message })
-                                        );
-                                    });
-                                }
-                            });
-                    }
-                });
-
-            from("User")
-                .whereArrayField("Groups", { _id: payload.data })
-                .exec()
-                .then((users) => {
-                    const groupMemberList =
-                        document.getElementById("group-members");
-                    if (groupMemberList) {
-                        groupMemberList.innerHTML = "";
-                        users.forEach(async (groupUser: User) => {
-                            groupMemberList.appendChild(
-                                await jsx(Profile, { groupUser })
+                .then((messages) => {
+                    console.log(messages);
+                    const chatMessages =
+                        document.getElementById("chat-messages");
+                    if (chatMessages) {
+                        chatMessages.innerHTML = "";
+                        messages.forEach(async (message) => {
+                            chatMessages.appendChild(
+                                await jsx(Message, { message })
                             );
                         });
                     }
                 });
 
+            from("Group")
+                .where({ _id: payload.data })
+                .include("User")
+                .exec()
+                .then((groups) => {
+                    if (groups && groups.length > 0) {
+                        const group = groups[0];
+                        const groupMemberList =
+                            document.getElementById("group-members");
+                        if (groupMemberList && group.user) {
+                            groupMemberList.innerHTML = "";
+                            group.user.forEach(async (groupUser: User) => {
+                                groupMemberList.appendChild(
+                                    await jsx(Profile, { groupUser })
+                                );
+                            });
+                        }
+                    }
+                });
+
             const { provider, ydoc } = P2P();
             if (!provider) return;
-
             messaging(provider, ydoc);
         }
     );
@@ -132,6 +127,8 @@ export default async () => {
                 <Column
                     id="chat-messages"
                     direction="column"
+                    pad="xl"
+                    gap="xl"
                     grow
                     fullHeight
                     scrollable

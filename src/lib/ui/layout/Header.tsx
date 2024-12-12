@@ -10,14 +10,17 @@ export const Header = () => {
 
     return (
         <header>
-            <Dropdown options={[
-                { label: "Plastic Fantastic", value: "base" },
-                { label: "Neumorphism", value: "neumorphic" },
-                { label: "Glassmorphism", value: "glassmorphic" },
-                { label: "Soft UI", value: "softui" },
-                { label: "Neo-Brutalism", value: "neobrutalism" },
-                { label: "Cyberpunk", value: "cyberpunk" },
-            ]} onChange={handleThemeChange}>
+            <Dropdown
+                options={[
+                    { label: "Plastic Fantastic", value: "base" },
+                    { label: "Neumorphism", value: "neumorphic" },
+                    { label: "Glassmorphism", value: "glassmorphic" },
+                    { label: "Soft UI", value: "softui" },
+                    { label: "Neo-Brutalism", value: "neobrutalism" },
+                    { label: "Cyberpunk", value: "cyberpunk" }
+                ]}
+                onChange={handleThemeChange}
+            >
                 Layout
             </Dropdown>
         </header>

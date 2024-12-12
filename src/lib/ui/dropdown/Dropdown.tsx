@@ -1,8 +1,8 @@
-import { jsx } from '@/lib/template';
-import { stateManager } from '@/lib/state';
-import Button from '@/lib/ui/button/Button';
-import { List, ListItem } from '@/lib/ui/list/List';
-import { Background, Unit } from '@/lib/ui/types';
+import { jsx } from "@/lib/template";
+import { stateManager } from "@/lib/state";
+import Button from "@/lib/ui/button/Button";
+import { List, ListItem } from "@/lib/ui/list/List";
+import { Background, Unit } from "@/lib/ui/types";
 
 interface DropdownOption {
     label: string;
@@ -31,7 +31,7 @@ export const Dropdown = async ({
     children,
     options,
     onChange,
-    placeholder = 'Select...',
+    placeholder = "Select...",
     background,
     gap,
     pad,
@@ -48,31 +48,39 @@ export const Dropdown = async ({
 
     const classes = {
         dropdown: true,
-        [`gap-${gap === true ? 'md' : gap}`]: gap,
-        [`pad-${pad === true ? 'md' : pad}`]: pad,
-        [`radius-${radius === true ? 'md' : radius}`]: radius,
+        [`gap-${gap === true ? "md" : gap}`]: gap,
+        [`pad-${pad === true ? "md" : pad}`]: pad,
+        [`radius-${radius === true ? "md" : radius}`]: radius,
         [background as string]: background,
         [className]: className
     };
 
     const handleToggle = async () => {
-        console.log('handleToggle');
+        console.log("handleToggle");
         const currentState = await stateManager.get<DropdownState>(stateKey);
         await stateManager.update(stateKey, { isOpen: !currentState?.isOpen });
+        const dropdownContent = document.querySelector(
+            `[data-dropdown-id="${dropdownId}"]`
+        );
+        if (dropdownContent) {
+            dropdownContent.classList.toggle("open", state.isOpen);
+        }
     };
 
     const handleOptionClick = async (value: string) => {
-        console.log('handleOptionClick', value);
+        console.log("handleOptionClick", value);
         onChange(value);
         await stateManager.update(stateKey, { isOpen: false });
     };
 
     // Subscribe to state changes
     stateManager.subscribe(stateKey, (state: DropdownState) => {
-        console.log('stateManager.subscribe', state);
-        const dropdownContent = document.querySelector(`[data-dropdown-id="${dropdownId}"]`);
+        console.log("stateManager.subscribe", state);
+        const dropdownContent = document.querySelector(
+            `[data-dropdown-id="${dropdownId}"]`
+        );
         if (dropdownContent) {
-            dropdownContent.classList.toggle('open', state.isOpen);
+            dropdownContent.classList.toggle("open", state.isOpen);
         }
     });
 
@@ -92,10 +100,7 @@ export const Dropdown = async ({
                     data-dropdown-id={dropdownId}
                 >
                     {options.map(({ label, value }) => (
-                        <ListItem
-                            onClick={() => handleOptionClick(value)}
-                            pad
-                        >
+                        <ListItem onClick={() => handleOptionClick(value)} pad>
                             {label}
                         </ListItem>
                     ))}

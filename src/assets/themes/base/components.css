@@ -279,6 +279,10 @@
                 &.material-symbols-rounded {
                     color: var(--color-text-muted);
                 }
+
+                &:first-child {
+                    flex: 0;
+                }
             }
         }
 
@@ -389,4 +393,11 @@
             border-bottom-right-radius: var(--radius-xxs);
         }
     }
+}
+
+.message {
+    background: var(--color-bg-offset);
+    box-shadow: var(--card-shadow);
+    border-radius: var(--card-radius);
+    transition: all 0.5s ease;
 }

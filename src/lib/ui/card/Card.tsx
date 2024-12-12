@@ -1,10 +1,10 @@
 import { jsx } from "@/lib/template";
-import { Flex } from "../Flex";
+import { Column } from "../flex/Flex";
 
 export default async ({ children }: { children: JSX.Element }) => {
     return (
-        <Flex className="card" gap>
+        <Column className="card" pad="md" gap="md">
             {children}
-        </Flex>
+        </Column>
     );
 };

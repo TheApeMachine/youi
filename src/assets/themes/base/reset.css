@@ -191,10 +191,6 @@ h6 {
     height: 100%;
 }
 
-.reveal .slides section {
-    padding: 2rem;
-}
-
 .reveal .progress {
     position: absolute;
     display: none;

@@ -14,7 +14,7 @@ export type VNode =
 // Updated VElement interface
 export interface VElement {
     type: string | FunctionComponent | ComponentClass | FragmentType;
-    props: Props | (null & { key?: string | number });
+    props: Props | null;
     children: VNode[];
 }
 
@@ -54,9 +54,7 @@ export interface PropsWithChildren extends Props {
 export type FunctionComponent = (props: PropsWithChildren) => VNode;
 
 // Component class type
-export interface ComponentClass {
-    new(props: PropsWithChildren): Component;
-}
+export type ComponentClass = new (props: PropsWithChildren) => Component;
 
 // JSX namespace for TypeScript support
 declare global {
@@ -87,11 +85,13 @@ export class Component {
 
     constructor(props: PropsWithChildren) {
         this.props = props;
-        this.stateKey = crypto.randomUUID(); // Unique key for this component's state
-        // Initialize state if initialState method is defined
+        this.stateKey = crypto.randomUUID();
+    }
+
+    async init() {
         if (typeof (this as any).initialState === "function") {
             const initialState = (this as any).initialState();
-            stateManager.set(this.stateKey, initialState);
+            await stateManager.set(this.stateKey, initialState);
         }
     }
 
@@ -115,7 +115,7 @@ export const jsx = (
     props: Props | null,
     ...children: VNode[]
 ): VNode => {
-    const { key, ...restProps } = props || {};
+    const { key, ...restProps } = props ?? {};
     return {
         type,
         props: { ...restProps, key },
@@ -125,7 +125,7 @@ export const jsx = (
 
 const nodeToVNode = (node: ChildNode): VNode => {
     if (node.nodeType === Node.TEXT_NODE) {
-        return node.textContent || "";
+        return node.textContent ?? "";
     }
     if (node instanceof Element) {
         return jsx(
@@ -171,6 +171,102 @@ export const render = async (
     }
 };
 
+const handlePromise = async (vnode: Promise<VNode>, dom: Node | null) => {
+    const fallbackVNode = jsx(
+        Suspense,
+        { fallback: jsx("div", null, "Loading...") },
+        null,
+    );
+    const fallbackDom = await diff(dom, fallbackVNode);
+
+    return vnode
+        .then(async resolvedVNode => {
+            const finalDom = await diff(fallbackDom, resolvedVNode);
+            if (fallbackDom.parentNode) {
+                fallbackDom.parentNode.replaceChild(finalDom, fallbackDom);
+            }
+            return finalDom;
+        })
+        .catch(error => {
+            console.error("Error during Suspense:", error);
+            return document.createTextNode("Error loading component");
+        });
+};
+
+const handleStringOrNumber = async (vnode: string | number, dom: Node | null) => {
+    // Text node
+    const newText = String(vnode);
+    if (dom && dom.nodeType === Node.TEXT_NODE) {
+        if (dom.textContent !== newText) {
+            dom.textContent = newText;
+        }
+        return dom;
+    } else {
+        const newDom = document.createTextNode(newText);
+        if (dom?.parentNode) {
+            dom.parentNode.replaceChild(newDom, dom);
+        }
+        return newDom;
+    }
+};
+
+const handleArray = async (vnode: VNode[], dom: Node | null) => {
+    const fragment = document.createDocumentFragment();
+    for (const child of vnode) {
+        fragment.appendChild(await diff(null, child));
+    }
+    if (dom?.parentNode) {
+        dom.parentNode.replaceChild(fragment, dom);
+    }
+    return fragment;
+};
+
+const handleFunction = async (element: VElement, dom: Node | null) => {
+    // Component
+    let componentVNode: VNode;
+
+    if (typeof element.type === "function" &&
+        (element.type as ComponentClass).prototype?.render) {
+        // Class-based component
+        const componentInstance = new (element.type as ComponentClass)({
+            ...element.props,
+            children: element.children,
+        });
+
+        const stateKey = componentInstance.stateKey;
+
+        // Subscribe to state changes
+        stateManager.subscribe(stateKey, async () => {
+            // Re-render when state changes
+            const newVNode = componentInstance.render();
+            const newDom = await diff(dom, newVNode);
+            if (dom?.parentNode && newDom !== dom) {
+                dom.parentNode.replaceChild(newDom, dom);
+            }
+        });
+
+        componentVNode = componentInstance.render();
+    } else {
+        // Functional component
+        componentVNode = (element.type as FunctionComponent)({
+            ...element.props,
+            children: element.children,
+        });
+    }
+    return await diff(dom, componentVNode);
+};
+
+const handleFragment = async (element: VElement, dom: Node | null) => {
+    // Fragment
+    const fragment = document.createDocumentFragment();
+    for (const child of element.children) {
+        fragment.appendChild(await diff(null, child));
+    }
+    if (dom?.parentNode) {
+        dom.parentNode.replaceChild(fragment, dom);
+    }
+    return fragment;
+};
 
 // Diffing and patching function
 const diff = async (dom: Node | null, vnode: VNode): Promise<Node> => {
@@ -180,121 +276,45 @@ const diff = async (dom: Node | null, vnode: VNode): Promise<Node> => {
         }
 
         if (vnode instanceof Promise) {
-            const fallbackVNode = jsx(
-                Suspense,
-                { fallback: jsx("div", null, "Loading...") },
-                null,
-            );
-            const fallbackDom = await diff(dom, fallbackVNode);
-
-            return vnode
-                .then(async resolvedVNode => {
-                    const finalDom = await diff(fallbackDom, resolvedVNode);
-                    if (fallbackDom.parentNode) {
-                        fallbackDom.parentNode.replaceChild(finalDom, fallbackDom);
-                    }
-                    return finalDom;
-                })
-                .catch(error => {
-                    console.error("Error during Suspense:", error);
-                    return document.createTextNode("Error loading component");
-                });
+            return await handlePromise(vnode, dom);
         }
 
         if (typeof vnode === "string" || typeof vnode === "number") {
-            // Text node
-            const newText = String(vnode);
-            if (dom && dom.nodeType === Node.TEXT_NODE) {
-                if (dom.textContent !== newText) {
-                    dom.textContent = newText;
-                }
-                return dom;
-            } else {
-                const newDom = document.createTextNode(newText);
-                if (dom && dom.parentNode) {
-                    dom.parentNode.replaceChild(newDom, dom);
-                }
-                return newDom;
-            }
+            return await handleStringOrNumber(vnode, dom);
         }
 
         if (Array.isArray(vnode)) {
-            const fragment = document.createDocumentFragment();
-            for (const child of vnode) {
-                fragment.appendChild(await diff(null, child));
-            }
-            if (dom && dom.parentNode) {
-                dom.parentNode.replaceChild(fragment, dom);
-            }
-            return fragment;
+            return await handleArray(vnode, dom);
         }
 
-        const element = vnode as VElement;
+        const element = vnode;
 
         if (typeof element.type === "function") {
-            // Component
-            let componentVNode: VNode;
-
-            if (element.type.prototype && element.type.prototype.render) {
-                // Class-based component
-                const componentInstance = new (element.type as ComponentClass)({
-                    ...element.props,
-                    children: element.children,
-                });
-
-                const stateKey = componentInstance.stateKey;
-
-                // Subscribe to state changes
-                stateManager.subscribe(stateKey, async () => {
-                    // Re-render when state changes
-                    const newVNode = componentInstance.render();
-                    const newDom = await diff(dom, newVNode);
-                    if (dom && dom.parentNode && newDom !== dom) {
-                        dom.parentNode.replaceChild(newDom, dom);
-                    }
-                });
-
-                componentVNode = componentInstance.render();
-            } else {
-                // Functional component
-                componentVNode = (element.type as FunctionComponent)({
-                    ...element.props,
-                    children: element.children,
-                });
-            }
-            return await diff(dom, componentVNode);
+            return await handleFunction(element, dom);
         }
 
         if (element.type === Fragment) {
-            // Fragment
-            const fragment = document.createDocumentFragment();
-            for (const child of element.children) {
-                fragment.appendChild(await diff(null, child));
-            }
-            if (dom && dom.parentNode) {
-                dom.parentNode.replaceChild(fragment, dom);
-            }
-            return fragment;
+            return await handleFragment(element, dom);
         }
 
         // Element node
         if (
             !dom ||
             !(dom instanceof Element) ||
-            dom.nodeName.toLowerCase() !== (element.type as string).toLowerCase()
+            dom.nodeName.toLowerCase() !== element.type.toLowerCase()
         ) {
             // Create new DOM node
             const newDom = await createElement(element);
-            if (dom && dom.parentNode) {
+            if (dom?.parentNode) {
                 dom.parentNode.replaceChild(newDom, dom);
             }
             return newDom;
         } else {
             // Update existing DOM node
-            updateProps(dom as Element, element.props || {}, (dom as any)._prevProps || {});
+            updateProps(dom, element.props ?? {}, (dom as any)._prevProps || {});
             (dom as any)._prevProps = element.props;
             // Diff children
-            await diffChildren(dom as Element, element.children);
+            await diffChildren(dom, element.children);
             return dom;
         }
     } catch (error) {
@@ -313,7 +333,7 @@ const createElement = async (vnode: VElement): Promise<Element> => {
     } else {
         element = document.createElement(type as string);
     }
-    updateProps(element, props || {});
+    updateProps(element, props ?? {});
     handleSpecialProps(element, props);
     for (const child of children) {
         element.appendChild(await diff(null, child));
@@ -351,7 +371,7 @@ const updateProps = (
 const setProp = (element: Element, name: string, value: any) => {
     if (name.startsWith("on") && typeof value === "function") {
         // Use the new event delegation system by adding the function to the attribute
-        element.setAttribute(name, value as any);
+        element.setAttribute(name, value);
         initializeEventType(name.substring(2).toLowerCase());
         return;
     }
@@ -469,36 +489,44 @@ const handleSpecialProps = (element: Element, props?: Props | null) => {
     }
 };
 
-// Diff and update children
-const diffChildren = async (parent: Element, vchildren: VNode[]) => {
-    const domChildren = Array.from(parent.childNodes) as Element[];
+// Categorize nodes by key
+const categorizeNodes = (nodes: Element[]) => {
+    const keyedNodes = new Map<string | number, Element>();
+    const nonKeyedNodes: Element[] = [];
 
+    nodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const key = node.getAttribute("key");
+            if (key !== null) {
+                keyedNodes.set(key, node);
+            } else {
+                nonKeyedNodes.push(node);
+            }
+        }
+    });
+    return { keyedNodes, nonKeyedNodes };
+};
+
+// Categorize VNodes by key
+const categorizeVNodes = (vnodes: VNode[]) => {
     const keyedVNodes = new Map<string | number, VNode>();
-    const keyedDomNodes = new Map<string | number, Element>();
     const nonKeyedVNodes: VNode[] = [];
-    const nonKeyedDomNodes: Element[] = [];
 
-    // Categorize VNodes into keyed and non-keyed
-    for (const vnode of vchildren) {
+    for (const vnode of vnodes) {
         if (isVElement(vnode) && vnode.props?.key != null) {
             keyedVNodes.set(vnode.props.key, vnode);
         } else {
             nonKeyedVNodes.push(vnode);
         }
     }
+    return { keyedVNodes, nonKeyedVNodes };
+};
 
-    // Categorize existing DOM nodes into keyed and non-keyed
-    domChildren.forEach((domChild) => {
-        if (domChild.nodeType === Node.ELEMENT_NODE) {
-            const key = domChild.getAttribute("key");
-            if (key !== null) {
-                keyedDomNodes.set(key, domChild as Element);
-            } else {
-                nonKeyedDomNodes.push(domChild as Element);
-            }
-        }
-    });
-
+// Diff and update children
+const diffChildren = async (parent: Element, vchildren: VNode[]) => {
+    const domChildren = Array.from(parent.childNodes) as Element[];
+    const { keyedNodes: keyedDomNodes, nonKeyedNodes: nonKeyedDomNodes } = categorizeNodes(domChildren);
+    const { keyedVNodes, nonKeyedVNodes } = categorizeVNodes(vchildren);
 
     // Update keyed VNodes
     for (const [key, vnode] of keyedVNodes) {
@@ -514,7 +542,6 @@ const diffChildren = async (parent: Element, vchildren: VNode[]) => {
         }
     }
 
-
     // Update non-keyed VNodes
     for (let i = 0; i < nonKeyedVNodes.length; i++) {
         const vnode = nonKeyedVNodes[i];
@@ -527,7 +554,7 @@ const diffChildren = async (parent: Element, vchildren: VNode[]) => {
         }
     }
 
-    // Remove any remaining DOM nodes that are not present in VNodes
+    // Remove remaining DOM nodes
     keyedDomNodes.forEach((domChild) => parent.removeChild(domChild));
     nonKeyedDomNodes
         .slice(nonKeyedVNodes.length)
@@ -597,10 +624,6 @@ const SVG_ELEMENTS = new Set([
 
 // Example of a stateful component
 export class Counter extends Component {
-    constructor(props: PropsWithChildren) {
-        super(props);
-    }
-
     initialState() {
         return { count: 0 };
     }
@@ -611,14 +634,14 @@ export class Counter extends Component {
     };
 
     render(): Promise<VNode> {
-        return this.getState<{ count: number }>().then(state => 
+        return this.getState<{ count: number }>().then(state =>
             jsx(
                 "div",
                 null,
                 jsx("p", null, `Count: ${state.count}`),
                 jsx(
                     "button",
-                    { onClick: this.increment },
+                    { onClick: (e) => { void this.increment(); } },
                     "Increment"
                 )
             )

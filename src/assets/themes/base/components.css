@@ -401,3 +401,10 @@
     border-radius: var(--card-radius);
     transition: all 0.5s ease;
 }
+
+.card {
+    background: var(--card-background);
+    box-shadow: var(--card-shadow);
+    border-radius: var(--card-radius);
+    transition: all 0.5s ease;
+}

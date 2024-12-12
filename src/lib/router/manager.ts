@@ -134,77 +134,34 @@ export const RouterManager = () => {
             footer: module.Footer || null
         };
 
-        console.log("Available sections:", Object.keys(sections).filter(k => sections[k as SectionKey]));
-
         const { variants } = await import('@/lib/ui/dynamic-island/variants');
         const config = module.variant ? variants[module.variant] : null;
 
-        const island = document.querySelector(`[data-island="${islandId}"]`) as HTMLElement;
-        if (!island) return;
+        const flipState = Flip.getState(`[data-island="${islandId}"]`);
 
-        const states = []
-
-        states.push(Flip.getState(island), {
-            props: "all"
+        Object.entries(sections).forEach(([key, section]) => {
+            if (section) {
+                // Replace the content of the section with the new one, and apply the styles from the variant config.
+                const newSection = section();
+                if (newSection instanceof Node) {
+                    const oldSection = document.querySelector(`[data-island="${islandId}"] ${key}`) as HTMLElement;
+                    if (oldSection) {
+                        oldSection.replaceChildren(newSection);
+                        gsap.set(oldSection, config[key].styles);
+                    }
+                }
+            }
         });
 
         if (config) {
-            gsap.set(island, config.styles);
+            gsap.set(`[data-island="${islandId}"]`, config.styles);
         }
 
-        // Create an array of update promises
-        ["header", "aside", "main", "article", "footer"].forEach(async (section) => {
-            const element = island.querySelector(section) as HTMLElement;
-            if (!element) return;
-
-            // Take a snapshot of the current state
-            states.push(Flip.getState(element, {
-                props: "all"
-            }));
-
-            const sectionElement = island.querySelector(section) as HTMLElement;
-            if (!sectionElement) return;
-
-            const sectionConfig = config?.[section as SectionKey];
-            if (sectionConfig) {
-                gsap.set(sectionElement, sectionConfig.styles);
-            }
-            const sectionContent = sections[section as SectionKey];
-            if (sectionContent) {
-                const newContent = await sectionContent();
-                element.replaceChildren(newContent);
-            } else if (element.children.length > 0) {
-                element.replaceChildren();
-            }
-
-            states.push(Flip.getState(element));
-        });
-
-        states.forEach((flipState) => {
-            Flip.from(flipState as ReturnType<typeof Flip.getState>, {
-                duration: 0.6,
-                ease: "power2.inOut",
-                scale: true,
-                absolute: true,
-                onLeave: (el) => {
-                    gsap.fromTo(el, {
-                        opacity: 1,
-                    }, {
-                        opacity: 0,
-                        duration: 0.6,
-                        ease: "power2.inOut"
-                    });
-                },
-                onEnter: (el) => {
-                    gsap.fromTo(el, {
-                        opacity: 0,
-                    }, {
-                        opacity: 1,
-                        duration: 0.6,
-                        ease: "power2.inOut"
-                    });
-                }
-            });
+        Flip.from(flipState as ReturnType<typeof Flip.getState>, {
+            duration: 0.6,
+            ease: "power2.inOut",
+            scale: true,
+            absolute: true,
         });
     };
 
@@ -233,7 +190,7 @@ export const RouterManager = () => {
         state.isNavigating = true;
         try {
             const isReady = await waitForReady();
-            
+
             if (isReady) {
                 // Only do auth checks if system is ready
                 const isPublicRoute = publicRoutes.some(route => path.startsWith(route));

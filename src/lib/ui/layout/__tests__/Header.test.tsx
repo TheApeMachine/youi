@@ -13,7 +13,7 @@ type HeaderComponent = {
 };
 
 // Mock dependencies
-vi.mock("@/lib/template", () => ({
+vi.mock("@/lib/vdom", () => ({
     jsx: vi.fn((type, props, ...children) => {
         console.log("JSX Mock called with:", {
             type: typeof type === "function" ? type.name : type,

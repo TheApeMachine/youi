@@ -1,5 +1,6 @@
 import { eventBus } from "../event";
 import { EventPayload } from "../event/types";
+import { stateManager } from "../state";
 
 // Private state
 let currentTheme: string | null = null;
@@ -23,7 +24,7 @@ const registerTheme = (name: string, path: string, isDefault: boolean) => {
 };
 
 const initializeThemes = () => {
-    registerTheme('base', '/src/assets/themes/base/styles.css', false);
+    registerTheme('base', '/src/assets/themes/base/styles.css', true);
     registerTheme('neumorphic', '/src/assets/themes/neumorphic/styles.css', false);
     registerTheme('glassmorphic', '/src/assets/themes/glassmorphic/styles.css', false);
     registerTheme('neobrutalism', '/src/assets/themes/neobrutalism/style.css', false);

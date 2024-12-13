@@ -1,13 +1,9 @@
-import { eventBus } from "@/lib/event";
-import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
+import { jsx } from "@/lib/vdom";
 
 interface RenderProps {
     children: any[];
 }
 
-export const TBody = Component({
-    render: ({ children }: RenderProps) => {
-        return <tbody>{children}</tbody>;
-    }
-});
+export const TBody = ({ children }: RenderProps) => {
+    return <tbody>{children}</tbody>;
+}

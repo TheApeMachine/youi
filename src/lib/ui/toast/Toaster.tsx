@@ -1,5 +1,5 @@
 import { eventBus } from "@/lib/event";
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { EventPayload } from "@/lib/event/types";
 import gsap from "gsap";
 

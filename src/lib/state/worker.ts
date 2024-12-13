@@ -10,7 +10,7 @@ interface StateData {
 }
 
 interface StateMessage {
-    type: 'read' | 'write' | 'update' | 'notify' | 'remove';
+    type: 'ready' | 'read' | 'write' | 'update' | 'notify' | 'remove';
     payload: any;
     id?: string;
 }
@@ -98,8 +98,8 @@ const handleWrite = async (payload: { key: string; value: any }, id?: string, po
         await persistState();
         postResponse('write', { success: true }, id, port);
     } catch (error) {
-        postResponse('error', { 
-            error: error instanceof Error ? error.message : 'Unknown error' 
+        postResponse('error', {
+            error: error instanceof Error ? error.message : 'Unknown error'
         }, id, port);
     }
 };
@@ -137,8 +137,8 @@ const handleUpdate = async (payload: { key: string; value: any }, id?: string, p
 
         postResponse('update', { success: true }, id, port);
     } catch (error) {
-        postResponse('error', { 
-            error: error instanceof Error ? error.message : 'Unknown error' 
+        postResponse('error', {
+            error: error instanceof Error ? error.message : 'Unknown error'
         }, id, port);
     }
 };
@@ -157,8 +157,8 @@ const handleRemove = async (key: string, id?: string, port?: MessagePort) => {
         await persistState();
         postResponse('remove', { success: true }, id, port);
     } catch (error) {
-        postResponse('error', { 
-            error: error instanceof Error ? error.message : 'Unknown error' 
+        postResponse('error', {
+            error: error instanceof Error ? error.message : 'Unknown error'
         }, id, port);
     }
 };
@@ -190,6 +190,9 @@ const handleMessage = async (event: MessageEvent<StateMessage>, port: MessagePor
 
     try {
         switch (type) {
+            case 'ready':
+                postResponse('ready', { success: true }, id);
+                break;
             case 'read':
                 await handleRead(payload, id, port);
                 break;
@@ -219,14 +222,14 @@ const handleMessage = async (event: MessageEvent<StateMessage>, port: MessagePor
 self.onconnect = (e) => {
     const port = e.ports[0];
     ports.add(port);
-    
+
     port.onmessage = (event) => handleMessage(event, port);
-    
+
     // Initialize state for new connection
     initializeState(port);
-    
+
     port.start();
-    
+
     // Cleanup when port is closed
     port.onmessageerror = () => {
         ports.delete(port);

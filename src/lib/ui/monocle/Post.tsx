@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Component } from "@/lib/ui/Component";
 import { createEditor } from "lexical";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
@@ -7,7 +7,7 @@ import { Flex } from "../Flex";
 import { Image } from "../Image";
 import { Text } from "../Text";
 import { Icon } from "../icon/Icon";
-import { sanitizeHTML } from "@/lib/template";
+import { sanitizeHTML } from "@/lib/vdom";
 import { Link } from "../Link";
 
 // Add this interface at the top of the file

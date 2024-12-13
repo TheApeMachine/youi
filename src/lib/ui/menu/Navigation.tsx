@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Component } from "@/lib/ui/Component";
 import { Text } from "@/lib/ui/Text";
 import { Button } from "../button/Button";

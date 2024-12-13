@@ -1,4 +1,4 @@
-import { jsx as h } from "@/lib/template";
+import { jsx as h } from "@/lib/vdom";
 import { DynamicIsland, getAnimation } from "../DynamicIsland";
 import { TemplateObject } from "../types";
 import gsap from "gsap";

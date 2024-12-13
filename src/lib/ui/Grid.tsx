@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Alignment, Background, Justification, Unit } from "./types";
 
 /*
@@ -92,11 +92,9 @@ export const Grid = async ({
 
     return (
         <div
-            className={`grid ${
-                gap ? gapClass : ""
-            } ${rowGapClass} ${columnGapClass} ${alignClass} ${justifyClass} ${growClass} ${
-                pad ? padClass : ""
-            } ${backgroundClass} ${radiusClass} ${className ?? ""}`}
+            className={`grid ${gap ? gapClass : ""
+                } ${rowGapClass} ${columnGapClass} ${alignClass} ${justifyClass} ${growClass} ${pad ? padClass : ""
+                } ${backgroundClass} ${radiusClass} ${className ?? ""}`}
             style={style}
             {...props}
         >
@@ -147,9 +145,8 @@ export const GridItem = async ({
 
     return (
         <div
-            className={`grid-item ${alignClass} ${justifyClass} ${
-                pad ? padClass : ""
-            } ${backgroundClass} ${radiusClass} ${className ?? ""}`}
+            className={`grid-item ${alignClass} ${justifyClass} ${pad ? padClass : ""
+                } ${backgroundClass} ${radiusClass} ${className ?? ""}`}
             style={style}
             {...props}
         >

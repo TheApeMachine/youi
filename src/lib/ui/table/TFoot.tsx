@@ -1,7 +1,9 @@
-import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
+import { jsx } from "@/lib/vdom";
 
-export const TFoot = Component({
-    effect: () => {},
-    render: () => <tfoot />
-});
+interface TFootProps {
+    children: JSX.Element[];
+}
+
+export const TFoot = ({ children }: TFootProps) => {
+    return <tfoot>{children}</tfoot>
+}

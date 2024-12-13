@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Center, Column, Row } from "@/lib/ui/Flex";
 import Icon from "@/lib/ui/icon/Icon";
 import { Image } from "@/lib/ui/Image";

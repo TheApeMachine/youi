@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Alignment, Background, Justification, Unit } from "@/lib/ui/types";
 
 interface GridProps {
@@ -73,16 +73,16 @@ export const Grid = async ({
     const style =
         areas && areas !== "main"
             ? {
-                  gridTemplateAreas: `"${areas.join('" "')}"`,
-                  gridTemplateColumns:
-                      typeof columns === "string" && columns !== "1"
-                          ? columns
-                          : undefined,
-                  gridTemplateRows:
-                      typeof rows === "string" && rows !== "auto"
-                          ? rows
-                          : undefined
-              }
+                gridTemplateAreas: `"${areas.join('" "')}"`,
+                gridTemplateColumns:
+                    typeof columns === "string" && columns !== "1"
+                        ? columns
+                        : undefined,
+                gridTemplateRows:
+                    typeof rows === "string" && rows !== "auto"
+                        ? rows
+                        : undefined
+            }
             : undefined;
 
     return (

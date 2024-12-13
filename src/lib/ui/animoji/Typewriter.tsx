@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Component } from "../Component";
 import gsap from "gsap";
 import { TextPlugin } from "gsap/TextPlugin";

@@ -31,7 +31,12 @@ export default defineConfig(async () => ({
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': path.resolve(__dirname, './src'),
+      '@lib': path.resolve(__dirname, './src/lib'),
+      '@assets': path.resolve(__dirname, './src/assets'),
+      '@routes': path.resolve(__dirname, './src/routes'),
+      '@ui': path.resolve(__dirname, './src/lib/ui')
     }
   }
 }));
+

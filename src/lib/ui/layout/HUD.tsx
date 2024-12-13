@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import Toaster from "@/lib/ui/toast/Toaster";
 import { Header } from "@/lib/ui/layout/Header";
 import gsap from "gsap";
@@ -35,7 +35,7 @@ export default () => {
 
                 if (shouldShow !== isVisible) {
                     isVisible = shouldShow;
-                    
+
                     const tl = gsap.timeline({
                         defaults: {
                             duration: 0.5,
@@ -53,10 +53,10 @@ export default () => {
                             backdropFilter: "blur(var(--space-xxs))",
                             pointerEvents: "auto"
                         })
-                        .to(headerElement, {
-                            height: "auto",
-                            overflow: "visible"
-                        }, "<");
+                            .to(headerElement, {
+                                height: "auto",
+                                overflow: "visible"
+                            }, "<");
                     } else {
                         tl.to(hudElement, {
                             top: "-100px",
@@ -67,10 +67,10 @@ export default () => {
                             backdropFilter: "blur(0)",
                             pointerEvents: "none"
                         })
-                        .to(headerElement, {
-                            height: 0,
-                            overflow: "hidden"
-                        }, "<");
+                            .to(headerElement, {
+                                height: 0,
+                                overflow: "hidden"
+                            }, "<");
                     }
                 }
             };

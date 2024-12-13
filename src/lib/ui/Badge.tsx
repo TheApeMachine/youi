@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Color } from "@/lib/ui/types";
 
 interface BadgeProps {

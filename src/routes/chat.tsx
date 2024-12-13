@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Profile } from "@/lib/ui/profile/Profile";
 import { P2P } from "@/lib/ui/chat/p2p";
 import { messaging } from "@/lib/ui/chat/messaging";

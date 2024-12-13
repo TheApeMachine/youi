@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { ChartConfig } from "@/lib/ui/charts/types";
 import * as echarts from "echarts";
 import type { EChartOption } from "echarts";

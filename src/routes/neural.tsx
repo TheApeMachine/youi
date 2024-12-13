@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Component } from "@/lib/ui/Component";
 import { NeuralCanvas } from "@/lib/ui/neural/NeuralCanvas";
 import { eventBus } from "@/lib/event";

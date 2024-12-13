@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Component } from "@/lib/ui/Component";
 import { Form } from "@/lib/ui/form/Form";
 import { TextField } from "@/lib/ui/form/TextField";

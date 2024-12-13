@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { createEmptyHistoryState, registerHistory } from "@lexical/history";
 import { HeadingNode, QuoteNode, registerRichText } from "@lexical/rich-text";
 import { mergeRegister } from "@lexical/utils";
@@ -9,7 +9,7 @@ import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
 import { Column, Flex, Row } from "../Flex";
 import Button from "../button/Button";
-import { Popover } from "../Popover";
+import { Popover } from "../popover/Popover";
 import { ButtonGroup } from "../button/ButtonGroup";
 
 export const Input = () => {

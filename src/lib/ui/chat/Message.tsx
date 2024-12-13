@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { createEditor } from "lexical";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { EmojiNode } from "@/lib/plugins/EmojiPlugin";

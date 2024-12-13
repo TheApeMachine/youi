@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Component } from "@/lib/ui/Component";
 
 interface CheckboxProps {
@@ -9,26 +9,24 @@ interface CheckboxProps {
     icon?: string;
 }
 
-export const Checkbox = Component({
-    render: async ({
-        label,
-        name,
-        value = "",
-        required = false,
-        icon
-    }: CheckboxProps) => {
-        return (
-            <div class="input-group">
-                <input
-                    type="checkbox"
-                    id={name}
-                    name={name}
-                    value={value}
-                    required={required}
-                />
-                <label for={name}>{label}</label>
-                {icon && <span class="material-icons">{icon}</span>}
-            </div>
-        );
-    }
-});
+export const Checkbox = ({
+    label,
+    name,
+    value = "",
+    required = false,
+    icon
+}: CheckboxProps) => {
+    return (
+        <div class="input-group">
+            <input
+                type="checkbox"
+                id={name}
+                name={name}
+                value={value}
+                required={required}
+            />
+            <label for={name}>{label}</label>
+            {icon && <span class="material-icons">{icon}</span>}
+        </div>
+    );
+};

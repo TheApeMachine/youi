@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { SVG } from "@/lib/ui/svg/SVG";
 import { Circle } from "@/lib/ui/svg/Circle";
 import { Animation } from "@/lib/ui/animation/Animation";

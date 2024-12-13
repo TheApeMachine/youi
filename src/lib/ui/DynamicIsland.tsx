@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Header } from "./layout/Header";
 import { Aside } from "./layout/Aside";
 import { Main } from "./layout/Main";

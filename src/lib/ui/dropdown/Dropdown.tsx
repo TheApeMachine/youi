@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { stateManager } from "@/lib/state";
 import Button from "@/lib/ui/button/Button";
 import { List, ListItem } from "@/lib/ui/list/List";

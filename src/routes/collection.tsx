@@ -1,21 +1,21 @@
-import { jsx } from "@/lib/template";
-import { Component } from "@/lib/ui/Component";
+import { jsx } from "@/lib/vdom";
+import { Table } from "@/lib/ui/table/Table";
+import { THead } from "@/lib/ui/table/THead";
 import { TBody } from "@/lib/ui/table/TBody";
 import { TFoot } from "@/lib/ui/table/TFoot";
-import { THead } from "@/lib/ui/table/THead";
-import { Table } from "@/lib/ui/Table";
-import { from, isUUID } from "@/lib/mongo/query";
+import { Checkbox } from "@/lib/ui/form/Checkbox";
+import Button from "@/lib/ui/button/Button";
 import { Flex } from "@/lib/ui/Flex";
+import { Popover } from "@/lib/ui/popover/Popover";
+import Icon from "@/lib/ui/icon/Icon";
+import { Link } from "@/lib/ui/Link";
 import { stats } from "@/lib/ui/table/stats";
-import { Checkbox } from "@/lib/ui/Checkbox";
-import { Button } from "@/lib/ui/Button";
-import { EventPayload, eventBus } from "@/lib/event";
+import { isUUID } from "@/lib/mongo/query";
+import { eventBus } from "@/lib/event";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
+import { from } from "@/lib/mongo/query";
 import { List } from "@/lib/ui/List";
-import { Popover } from "@/lib/ui/Popover";
-import { Icon } from "@/lib/ui/icon/Icon";
-import { Link } from "@/lib/ui/Link";
 
 gsap.registerPlugin(Flip);
 
@@ -25,83 +25,6 @@ interface CollectionProps {
         data: Record<string, any>[];
     };
 }
-
-const renderCellContent = (value: any) => {
-    if (value === null) return value;
-
-    if (typeof value !== "object" && !Array.isArray(value)) {
-        if (isUUID(value)) {
-            return <Link href={`/object/${value}`}>{value}</Link>;
-        }
-
-        return value;
-    }
-
-    return (
-        <Button
-            variant="icon"
-            icon={Array.isArray(value) ? "lists" : "dataset"}
-            trigger="click"
-            event="datatable"
-            effect="nested:drill"
-        />
-    );
-};
-
-const renderTableRow = (row: any, columns: string[], rowIdx: number) => {
-    return (
-        <tr data-row={rowIdx}>
-            <td>
-                <Checkbox />
-            </td>
-            {columns.map((column: string, cellIdx: number) => (
-                <td
-                    data-cell={cellIdx}
-                    data-value={JSON.stringify(row[column])}
-                >
-                    {renderCellContent(row[column])}
-                </td>
-            ))}
-            <td>
-                <Popover content={<div>Hello</div>}>
-                    <Icon icon="more_vert" />
-                </Popover>
-            </td>
-        </tr>
-    );
-};
-
-const renderTable = (data: any, columns: string[], id: string) => {
-    console.log("renderTable", data, columns, id);
-    const { createMiniChart } = stats();
-
-    if (!data) {
-        return <div>No data available</div>;
-    }
-
-    return (
-        <Table collection={id}>
-            <THead>
-                <th>
-                    <Checkbox />
-                </th>
-                {columns.map((column: string) => (
-                    <th>
-                        {column}
-                        {createMiniChart(column, data)}
-                    </th>
-                ))}
-                <th />
-            </THead>
-            <TBody>
-                {data.map((row: any, rowIdx: number) =>
-                    renderTableRow(row, columns, rowIdx)
-                )}
-            </TBody>
-            <TFoot />
-        </Table>
-    );
-};
 
 const handleArrayDrill = async (
     items: any[],
@@ -130,10 +53,9 @@ const handleArrayDrill = async (
     } else {
         // Render a simple list
         const items = await Promise.all(
-            cellData.map((item) => jsx("span", null, String(item)))
+            cellData.map((item) => <span>{item}</span>)
         );
-        const list = await jsx(List, { items });
-        newTd.appendChild(list);
+        newTd.appendChild(<List items={items} />);
     }
 };
 
@@ -183,59 +105,131 @@ const closeDrill = async (
     nextRow.remove();
 };
 
-export const render = Component({
-    loader: (props: { id: string }) => {
-        console.log("loader", props);
-        return {
-            data: from(props.id).sortBy("Created", "desc").limit(10).exec()
-        };
-    },
-    effect: (props: any) => {
-        console.log("effect", props);
+const renderCellContent = (value: any) => {
+    if (value === null) return value;
 
-        eventBus.subscribe("datatable", async (payload: EventPayload) => {
-            const state = Flip.getState(document.querySelector("table"));
+    if (typeof value !== "object" && !Array.isArray(value)) {
+        if (isUUID(value)) {
+            return <Link href={`/object/${value}`}>{value}</Link>;
+        }
 
-            if (payload.effect === "nested:drill") {
-                const target = payload.originalEvent?.target as HTMLElement;
-                if (!target) return;
-
-                const cell = target.closest("td");
-                if (!cell) return;
-
-                const row = cell.closest("tr");
-                if (!row) return;
-
-                const table = row.closest("table");
-                if (!table) return;
-
-                if (cell.dataset.isDrilling) {
-                    await closeDrill(cell, table, row);
-                } else {
-                    await handleDrill(cell, table, props, row);
-                }
-
-                Flip.from(state, {
-                    duration: 0.5,
-                    stagger: 0.1
-                });
-            }
-        });
-    },
-    render: async ({ data, id }: CollectionProps) => {
-        const tableData = data.data;
-        const columns = Object.keys(tableData[0]);
-        console.log("render", data, columns, id);
-
-        return (
-            <Flex
-                direction="column"
-                radius="xs"
-                className="card-glass"
-                scrollable
-            >
-                {renderTable(tableData, columns, id)}
-            </Flex>
-        );
+        return value;
     }
-});
+
+    return (
+        <Button
+            variant="icon"
+            icon={Array.isArray(value) ? "lists" : "dataset"}
+        />
+    );
+};
+
+const renderTableRow = (row: any, columns: string[], rowIdx: number) => {
+    return (
+        <tr data-row={rowIdx}>
+            <td>
+                <Checkbox label="Select" name="select-row" />
+            </td>
+            {columns.map((column: string, cellIdx: number) => (
+                <td
+                    data-cell={cellIdx}
+                    data-value={JSON.stringify(row[column])}
+                >
+                    {renderCellContent(row[column])}
+                </td>
+            ))}
+            <td>
+                <Popover content={<div>Hello</div>}>
+                    <Icon icon="more_vert" />
+                </Popover>
+            </td>
+        </tr>
+    );
+};
+
+const renderTable = (data: any, columns: string[], id: string) => {
+    console.log("renderTable", data, columns, id);
+    const { createMiniChart } = stats();
+
+    if (!data) {
+        return <div>No data available</div>;
+    }
+
+    return (
+        <Table collection={id}>
+            <THead>
+                <th>
+                    <Checkbox label="Select" name="select-row" />
+                </th>
+                {columns.map((column: string) => (
+                    <th>
+                        {column}
+                        {createMiniChart(column, data)}
+                    </th>
+                ))}
+                <th />
+            </THead>
+            <TBody>
+                {data.map((row: any, rowIdx: number) =>
+                    renderTableRow(row, columns, rowIdx)
+                )}
+            </TBody>
+            <TFoot>
+                <tr>
+                    <td>
+                        <Checkbox label="Select" name="select-row" />
+                    </td>
+                </tr>
+            </TFoot>
+        </Table>
+    );
+};
+
+export const Collection = async(props: CollectionProps): Promise<JSX.Element> => {
+    console.log("effect", props);
+
+    eventBus.subscribe("datatable", async (payload: any) => {
+        const state = Flip.getState(document.querySelector("table"));
+
+        if (payload.effect === "nested:drill") {
+            const target = payload.originalEvent?.target as HTMLElement;
+            if (!target) return;
+
+            const cell = target.closest("td");
+            if (!cell) return;
+
+            const row = cell.closest("tr");
+            if (!row) return;
+
+            const table = row.closest("table");
+            if (!table) return;
+
+            if (cell.dataset.isDrilling) {
+                await closeDrill(cell, table, row);
+            } else {
+                await handleDrill(cell, table, props, row);
+            }
+
+            Flip.from(state, {
+                duration: 0.5,
+                stagger: 0.1
+            });
+        }
+    });
+
+    const tableData = await from(props.id).sortBy("Created", "desc").limit(10).exec();
+    const columns = tableData.length > 0 ? Object.keys(tableData[0]) : [];
+
+    return (
+        <Flex
+            direction="column"
+            radius="xs"
+            className="card-glass"
+            scrollable
+        >
+            {renderTable(tableData, columns, props.id)}
+        </Flex>
+    );
+};
+
+export default Collection;

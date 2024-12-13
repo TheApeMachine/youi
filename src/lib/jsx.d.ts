@@ -16,9 +16,9 @@ declare namespace JSX {
     }
 
     // Add support for async components
-    interface ElementClass {
-        render?: () => Element;
-    }
+    // interface ElementClass {
+    //     render?: () => Element;
+    // }
 
     interface IntrinsicAttributes {
         children?: Element | Element[];

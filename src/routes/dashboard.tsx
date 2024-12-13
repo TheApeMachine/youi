@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import Calendar from "@/lib/ui/calendar/Calendar";
 import { stateManager } from "@/lib/state";
 import gsap from "gsap";

@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Dropdown } from "@/lib/ui/dropdown/Dropdown";
 import { themeManager } from "@/lib/theme/manager";
 import { eventBus } from "@/lib/event";

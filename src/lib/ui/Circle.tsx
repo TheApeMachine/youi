@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Component } from "./Component";
 import { stateManager } from "@/lib/state";
 import { eventBus } from "@/lib/event";
@@ -468,9 +468,9 @@ export const Circle = Component({
 
         // Cleanup on unmount
         return () => {
-            eventBus.unsubscribe("circle-click", () => {});
+            eventBus.unsubscribe("circle-click", () => { });
             if (rootElement) {
-                rootElement.removeEventListener("click", () => {});
+                rootElement.removeEventListener("click", () => { });
             }
             stateManager.setState({ groupMembersMap: {} });
             if (rotationInterval) {
@@ -552,9 +552,8 @@ export const Circle = Component({
 
                 return {
                     id: `${conn.source}-${conn.target}`,
-                    path: `M ${source.x} ${source.y} Q ${midX + normalX} ${
-                        midY + normalY
-                    } ${target.x} ${target.y}`,
+                    path: `M ${source.x} ${source.y} Q ${midX + normalX} ${midY + normalY
+                        } ${target.x} ${target.y}`,
                     strength: conn.strength
                 };
             })
@@ -588,9 +587,8 @@ export const Circle = Component({
                                     fill="none"
                                     strokeWidth={conn.strength}
                                     strokeLinecap="round"
-                                    class={`circle-connection ${
-                                        selectedGroup ? "dimmed" : ""
-                                    }`}
+                                    class={`circle-connection ${selectedGroup ? "dimmed" : ""
+                                        }`}
                                 />
                             </g>
                         ))}
@@ -623,24 +621,22 @@ export const Circle = Component({
                                 >
                                     <circle
                                         r={isExpanded ? 80 : 60}
-                                        class={`circle-outer ${
-                                            isSelected || isExpanded
+                                        class={`circle-outer ${isSelected || isExpanded
                                                 ? "active"
                                                 : ""
-                                        }`}
+                                            }`}
                                         filter="url(#glow)"
                                     />
                                     <circle
                                         r={50}
-                                        class={`circle-main ${
-                                            isSelected
+                                        class={`circle-main ${isSelected
                                                 ? "selected"
                                                 : hasCommonRoles
-                                                ? "connected"
-                                                : selectedGroup
-                                                ? "inactive"
-                                                : ""
-                                        }`}
+                                                    ? "connected"
+                                                    : selectedGroup
+                                                        ? "inactive"
+                                                        : ""
+                                            }`}
                                         filter="url(#glow)"
                                     />
                                     <g class="text-content">

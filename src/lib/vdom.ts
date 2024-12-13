@@ -108,7 +108,6 @@ export class Component {
     }
 }
 
-
 // The JSX factory function
 export const jsx = (
     type: string | FunctionComponent | ComponentClass | FragmentType,
@@ -159,16 +158,24 @@ export const render = async (
     vnode: VNode,
     container: Element | DocumentFragment,
 ) => {
+    console.log("render", vnode, container);
     // Ensure state manager is initialized
     await stateManager.init();
 
-    const prevDom = container.firstChild;
-    const newDom = await diff(prevDom as Node | null, vnode);
-    if (prevDom && prevDom !== newDom) {
-        container.replaceChild(newDom, prevDom);
-    } else if (!prevDom) {
-        container.appendChild(newDom);
+    // Create new DOM node
+    const newDom = await diff(null, vnode);
+
+    // Clear the container
+    if (container instanceof Element) {
+        container.innerHTML = '';
+    } else {
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
     }
+
+    // Append the new DOM node
+    container.appendChild(newDom);
 };
 
 const handlePromise = async (vnode: Promise<VNode>, dom: Node | null) => {
@@ -270,6 +277,7 @@ const handleFragment = async (element: VElement, dom: Node | null) => {
 
 // Diffing and patching function
 const diff = async (dom: Node | null, vnode: VNode): Promise<Node> => {
+    console.log("diff", dom, vnode);
     try {
         if (vnode === null || vnode === undefined) {
             return document.createTextNode("");
@@ -296,6 +304,8 @@ const diff = async (dom: Node | null, vnode: VNode): Promise<Node> => {
         if (element.type === Fragment) {
             return await handleFragment(element, dom);
         }
+
+        console.log("element", element);
 
         // Element node
         if (
@@ -620,35 +630,6 @@ const SVG_ELEMENTS = new Set([
     "textPath",
     "tspan",
 ]);
-
-
-// Example of a stateful component
-export class Counter extends Component {
-    initialState() {
-        return { count: 0 };
-    }
-
-    increment = async () => {
-        const state = await this.getState<{ count: number }>();
-        this.setState({ count: state.count + 1 });
-    };
-
-    render(): Promise<VNode> {
-        return this.getState<{ count: number }>().then(state =>
-            jsx(
-                "div",
-                null,
-                jsx("p", null, `Count: ${state.count}`),
-                jsx(
-                    "button",
-                    { onClick: (e) => { void this.increment(); } },
-                    "Increment"
-                )
-            )
-        );
-    }
-}
-
 
 //Error Boundary
 export interface ErrorBoundaryProps extends Props {

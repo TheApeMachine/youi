@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Column, Flex, Row } from "../Flex";
 import { Text } from "../Text";
 import { DateTime } from "luxon";
@@ -127,8 +127,8 @@ export default async () => {
                                         <Text
                                             variant="span"
                                             color={`${isCurrentMonth
-                                                    ? "text-default"
-                                                    : "text-muted"
+                                                ? "text-default"
+                                                : "text-muted"
                                                 }`}
                                             className="day-text"
                                         >

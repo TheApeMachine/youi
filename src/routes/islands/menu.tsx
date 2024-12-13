@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Link } from "@/lib/ui/Link";
 import { List } from "@/lib/ui/List";
 import { Text } from "@/lib/ui/Text";

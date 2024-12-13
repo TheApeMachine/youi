@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { stateManager } from "@/lib/state";
 import { eventManager } from "@/lib/event";
 import TextField from "./TextField";
@@ -257,31 +257,25 @@ export default async ({
         }
     };
 
-    const renderForm = async () => {
-        const currentState = await getFormState();
+    const currentState = await getFormState();
 
-        const form = (
-            <form onSubmit={handleSubmit} id={id} noValidate>
-                {Object.entries(fields).map(([name, field]) => (
-                    <div key={name} className="form-field">
-                        <label>{field.label}</label>
-                        <TextField
-                            type={field.type as "text" | "email" | "password"}
-                            name={name}
-                            value={currentState.values[name] || ""}
-                            required={field.required}
-                            onChange={(value) => handleFieldChange(name, value)}
-                            onBlur={() => handleFieldBlur(name)}
-                        />
-                    </div>
-                ))}
-                {buttons &&
-                    Object.entries(buttons).map(([name, button]) => button)}
-            </form>
-        );
-
-        return form;
-    };
-
-    return renderForm();
+    return (
+        <form onSubmit={handleSubmit} id={id} noValidate>
+            {Object.entries(fields).map(([name, field]) => (
+                <div key={name} className="form-field">
+                    <TextField
+                        type={field.type as "text" | "email" | "password"}
+                        label={field.label}
+                        name={name}
+                        value={currentState.values[name] || ""}
+                        required={field.required}
+                        onChange={(value) => handleFieldChange(name, value)}
+                        onBlur={() => handleFieldBlur(name)}
+                    />
+                </div>
+            ))}
+            {buttons &&
+                Object.entries(buttons).map(([name, button]) => button)}
+        </form>
+    );
 };

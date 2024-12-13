@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Color } from "@/lib/ui/types";
 import Icon from "@/lib/ui/icon/Icon";
 
@@ -6,16 +6,16 @@ interface TextProps {
     id?: string;
     interactive?: boolean;
     variant?:
-        | "p"
-        | "h1"
-        | "h2"
-        | "h3"
-        | "h4"
-        | "h5"
-        | "h6"
-        | "sub"
-        | "span"
-        | undefined;
+    | "p"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "h4"
+    | "h5"
+    | "h6"
+    | "sub"
+    | "span"
+    | undefined;
     color?: string;
     iconColor?: Color;
     icon?: string;

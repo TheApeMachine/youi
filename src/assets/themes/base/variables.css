@@ -86,10 +86,17 @@
     --input-height: 2.5rem;
     --input-border: 1px solid var(--color-border);
 
-    --card-padding: var(--space-lg);
+    --card-padding: var(--space-xxl);
     --card-radius: var(--radius-xxs);
     --card-background: var(--color-bg-offset);
     --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+
+    --form-gap: var(--space-md);
+
+    --field-padding: var(--space-sm);
+    --field-border-radius: var(--radius-xxl);
+    --field-gap: var(--space-sm);
 
     --button-shadow: 0 1px hsl(0 0% 100% / 0.35) inset,
         0 -1px hsl(0 0% 0% / 1) inset, 0 10px 20px -5px hsl(0 0% 0% / 1);
@@ -100,19 +107,21 @@
     --button-active-transform: scale(0.95);
     --button-icon-radius: var(--radius-xxs);
 
-    --gradient-horizontal: linear-gradient(
-        to right,
-        var(--color-bg),
-        var(--color-bg-offset)
-    );
+    --gradient-horizontal: linear-gradient(to right,
+            var(--color-bg),
+            var(--color-bg-offset));
 
-    --gradient-vertical: linear-gradient(
-        to bottom,
-        var(--color-bg-offset),
-        var(--color-bg)
-    );
+    --gradient-vertical: linear-gradient(to bottom,
+            var(--color-bg-offset),
+            var(--color-bg));
 
+    --is-valid: 0;
+    --is-invalid: 0;
     --surface: var(--color-black);
+    --surface-background: linear-gradient(var(--surface), var(--surface)) padding-box,
+        linear-gradient(var(--color-danger), var(--color-danger)) calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
+        linear-gradient(var(--color-success), var(--color-success)) calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
+        var(--surface);
     --surface-border: 2px solid transparent;
     --surface-border-radius: var(--radius-xxs);
     --surface-shadow: 0 1px hsl(0 0% 100% / 0.35) inset,

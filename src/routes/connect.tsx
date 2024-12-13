@@ -1,11 +1,11 @@
-import { jsx, Fragment } from "@/lib/template";
+import { jsx, Fragment } from "@/lib/vdom";
 import { Input } from "@/lib/ui/chat/Input";
 import { Circle } from "@/lib/ui/Circle";
 import { Component } from "@/lib/ui/Component";
 import { Flex } from "@/lib/ui/Flex";
 import { Timeline } from "@/lib/ui/monocle/Timeline";
 import { DynamicIsland } from "@/lib/ui/DynamicIsland";
-import { Popover } from "@/lib/ui/Popover";
+import { Popover } from "@/lib/ui/popover/Popover";
 import Button from "@/lib/ui/button/Button";
 
 export const render = () => {

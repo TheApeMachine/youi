@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { AuthService } from "@/lib/auth";
 import { Center, Column, Row } from "@/lib/ui/Flex";
 import Form from "@/lib/ui/form/Form";
@@ -8,7 +8,7 @@ import Card from "@/lib/ui/card/Card";
 import { eventManager } from "@/lib/event";
 import { routerManager } from "@/lib/router/manager";
 
-export default async () => {
+export const Login = async (): Promise<JSX.Element> => {
     // Check if already authenticated
     const isAuthenticated = await AuthService.isAuthenticated();
     if (isAuthenticated) {
@@ -19,7 +19,7 @@ export default async () => {
     const handleSubmit = async (values: Record<string, any>) => {
         try {
             await AuthService.login(values.email, values.password);
-            
+
             await eventManager.publish('auth', 'login.success', {
                 email: values.email
             });
@@ -106,3 +106,5 @@ export default async () => {
         </Row>
     );
 };
+
+export default Login;

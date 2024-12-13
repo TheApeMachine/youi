@@ -1,5 +1,5 @@
 import { eventBus, EventPayload } from "@/lib/event";
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Component } from "@/lib/ui/Component";
 import { faker } from "@faker-js/faker";
 

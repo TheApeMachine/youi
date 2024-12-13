@@ -1,13 +1,13 @@
 import { eventManager } from "@/lib/event";
 import { routerManager } from "@/lib/router/manager";
 import { stateManager } from "@/lib/state";
-import { initializeDebugContext } from "@/lib/debug/context";
+//import { initializeDebugContext } from "@/lib/debug/context";
 import { themeManager } from "@/lib/theme/manager";
 
 export const YouI = {
     isReady: false,
     init: async () => {
-        initializeDebugContext();
+        //initializeDebugContext();
 
         try {
             await Promise.all([

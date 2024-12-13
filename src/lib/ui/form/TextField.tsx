@@ -1,8 +1,9 @@
-import { jsx } from "@/lib/template";
-import { createEventProps } from "@/lib/event/dom";
+import { jsx } from "@/lib/vdom";
+import { Column } from "@/lib/ui/flex/Flex";
 
 export default async ({
     type = "text",
+    label,
     name,
     value = "",
     error,
@@ -12,6 +13,7 @@ export default async ({
     ...props
 }: {
     type?: "text" | "email" | "password";
+    label?: string;
     name: string;
     value?: string;
     error?: string;
@@ -30,8 +32,10 @@ export default async ({
     };
 
     return (
-        <div className="field">
+        <Column className="field">
+            <label for={name}>{label}</label>
             <input
+                id={name}
                 type={type}
                 name={name}
                 value={value}
@@ -42,6 +46,6 @@ export default async ({
                 {...props}
             />
             {error && <div className="error-message">{error}</div>}
-        </div>
+        </Column>
     );
 };

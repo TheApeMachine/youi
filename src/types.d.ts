@@ -4,11 +4,9 @@ declare namespace JSX {
     }
 }
 
-declare module "@/lib/template" {
+declare module "@/lib/vdom" {
     export const jsx: any;
     export const Fragment: any;
+    export const render: any;
+    export const renderApp: any;
 }
-
-declare module "@/lib/ui/Component" {
-    export const Component: any;
-} 

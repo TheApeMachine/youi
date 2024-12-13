@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Alignment, Background, Justification, Unit } from "./types";
 
 interface FlexProps {
@@ -47,11 +47,9 @@ export const Flex = async ({
 
     return (
         <div
-            className={`flex ${direction} ${
-                gap ? gapClass : ""
-            } ${alignClass} ${justifyClass} ${growClass} ${
-                pad ? padClass : ""
-            } ${backgroundClass} ${radiusClass} ${textClass} ${className} ${fullHeightClass} ${scrollableClass}`}
+            className={`flex ${direction} ${gap ? gapClass : ""
+                } ${alignClass} ${justifyClass} ${growClass} ${pad ? padClass : ""
+                } ${backgroundClass} ${radiusClass} ${textClass} ${className} ${fullHeightClass} ${scrollableClass}`}
             {...props}
         >
             {children}

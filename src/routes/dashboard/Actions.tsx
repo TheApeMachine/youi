@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Badge } from "@/lib/ui/Badge";
 import Icon from "@/lib/ui/icon/Icon";
 import { Link } from "@/lib/ui/Link";

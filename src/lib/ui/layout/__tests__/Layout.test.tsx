@@ -5,7 +5,7 @@ import { AuthService } from "@/lib/auth";
 import { createRouter } from "@/lib/router";
 
 // Mock dependencies
-vi.mock("@/lib/template", () => ({
+vi.mock("@/lib/vdom", () => ({
     jsx: vi.fn(async (type, props, ...children) => {
         if (typeof type === "string") {
             const el = document.createElement(type);

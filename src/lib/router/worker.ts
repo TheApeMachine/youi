@@ -23,6 +23,7 @@ const createRouterWorker = () => {
     };
 
     const handleNavigation = async (payload: { path: string }, id?: string) => {
+        console.log('[Worker] Handling navigation:', payload);
         const path = payload.path || '/';
         const segments = path.split('/').filter(Boolean);
 
@@ -37,6 +38,12 @@ const createRouterWorker = () => {
         if (!state.slideHistory.includes(targetSlide)) {
             state.slideHistory.push(targetSlide);
         }
+
+        console.log('[Worker] Sending updateView message:', {
+            slide: targetSlide,
+            island: targetIsland,
+            isNew: !state.islandStates.has(targetSlide)
+        });
 
         // Notify main thread to update the view
         postResponse('updateView', {

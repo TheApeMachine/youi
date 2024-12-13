@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 
 export const Aside = ({ children }: { children: JSX.Element }) => {
     return (

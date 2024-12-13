@@ -5,7 +5,7 @@ import { Doc } from "yjs";
 import * as Y from "yjs";
 import { ConnectionState } from "./p2p";
 import { Message } from "./Message";
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 
 interface StatusEventInit {
     status: ConnectionState;

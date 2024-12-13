@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { createEventProps } from "@/lib/event/dom";
 import Icon from "@/lib/ui/icon/Icon";
 
@@ -55,22 +55,19 @@ export default async ({
         .filter(Boolean)
         .join(" ");
 
+    const buttonIcon = loading ? "sync" : icon;
+
     return (
         <button
             type={type}
             class={classes}
             disabled={disabled || loading}
-            {...eventProps}
             onClick={onClick}
+            {...eventProps}
             {...props}
         >
-            {icon && <Icon icon={icon} color={color} />}
+            {buttonIcon && <Icon icon={buttonIcon} color={color} />}
             {children}
-            {loading && (
-                <span class="loading-indicator">
-                    <Icon icon="sync" color={color} />
-                </span>
-            )}
         </button>
     );
 };

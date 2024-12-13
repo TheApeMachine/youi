@@ -13,6 +13,18 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "@lib/*": [
+        "src/lib/*"
+      ],
+      "@assets/*": [
+        "src/assets/*"
+      ],
+      "@routes/*": [
+        "src/routes/*"
+      ],
+      "@ui/*": [
+        "src/lib/ui/*"
       ]
     }
   },

@@ -43,6 +43,34 @@
     grid-area: activity;
 }
 
+form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--form-gap);
+}
+
+.field {
+    gap: var(--field-gap);
+
+    >input {
+        --is-valid: 0;
+        --is-invalid: 0;
+        padding: var(--field-padding);
+        gap: var(--field-gap);
+        background: var(--surface-background);
+        border: var(--surface-border);
+        border-radius: var(--field-border-radius);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        max-width: 100%;
+        width: 100%;
+        color: var(--color-text);
+        outline: none;
+        font-weight: 200;
+        box-shadow: var(--surface-shadow);
+    }
+}
+
 /* Button styles */
 .button {
     display: flex;
@@ -193,7 +221,7 @@
         border-bottom-left-radius: var(--space-xxs);
         border-bottom-right-radius: var(--space-xxs);
 
-        > * {
+        >* {
             color: var(--color-brand);
             transform: scale(1.1);
         }
@@ -380,7 +408,7 @@
 }
 
 .button-group {
-    > button {
+    >button {
         border-radius: 0;
 
         &:first-child {
@@ -403,6 +431,8 @@
 }
 
 .card {
+    gap: var(--space-xl);
+    padding: var(--card-padding);
     background: var(--card-background);
     box-shadow: var(--card-shadow);
     border-radius: var(--card-radius);

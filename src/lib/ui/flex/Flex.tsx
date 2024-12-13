@@ -1,4 +1,4 @@
-import { jsx } from "@/lib/template";
+import { jsx } from "@/lib/vdom";
 import { Alignment, Background, Justification, Unit } from "@/lib/ui/types";
 
 interface FlexProps {
@@ -27,7 +27,7 @@ export const Flex = async ({
     fullHeight,
     radius,
     className = ""
-}: FlexProps) => {
+}: FlexProps): Promise<JSX.Element> => {
     const classes = {
         flex: true,
         row: direction === 'row',
@@ -57,7 +57,7 @@ export const Row = async ({
     radius,
     fullHeight,
     className = ""
-}: Omit<FlexProps, 'direction'>) => {
+}: Omit<FlexProps, 'direction'>): Promise<JSX.Element> => {
     return (
         <Flex
             direction="row"
@@ -87,7 +87,7 @@ export const Column = async ({
     radius,
     fullHeight,
     className = ""
-}: Omit<FlexProps, 'direction'>) => {
+}: Omit<FlexProps, 'direction'>): Promise<JSX.Element> => {
     return (
         <Flex
             direction="column"
@@ -115,7 +115,7 @@ export const Center = async ({
     radius,
     fullHeight,
     className = ""
-}: Omit<FlexProps, 'direction' | 'align' | 'justify'>) => {
+}: Omit<FlexProps, 'direction' | 'align' | 'justify'>): Promise<JSX.Element> => {
     return (
         <Flex
             direction="column"

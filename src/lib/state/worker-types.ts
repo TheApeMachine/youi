@@ -5,7 +5,7 @@ export interface StateData {
 }
 
 export interface StateMessage {
-    type: 'read' | 'write' | 'update' | 'notify' | 'remove';
+    type: 'read' | 'write' | 'update' | 'notify' | 'remove' | 'ready';
     payload: any;
     id?: string;
 }

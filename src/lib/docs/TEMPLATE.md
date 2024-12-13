@@ -8,7 +8,7 @@ Import the template system in your application:
 
 ```tsx
 // @ts-ignore: JSX factory import is used by the transpiler
-import { jsx, Fragment } from "@/lib/template";
+import { jsx, Fragment } from "@/lib/vdom";
 ```
 
 ## 🎯 Core Features

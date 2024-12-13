@@ -43,6 +43,32 @@
     grid-area: activity;
 }
 
+.text {
+    &.brand {
+        color: var(--color-brand);
+    }
+
+    &.offset {
+        color: var(--color-text-offset);
+    }
+
+    &.muted {
+        color: var(--color-muted);
+    }
+
+    &.danger {
+        color: var(--color-danger);
+    }
+
+    &.success {
+        color: var(--color-success);
+    }
+
+    &.warning {
+        color: var(--color-warning);
+    }
+}
+
 form {
     display: flex;
     flex-direction: column;
@@ -51,10 +77,17 @@ form {
 
 .field {
     gap: var(--field-gap);
+    transition: var(--transition-all-long);
 
-    >input {
+    > label {
+        text-align: left;
+        color: var(--color-text-muted);
+        transform: translate(10%, 210%);
+    }
+
+    > input {
         --is-valid: 0;
-        --is-invalid: 0;
+        --is-invalid: 1;
         padding: var(--field-padding);
         gap: var(--field-gap);
         background: var(--surface-background);
@@ -68,6 +101,17 @@ form {
         outline: none;
         font-weight: 200;
         box-shadow: var(--surface-shadow);
+        transition: var(--transition-all-long);
+
+        &.error {
+            background: var(--surface-background-error);
+        }
+    }
+
+    .error-message {
+        transform: translateY(-210%);
+        color: var(--color-danger);
+        transition: var(--transition-all-long);
     }
 }
 
@@ -79,7 +123,7 @@ form {
     gap: var(--space-xs);
     padding: var(--space-sm) var(--space-md);
     border: none;
-    border-radius: var(--radius-xs);
+    border-radius: var(--button-radius);
     font-family: var(--font-family);
     font-weight: 600;
     cursor: pointer;
@@ -119,20 +163,15 @@ form {
     padding: 0;
 }
 
-.button-submit {
-    background: var(--color-brand);
-    color: var(--color-white);
-    box-shadow: var(--surface-shadow);
-    width: 100%;
-    margin-top: var(--space-sm);
-}
-
-/* Button colors */
 .button-brand {
     background: var(--color-bg-offset);
     background: var(--button-gradient);
     color: var(--color-white);
     box-shadow: var(--button-shadow);
+
+    span {
+        color: var(--button-color);
+    }
 
     &:hover {
         background: var(--button-active-gradient);
@@ -221,7 +260,7 @@ form {
         border-bottom-left-radius: var(--space-xxs);
         border-bottom-right-radius: var(--space-xxs);
 
-        >* {
+        > * {
             color: var(--color-brand);
             transform: scale(1.1);
         }
@@ -408,7 +447,7 @@ form {
 }
 
 .button-group {
-    >button {
+    > button {
         border-radius: 0;
 
         &:first-child {
@@ -433,6 +472,7 @@ form {
 .card {
     gap: var(--space-xl);
     padding: var(--card-padding);
+    width: 50%;
     background: var(--card-background);
     box-shadow: var(--card-shadow);
     border-radius: var(--card-radius);

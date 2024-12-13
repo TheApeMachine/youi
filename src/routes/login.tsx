@@ -12,7 +12,7 @@ export const Login = async (): Promise<JSX.Element> => {
     // Check if already authenticated
     const isAuthenticated = await AuthService.isAuthenticated();
     if (isAuthenticated) {
-        routerManager.navigate('/');
+        routerManager.navigate("/");
         return null;
     }
 
@@ -20,21 +20,21 @@ export const Login = async (): Promise<JSX.Element> => {
         try {
             await AuthService.login(values.email, values.password);
 
-            await eventManager.publish('auth', 'login.success', {
+            await eventManager.publish("auth", "login.success", {
                 email: values.email
             });
 
             // Use router for navigation
-            routerManager.navigate('/');
+            routerManager.navigate("/");
         } catch (error) {
-            await eventManager.publish('auth', 'login.error', {
+            await eventManager.publish("auth", "login.error", {
                 error: String(error)
             });
         }
     };
 
     const handleSocialLogin = async (provider: string) => {
-        await eventManager.publish('auth', 'social.login', { provider });
+        await eventManager.publish("auth", "social.login", { provider });
     };
 
     return (
@@ -52,17 +52,23 @@ export const Login = async (): Promise<JSX.Element> => {
                             email: {
                                 type: "email",
                                 label: "Email",
+                                icon: "person",
                                 required: true
                             },
                             password: {
                                 type: "password",
                                 label: "Password",
+                                icon: "lock",
                                 required: true
                             }
                         }}
                         buttons={{
                             submit: (
-                                <Button variant="submit" icon="login">
+                                <Button
+                                    variant="submit"
+                                    color="brand"
+                                    icon="login"
+                                >
                                     Sign In
                                 </Button>
                             )
@@ -70,32 +76,41 @@ export const Login = async (): Promise<JSX.Element> => {
                     />
 
                     <Column gap>
-                        <p>Or sign in with</p>
+                        <Text variant="p" color="muted">
+                            Or sign in with
+                        </Text>
                         <Row gap>
                             <Button
                                 variant="icon"
                                 color="muted"
                                 icon="android"
-                                onClick={() => handleSocialLogin('android')}
+                                onClick={() => handleSocialLogin("android")}
                             />
                             <Button
                                 variant="icon"
                                 color="muted"
                                 icon="code"
-                                onClick={() => handleSocialLogin('github')}
+                                onClick={() => handleSocialLogin("github")}
                             />
                             <Button
                                 variant="icon"
                                 color="muted"
                                 icon="flutter_dash"
-                                onClick={() => handleSocialLogin('google')}
+                                onClick={() => handleSocialLogin("google")}
                             />
                         </Row>
                     </Column>
 
                     <Column>
                         <p>
-                            Don't have an account? <a onClick={() => routerManager.navigate('/signup')}>Sign up</a>
+                            Don't have an account?{" "}
+                            <a
+                                onClick={() =>
+                                    routerManager.navigate("/signup")
+                                }
+                            >
+                                Sign up
+                            </a>
                         </p>
                     </Column>
                 </Card>

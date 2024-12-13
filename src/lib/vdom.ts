@@ -305,7 +305,6 @@ const diff = async (dom: Node | null, vnode: VNode): Promise<Node> => {
             return await handleFragment(element, dom);
         }
 
-        console.log("element", element);
 
         // Element node
         if (
@@ -371,7 +370,7 @@ const updateProps = (
     // Remove old props that are not present in new props
     for (const name in oldProps) {
         if (!(name in newProps)) {
-            removeProp(element, name);
+            removeProp(element, name, oldProps[name]);
         }
     }
 };
@@ -380,9 +379,14 @@ const updateProps = (
 // Set a property on a DOM element
 const setProp = (element: Element, name: string, value: any) => {
     if (name.startsWith("on") && typeof value === "function") {
-        // Use the new event delegation system by adding the function to the attribute
-        element.setAttribute(name, value);
-        initializeEventType(name.substring(2).toLowerCase());
+        // Attach the event listener
+        const eventType = name.substring(2).toLowerCase();
+        // Remove old event listener, if exists
+        element.removeEventListener(eventType, (element as any)[name]);
+        // Store the value on the element so we can remove it later
+        (element as any)[name] = value;
+        // Add event listener
+        element.addEventListener(eventType, value);
         return;
     }
 
@@ -405,9 +409,14 @@ const setProp = (element: Element, name: string, value: any) => {
     }
 };
 
-
 // Remove a property from a DOM element
-const removeProp = (element: Element, name: string) => {
+const removeProp = (element: Element, name: string, value: any) => {
+    if (name.startsWith("on") && typeof value === "function") {
+        const eventType = name.substring(2).toLowerCase();
+        element.removeEventListener(eventType, value);
+        return;
+    }
+
     element.removeAttribute(name);
 };
 

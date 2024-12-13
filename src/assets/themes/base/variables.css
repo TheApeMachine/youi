@@ -66,6 +66,7 @@
     --color-accent: var(--color-primary-500);
 
     --color-brand: var(--color-primary-500);
+    --color-brand-light: var(--color-primary-400);
     --color-danger: var(--color-error-500);
     --color-success: var(--color-success-500);
 
@@ -77,6 +78,24 @@
     --color-blue: hsl(179, 100%, 80%);
     --color-purple: hsl(238, 100%, 80%);
     --color-pink: hsl(302, 100%, 80%);
+
+    --gradient-horizontal: linear-gradient(
+        to right,
+        var(--color-bg),
+        var(--color-bg-offset)
+    );
+
+    --gradient-vertical: linear-gradient(
+        to bottom,
+        var(--color-bg-offset),
+        var(--color-bg)
+    );
+
+    --gradient-brand-vertical: linear-gradient(
+        to bottom,
+        var(--color-brand),
+        var(--color-bg-offset)
+    );
 
     /* Component Variables */
     --button-height-sm: 2rem;
@@ -91,7 +110,6 @@
     --card-background: var(--color-bg-offset);
     --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 
-
     --form-gap: var(--space-md);
 
     --field-padding: var(--space-sm);
@@ -100,28 +118,47 @@
 
     --button-shadow: 0 1px hsl(0 0% 100% / 0.35) inset,
         0 -1px hsl(0 0% 0% / 1) inset, 0 10px 20px -5px hsl(0 0% 0% / 1);
-    --button-gradient: none;
+    --button-gradient: var(--surface-brand);
+    --button-color: var(--color-text);
     --button-active-shadow: var(--button-shadow);
-    --button-active-gradient: none;
+    --button-active-gradient: var(--color-brand-light);
     --button-hover-transform: translateY(-2px);
     --button-active-transform: scale(0.95);
+    --button-radius: var(--radius-xxs);
     --button-icon-radius: var(--radius-xxs);
-
-    --gradient-horizontal: linear-gradient(to right,
-            var(--color-bg),
-            var(--color-bg-offset));
-
-    --gradient-vertical: linear-gradient(to bottom,
-            var(--color-bg-offset),
-            var(--color-bg));
 
     --is-valid: 0;
     --is-invalid: 0;
     --surface: var(--color-black);
-    --surface-background: linear-gradient(var(--surface), var(--surface)) padding-box,
-        linear-gradient(var(--color-danger), var(--color-danger)) calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
-        linear-gradient(var(--color-success), var(--color-success)) calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
+    --surface-transparent: hsla(0, 0%, 0%, 0.9);
+
+    --surface-background: linear-gradient(var(--surface), var(--surface))
+            padding-box,
+        linear-gradient(var(--color-danger), var(--color-danger))
+            calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
+        linear-gradient(var(--color-success), var(--color-success))
+            calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
         var(--surface);
+
+    --surface-background-error: linear-gradient(
+                var(--surface-transparent),
+                var(--surface-transparent)
+            )
+            padding-box,
+        linear-gradient(var(--color-danger), var(--color-danger))
+            calc((1 - 1) * -100cqi) 0 / 100% 100% border-box,
+        linear-gradient(var(--color-success), var(--color-success))
+            calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
+        var(--surface);
+
+    --surface-brand: linear-gradient(var(--color-brand), var(--color-brand))
+            padding-box,
+        linear-gradient(var(--color-danger), var(--color-danger))
+            calc((1 - var(--is-invalid)) * -100cqi) 0 / 100% 100% border-box,
+        linear-gradient(var(--color-success), var(--color-success))
+            calc((1 - var(--is-valid)) * 100cqi) 0 / 100% 100% border-box,
+        var(--surface);
+
     --surface-border: 2px solid transparent;
     --surface-border-radius: var(--radius-xxs);
     --surface-shadow: 0 1px hsl(0 0% 100% / 0.35) inset,

@@ -70,26 +70,7 @@ export const Grid = async ({
         [className]: className
     };
 
-    const style =
-        areas && areas !== "main"
-            ? {
-                gridTemplateAreas: `"${areas.join('" "')}"`,
-                gridTemplateColumns:
-                    typeof columns === "string" && columns !== "1"
-                        ? columns
-                        : undefined,
-                gridTemplateRows:
-                    typeof rows === "string" && rows !== "auto"
-                        ? rows
-                        : undefined
-            }
-            : undefined;
-
-    return (
-        <div className={classes} style={style}>
-            {children}
-        </div>
-    );
+    return <div className={classes}>{children}</div>;
 };
 
 export const GridItem = async ({
@@ -124,17 +105,11 @@ export const GridItem = async ({
         [`radius-${radius === true ? "md" : radius}`]: radius,
         [`flex-grow`]: grow,
         [`full-height`]: fullHeight,
+        [`column-${column}`]: column,
+        [`row-${row}`]: row,
+        [`span-${span}`]: span,
         [className]: className
     };
 
-    const style = {
-        gridColumn: span ? `span ${span}` : column,
-        gridRow: row
-    };
-
-    return (
-        <div className={classes} style={style}>
-            {children}
-        </div>
-    );
+    return <div className={classes}>{children}</div>;
 };

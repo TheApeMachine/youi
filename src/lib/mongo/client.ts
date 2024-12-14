@@ -1,6 +1,7 @@
 import * as Realm from "realm-web";
 import { FromBinary, ToBinary } from "./utils";
 import { DateTime } from "luxon";
+import { stateManager } from "@/lib/state";
 
 // Initialize the Realm app once
 const app = new Realm.App({ id: import.meta.env.VITE_REALM_APP_ID });
@@ -45,19 +46,46 @@ const convertBinary = (doc: any): any => {
     return converted;
 };
 
+// Add a function to generate a consistent state key
+const getQueryStateKey = (name: string, options: any) => {
+    return `query:${name}:${JSON.stringify(options)}`;
+};
+
+// Add these interfaces at the top of the file
+interface NestedJoin {
+    from: string;
+    localField: string;
+    foreignField: string;
+    as: string;
+    isArray: boolean;
+}
+
+interface Join {
+    from: string;
+    localField: string;
+    foreignField: string;
+    as: string;
+    isArray: boolean;
+    nested?: NestedJoin;
+}
+
 export const fetchCollection = async (
     name: string,
     options: {
         query?: Record<string, any>;
         projection?: string[];
-        join?: { from: string; localField: string; foreignField: string; as: string };
+        joins?: Join[];
         sort?: Record<string, 1 | -1>;
         limit?: number;
         offset?: number;
         count?: boolean;
+        stateKey?: string;
     } = {}
 ) => {
-    const { query = {}, projection = [], join, sort, limit = 20, offset = 0, count = false } = options;
+    // Use provided stateKey or generate one
+    const stateKey = options.stateKey ?? getQueryStateKey(name, options);
+
+    const { query = {}, projection = [], joins, sort, limit = 20, offset = 0, count = false } = options;
 
     // Define processQuery before using it
     const processQuery = (q: Record<string, any>): Record<string, any> => {
@@ -130,16 +158,40 @@ export const fetchCollection = async (
         });
     }
 
-    if (join) {
-        pipeline.push({
-            $lookup: {
-                from: join.from,
-                localField: join.localField,
-                foreignField: join.foreignField,
-                as: join.as
+    if (joins?.length) {
+        for (const join of joins) {
+            // First lookup
+            pipeline.push({
+                $lookup: {
+                    from: join.from,
+                    localField: join.localField,
+                    foreignField: join.foreignField,
+                    as: join.as
+                }
+            });
+
+            // If not an array, unwind
+            if (!join.isArray) {
+                pipeline.push({
+                    $unwind: {
+                        path: `$${join.as}`,
+                        preserveNullAndEmptyArrays: true
+                    }
+                });
             }
-        });
-        pipeline.push({ $unwind: `$${join.as}` });
+
+            // If this is a nested lookup (e.g., Chat.Message)
+            if (join.nested) {
+                pipeline.push({
+                    $lookup: {
+                        from: join.nested.from,
+                        localField: `${join.as}.${join.nested.localField}`,
+                        foreignField: join.nested.foreignField,
+                        as: join.nested.as
+                    }
+                });
+            }
+        }
     }
 
     if (sort) {
@@ -150,7 +202,12 @@ export const fetchCollection = async (
     pipeline.push({ $limit: limit });
 
     const results = await conn.collection(name).aggregate(pipeline);
-    return results.map((doc: any) => convertBinary(doc));
+    const convertedResults = results.map((doc: any) => convertBinary(doc));
+
+    // Store the results in state
+    await stateManager.set(stateKey, convertedResults);
+
+    return convertedResults;
 };
 
 export const fetchDocument = async (collectionName: string, id: string, pipeline?: any[]) => {

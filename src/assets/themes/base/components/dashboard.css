@@ -4,6 +4,8 @@
     grid-template-areas:
         "actions profile calendar"
         "metrics activity calendar";
+    gap: var(--space-xl);
+    padding: var(--space-xl);
 }
 
 .grid-area-actions {

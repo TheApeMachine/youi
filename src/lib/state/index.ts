@@ -1,5 +1,9 @@
 import { eventManager } from '@/lib/event';
-import { getWorker, initWorkerCommunication, sendWorkerMessage } from './worker-instance';
+import { initWorkerCommunication, sendWorkerMessage } from './worker-instance';
+
+interface WorkerResponse {
+    value: unknown;
+}
 
 export const createStateManager = () => {
     const subscribers = new Map<string, Set<(value: any) => void>>();
@@ -7,7 +11,7 @@ export const createStateManager = () => {
 
     const get = async <T>(key: string): Promise<T | undefined> => {
         try {
-            const response = await sendWorkerMessage('read', key);
+            const response = await sendWorkerMessage('read', key) as WorkerResponse;
             return response.value as T;
         } catch (error) {
             console.error(`Failed to get ${key}:`, error);
@@ -39,6 +43,7 @@ export const createStateManager = () => {
                     }
                 }
             });
+            eventManager.publish('render', 'update', { type: 'render' });
         } catch (error) {
             console.error(`Failed to update ${key}:`, error);
             throw error;

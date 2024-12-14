@@ -5,7 +5,6 @@ import { messaging } from "@/lib/ui/chat/messaging";
 import { Input } from "@/lib/ui/chat/Input";
 import { stateManager } from "@/lib/state";
 import { from } from "@/lib/mongo/query";
-import { eventBus } from "@/lib/event";
 import { Column } from "@/lib/ui/Flex";
 import { List, ListItem } from "@/lib/ui/list/List";
 import { User } from "@/types/mongo/User";
@@ -13,6 +12,7 @@ import { Badge } from "@/lib/ui/Badge";
 import { Text } from "@/lib/ui/Text";
 import { Grid, GridItem } from "@/lib/ui/grid/Grid";
 import { Message } from "@/lib/ui/chat/Message";
+import { Message as MessageType } from "@/types/mongo/Message";
 
 interface Auth0User {
     sub: string;
@@ -23,75 +23,32 @@ export default async () => {
     const dbUser = (await from("User")
         .where({ Auth0UserId: authUser?.sub })
         .limit(1)
-        .exec()) as User[];
+        .exec()) as User | null;
 
     const chatGroups = dbUser?.Groups?.filter((g) => g.HasChat) || [];
 
-    eventBus.subscribe(
-        "group-select",
-        (payload: { type: string; data: any }) => {
-            console.log(payload);
-            if (!payload.data) return;
+    await stateManager.set("selectedGroupId", null);
 
-            from("Message")
-                .include("Chat")
-                .whereArrayField("ChatId", "in", chatIds)
-                .sortBy("Created", "desc")
-                .limit(20)
-                .exec()
-                .then((messages) => {
-                    console.log(messages);
-                    const chatMessages =
-                        document.getElementById("chat-messages");
-                    if (chatMessages) {
-                        chatMessages.innerHTML = "";
-                        messages.forEach(async (message) => {
-                            chatMessages.appendChild(
-                                await jsx(Message, { message })
-                            );
-                        });
-                    }
-                });
+    const selectedGroupId = await stateManager.get("selectedGroupId");
 
-            from("Group")
-                .where({ _id: payload.data })
-                .include("User")
-                .exec()
-                .then((groups) => {
-                    if (groups && groups.length > 0) {
-                        const group = groups[0];
-                        const groupMemberList =
-                            document.getElementById("group-members");
-                        if (groupMemberList && group.user) {
-                            groupMemberList.innerHTML = "";
-                            group.user.forEach(async (groupUser: User) => {
-                                groupMemberList.appendChild(
-                                    await jsx(Profile, { groupUser })
-                                );
-                            });
-                        }
-                    }
-                });
+    const getGroup = async (groupId: string) => {
+        console.log("Getting group:", groupId);
+        const group = await from("Group")
+            .include("Chat.Message")
+            .where({ _id: groupId })
+            .exec({ stateKey: `group:${groupId}` });
 
-            const { provider, ydoc } = P2P();
-            if (!provider) return;
-            messaging(provider, ydoc);
-        }
-    );
+        console.log("Group data:", group);
+        return group;
+    };
 
     return (
         <Grid columns="1fr 2fr" gap="xxl" grow>
-            <GridItem column="1" direction="column" gap="md">
+            <GridItem column="1" direction="column">
                 <List gap="xs" pad="md">
                     {chatGroups.map((group) => (
                         <ListItem
-                            onClick={() => {
-                                eventBus.publish(
-                                    "group",
-                                    "group-select",
-                                    group._id
-                                );
-                            }}
+                            onClick={() => getGroup(group._id)}
                             pad="sm"
                             background="bg"
                             radius="xs"
@@ -109,10 +66,14 @@ export default async () => {
                         </ListItem>
                     ))}
                 </List>
-                <List id="group-members" gap="xs" pad="md">
-                    <ListItem>
-                        <Text>Create Group</Text>
-                    </ListItem>
+                <List gap="xs" pad="md">
+                    {(
+                        await stateManager.get<User[]>(
+                            `members:${selectedGroupId}`
+                        )
+                    )?.map((user) => (
+                        <Profile groupUser={user} />
+                    ))}
                 </List>
             </GridItem>
             <GridItem
@@ -124,15 +85,15 @@ export default async () => {
                 fullHeight
                 grow
             >
-                <Column
-                    id="chat-messages"
-                    direction="column"
-                    pad="xl"
-                    gap="xl"
-                    grow
-                    fullHeight
-                    scrollable
-                ></Column>
+                <Column pad="xl" gap="xl" grow fullHeight scrollable>
+                    {(
+                        await stateManager.get<MessageType[]>(
+                            `messages:${selectedGroupId}`
+                        )
+                    )?.map((message) => (
+                        <Message message={message} />
+                    ))}
+                </Column>
                 <Input />
             </GridItem>
         </Grid>

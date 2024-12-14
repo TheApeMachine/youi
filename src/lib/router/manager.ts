@@ -3,9 +3,6 @@ import { eventManager } from '@/lib/event';
 import { EventPayload } from '@/lib/event/types';
 import { AuthService } from '@/lib/auth';
 import gsap from 'gsap';
-import { Flip } from 'gsap/Flip';
-
-gsap.registerPlugin(Flip);
 
 // Public routes that don't require authentication
 const publicRoutes = ['/login', '/signup', '/forgot-password'];
@@ -38,10 +35,8 @@ export const RouterManager = () => {
                 // Handle the message first
                 switch (type) {
                     case 'updateView':
+                        console.log("[Router] Updating view", payload);
                         await updateView(payload);
-                        break;
-                    case 'islandUpdated':
-                        await updateIsland(payload);
                         break;
                     case 'ready':
                         console.log('[Router] Worker ready:', payload);
@@ -69,103 +64,25 @@ export const RouterManager = () => {
         };
     };
 
-    const updateView = async ({ slide, island, isNew }: { slide: string, island?: string, isNew: boolean }) => {
-        console.log("Updating view", slide, island, isNew);
+    const updateView = async ({ content, target, params }: { content: string, target: string, params?: any }) => {
         try {
-            const module = await import(`/src/routes/${slide}.tsx`);
+            const module = await import(`/src/routes/${content}.tsx`);
             const Component = module.default;
+            if (!Component) throw new Error(`No default export found in ${content} module`);
 
-            console.log("Component", typeof Component);
+            const vnode = await Component({ params });
+            const targetElement = document.querySelector(target) || document.body;
 
-            if (!Component) {
-                throw new Error(`No default export found in ${slide} module`);
-            }
+            const transition = document.startViewTransition(async () => {
+                await renderApp(vnode, targetElement);
+            });
 
-            // Create a props object for the component
-            const props = {
-                id: slide, // Use slide as default id
-                data: {
-                    data: []
-                } // Default data object
-            };
-
-            const vnode = await Component();
-            renderApp(vnode, document.body);
-
+            await transition.finished;
         } catch (error) {
             console.error('Error in updateView:', error);
-            document.body.innerHTML = `<div class="error">Error loading ${slide}: ${error}</div>`;
+            const targetElement = document.querySelector(target) || document.body;
+            targetElement.innerHTML = `<div class="error">Error loading ${content}: ${error}</div>`;
         }
-    };
-
-    const updateIsland = async ({ islandId, route }: { islandId: string, route: string }) => {
-        console.log("Updating island", islandId, route);
-
-        const module = await import(`/src/routes/islands/${route}.tsx`);
-        type SectionKey = 'header' | 'aside' | 'main' | 'article' | 'footer';
-
-        const sections: Record<SectionKey, (() => Promise<JSX.Element>) | null> = {
-            header: module.Header || null,
-            aside: module.Aside || null,
-            main: module.Main || null,
-            article: module.Article || null,
-            footer: module.Footer || null
-        };
-
-        const { variants } = await import('@/lib/ui/dynamic-island/variants');
-        const config = module.variant ? variants[module.variant] : null;
-
-        const island = document.querySelector(`[data-island="${islandId}"]`) as HTMLElement;
-        if (!island) return;
-
-
-        const props = {
-            id: islandId,
-            variant: module.variant
-        }
-
-        const newChildren = jsx(Fragment, {},
-            [
-                jsx('header', {},
-                    sections.header ? await sections.header() : null
-                ),
-                jsx('aside', {},
-                    sections.aside ? await sections.aside() : null
-                ),
-                jsx('main', {},
-                    sections.main ? await sections.main() : null
-                ),
-                jsx('article', {},
-                    sections.article ? await sections.article() : null
-                ),
-                jsx('footer', {},
-                    sections.footer ? await sections.footer() : null
-                )
-            ]
-        );
-
-        const element = jsx(
-            'div',
-            {
-                ...props,
-                style: config?.styles ? Object.fromEntries(
-                    Object.entries(config.styles).map(([k, v]) => [k, String(v)])
-                ) : undefined,
-                transitionEnter: () => {
-                    gsap.from(island, { opacity: 0, duration: 0.3 });
-                },
-                transitionExit: () => {
-                    gsap.to(island, { opacity: 0, duration: 0.3 });
-                }
-            },
-            newChildren
-        );
-
-        // Render the element via the virtual DOM
-        jsx(
-            element,
-            island
-        );
     };
 
     const sendWorkerMessage = async (type: string, payload: any): Promise<any> => {
@@ -206,7 +123,6 @@ export const RouterManager = () => {
             console.log("[Router] System ready status:", isReady);
 
             if (isReady) {
-                // Only do auth checks if system is ready
                 const isPublicRoute = publicRoutes.some(route => path.startsWith(route));
                 const isAuthenticated = await AuthService.isAuthenticated();
                 console.log("[Router] Auth status:", { isPublicRoute, isAuthenticated });
@@ -217,22 +133,20 @@ export const RouterManager = () => {
                     path = '/';
                 }
 
-                // Parse the path to handle dynamic islands
-                const [_, islandId, islandRoute] = path.split('/').filter(Boolean);
+                console.log("[Router] Sending navigate message to worker:", { path });
 
-                if (islandId && islandRoute) {
-                    console.log("[Router] Handling island navigation:", { islandId, islandRoute });
-                    // Handle dynamic island update
-                    await updateIsland({
-                        islandId,
-                        route: islandRoute
-                    });
-                } else {
-                    console.log("[Router] Sending navigate message to worker:", { path });
-                    // Regular slide navigation
+                const segments = path.split('/').filter(Boolean);
+                const isIslandUpdate = segments.length > 1;
+
+                const params = isIslandUpdate ? {
+                    id: segments[segments.length - 2]
+                } : undefined;
+
+                if (!isIslandUpdate) {
                     history.pushState(null, '', path);
-                    await sendWorkerMessage('navigate', { path });
                 }
+
+                await sendWorkerMessage('navigate', { path, params });
             } else {
                 console.warn("[Router] System not ready after maximum attempts");
             }

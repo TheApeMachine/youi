@@ -27,9 +27,9 @@ const createRouterWorker = () => {
         const path = payload.path || '/';
         const segments = path.split('/').filter(Boolean);
 
-        // First segment is always the slide
-        const targetSlide = segments[0] || 'home';
-        const targetIsland = segments[1];
+        // First segment is the slide, but for islands we want the last segment
+        const targetIsland = segments.length > 2 ? segments[2] : undefined;
+        const targetSlide = targetIsland ? `islands/${targetIsland}` : (segments[0] || 'home');
 
         // Update state
         state.currentSlide = targetSlide;
@@ -39,17 +39,11 @@ const createRouterWorker = () => {
             state.slideHistory.push(targetSlide);
         }
 
-        console.log('[Worker] Sending updateView message:', {
-            slide: targetSlide,
-            island: targetIsland,
-            isNew: !state.islandStates.has(targetSlide)
-        });
-
-        // Notify main thread to update the view
+        // Format payload to match updateView expectations
         postResponse('updateView', {
-            slide: targetSlide,
-            island: targetIsland,
-            isNew: !state.islandStates.has(targetSlide)
+            content: targetSlide,
+            target: targetIsland ? `[data-island="${segments[1]}"]` : 'body',
+            params: { id: segments[1] }
         }, id);
     };
 

@@ -1,5 +1,5 @@
 .button-group {
-    >button {
+    > button {
         border-radius: 0;
 
         &:first-child {
@@ -27,6 +27,7 @@
     cursor: pointer;
     background: var(--surface);
     color: var(--fg);
+    view-transition-name: button;
 }
 
 .button-primary {
@@ -156,7 +157,7 @@
         border-bottom-left-radius: var(--space-xxs);
         border-bottom-right-radius: var(--space-xxs);
 
-        >* {
+        > * {
             color: var(--color-brand);
             transform: scale(1.1);
         }

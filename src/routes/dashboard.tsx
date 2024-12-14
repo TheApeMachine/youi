@@ -22,7 +22,7 @@ export default async () => {
     console.log(dbUser);
 
     return (
-        <Grid className="dashboard-grid" gap="xl">
+        <Grid className="dashboard-grid">
             <GridItem area="actions" order={{ sm: 2 }}>
                 <Actions />
             </GridItem>

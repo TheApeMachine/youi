@@ -1,4 +1,4 @@
-@import "./components/alwaysgoodgrid.css";
+@import "./components/dynamic-island.css";
 @import "./components/form.css";
 @import "./components/avatar.css";
 @import "./components/dashboard.css";
@@ -11,3 +11,4 @@
 @import "./components/card.css";
 @import "./components/chat.css";
 @import "./components/hud.css";
+@import "./components/badge.css";

@@ -1,5 +1,4 @@
 import { jsx } from "@/lib/vdom";
-import { createEventProps } from "@/lib/event/dom";
 import Icon from "@/lib/ui/icon/Icon";
 
 export type ButtonVariant =
@@ -38,7 +37,6 @@ export default async ({
     type = variant === "submit" ? "submit" : "button",
     ...props
 }: ButtonProps) => {
-    const eventProps = createEventProps("button");
     const baseClass = "button";
     const variantClass = `${baseClass}-${variant}`;
     const colorClass = `${baseClass}-${color}`;
@@ -63,7 +61,6 @@ export default async ({
             class={classes}
             disabled={disabled || loading}
             onClick={onClick}
-            {...eventProps}
             {...props}
         >
             {buttonIcon && <Icon icon={buttonIcon} color={color} />}

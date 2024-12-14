@@ -159,23 +159,23 @@ export const render = async (
     container: Element | DocumentFragment,
 ) => {
     console.log("render", vnode, container);
-    // Ensure state manager is initialized
     await stateManager.init();
 
-    // Create new DOM node
-    const newDom = await diff(null, vnode);
+    const existingNode = container.firstChild;
+    const newNode = await diff(existingNode, vnode);
 
-    // Clear the container
-    if (container instanceof Element) {
-        container.innerHTML = '';
-    } else {
-        while (container.firstChild) {
-            container.removeChild(container.firstChild);
-        }
+    // Check if the new node is already in the correct position
+    if (newNode.parentNode === container) {
+        return;
     }
 
-    // Append the new DOM node
-    container.appendChild(newDom);
+    if (!existingNode) {
+        container.appendChild(newNode);
+    } else if (existingNode.parentNode === container) {
+        container.replaceChild(newNode, existingNode);
+    } else {
+        container.appendChild(newNode);
+    }
 };
 
 const handlePromise = async (vnode: Promise<VNode>, dom: Node | null) => {
@@ -495,15 +495,6 @@ const handleSpecialProps = (element: Element, props?: Props | null) => {
                 });
                 observer.observe(document.body, { childList: true, subtree: true });
             }
-        });
-    }
-
-
-    // Handle transitions
-    if (props.transitionEnter || props.transitionExit) {
-        Transition(element, {
-            enter: props.transitionEnter || (() => { }),
-            exit: props.transitionExit || (() => { }),
         });
     }
 };

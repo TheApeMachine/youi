@@ -1,19 +1,72 @@
 import { ToBinary } from "./utils";
-
 import { fetchCollection, updateCollection } from "./client";
 
+// Add this type definition at the top of the file
+type CollectionName = keyof typeof COLLECTION_RELATIONSHIPS;
+
 export interface QueryProps {
-    collection: string;
+    collection: CollectionName;
     fields?: string[];
     where?: Record<string, any>;
-    joins?: Array<{
-        collection: string;
-        localField: string;
-        foreignField: string;
-    }>;
+    joins?: string[];
     limit?: number;
     offset?: number;
     sort?: { field: string; order: "asc" | "desc" };
+}
+
+interface Join {
+    from: string;
+    localField: string;
+    foreignField: string;
+    as: string;
+    isArray: boolean;
+    nested?: Join;
+}
+
+// Define known relationships between collections with nested relationships
+const COLLECTION_RELATIONSHIPS = {
+    Group: {
+        Chat: {
+            localField: "_id",
+            foreignField: "GroupId",
+            isArray: false,
+            includes: {
+                Message: {
+                    localField: "_id",
+                    foreignField: "ChatId",
+                    isArray: true
+                }
+            }
+        }
+    }
+} as const;
+
+const handlePrimaryJoin = (collection: CollectionName, primary: string, nested?: string) => {
+    const relationship = COLLECTION_RELATIONSHIPS[collection as keyof typeof COLLECTION_RELATIONSHIPS][primary as keyof (typeof COLLECTION_RELATIONSHIPS)[keyof typeof COLLECTION_RELATIONSHIPS]];
+    if (!relationship) {
+        throw new Error(`No relationship defined from ${collection} to ${primary}`);
+    }
+
+    const primaryJoin = {
+        from: primary,
+        localField: relationship.localField,
+        foreignField: relationship.foreignField,
+        as: primary.toLowerCase(),
+        isArray: relationship.isArray || false
+    };
+
+    if (nested && relationship.includes?.[nested as keyof typeof relationship.includes]) {
+        const nestedRel = relationship.includes[nested as keyof typeof relationship.includes];
+        return [primaryJoin, {
+            from: nested,
+            localField: `${primary.toLowerCase()}._id`,
+            foreignField: nestedRel.foreignField,
+            as: `${primary.toLowerCase()}_${nested.toLowerCase()}`,
+            isArray: nestedRel.isArray || false
+        }];
+    }
+
+    return primaryJoin;
 }
 
 export const query = async ({
@@ -24,56 +77,65 @@ export const query = async ({
     limit = 20,
     offset = 0,
     sort
-}: QueryProps) => {
-    const options: any = {
+}: QueryProps, options?: { stateKey?: string }) => {
+    console.log('Query Input:', { collection, fields, where, joins, limit, offset, sort });
+
+    const fetchOptions: any = {
         query: where,
         projection: fields,
         limit,
-        offset
+        offset,
+        stateKey: options?.stateKey
     };
 
     if (sort) {
-        options.sort = { [sort.field]: sort.order === "asc" ? 1 : -1 };
+        fetchOptions.sort = { [sort.field]: sort.order === "asc" ? 1 : -1 };
     }
 
     if (joins?.length) {
-        // Get initial results with first join
-        const firstJoin = joins[0];
-        options.join = {
-            from: firstJoin.collection,
-            localField: firstJoin.localField,
-            foreignField: firstJoin.foreignField,
-            as: firstJoin.collection.toLowerCase()
-        };
+        console.log('Processing joins:', joins);
+        // Convert simple join names to full join configurations
+        fetchOptions.joins = joins.map(join => {
+            console.log('Processing join:', join);
 
-        let results = await fetchCollection(collection, options);
+            // If it's a string (e.g., "Chat.Message")
+            if (typeof join === 'string') {
+                const [primary, nested] = join.split('.');
+                console.log('Split join:', { primary, nested });
 
-        // Handle additional joins
-        if (joins.length > 1) {
-            for (let i = 1; i < joins.length; i++) {
-                const join = joins[i];
-                const joinOptions = {
-                    ...options,
-                    join: {
-                        from: join.collection,
-                        localField: join.localField,
-                        foreignField: join.foreignField,
-                        as: join.collection.toLowerCase()
-                    },
-                    initialData: results
-                };
-                results = await fetchCollection(collection, joinOptions);
+                if (!(collection in COLLECTION_RELATIONSHIPS)) {
+                    throw new Error(`Invalid collection: ${collection}`);
+                }
+
+                return handlePrimaryJoin(collection, primary, nested);
             }
-        }
 
-        // Return first item if limit is 1
-        return limit === 1 ? results[0] || null : results;
+            if (typeof join === 'object' && 'from' in join) {
+                const typedJoin = join as Join;  // Type assertion
+                // Check if it is a nested join. If yes, return as is
+                if (typedJoin.nested) {
+                    return [typedJoin, {
+                        from: typedJoin.nested.from,
+                        localField: `${typedJoin.as}._id`,
+                        foreignField: typedJoin.nested.foreignField,
+                        as: `${typedJoin.as}_${typedJoin.nested.as}`,
+                        isArray: typedJoin.nested.isArray
+                    }];
+                }
+                // Otherwise, return this join as it is.
+                return typedJoin;
+            }
+
+
+            throw new Error(`Invalid join configuration: ${JSON.stringify(join)}`);
+        }).flat();
     }
 
-    const results = await fetchCollection(collection, options);
-    // Return first item if limit is 1
+    console.log('Final fetchOptions:', fetchOptions);
+    const results = await fetchCollection(collection, fetchOptions);
     return limit === 1 ? results[0] || null : results;
 };
+
 
 // Type for the smart query builder
 type QueryBuilder = {
@@ -83,7 +145,7 @@ type QueryBuilder = {
     limit: (num: number) => QueryBuilder;
     sortBy: (field: string, direction?: "asc" | "desc") => QueryBuilder;
     include: (...relations: string[]) => QueryBuilder;
-    exec: () => Promise<any[]>;
+    exec: (options?: { stateKey?: string }) => Promise<any>;
     count: () => Promise<number>;
     set: (data: Record<string, any>) => Promise<any>;
     softDelete: () => Promise<void>;
@@ -107,7 +169,7 @@ type WhereConditions = Record<string, any>;
 // Smart query function - now accepts PascalCase collection names
 export const from = (collection: string): QueryBuilder => {
     let state = {
-        collection: toPascalCase(collection),
+        collection: toPascalCase(collection) as CollectionName,
         fields: [] as string[],
         where: {} as WhereConditions,
         joins: [] as any[],
@@ -231,19 +293,25 @@ export const from = (collection: string): QueryBuilder => {
         },
 
         include: (...relations: string[]) => {
+            let newJoins = [...state.joins];
             relations.forEach(relation => {
-                const relationName = toPascalCase(relation);
-                state.joins.push({
-                    collection: relationName,
-                    localField: `${relationName}Id`,
-                    foreignField: "_id"
-                });
+                const [primary, nested] = relation.split('.');
+                const joins = handlePrimaryJoin(state.collection, primary, nested);
+
+                // handlePrimaryJoin returns either a single join or an array of joins
+                if (Array.isArray(joins)) {
+                    newJoins.push(...joins);
+                } else {
+                    newJoins.push(joins);
+                }
             });
+
+            state.joins = newJoins;
             return builder;
         },
 
-        exec: async () => {
-            return query(state);
+        exec: async (options?: { stateKey?: string }) => {
+            return query(state, options);
         },
 
         count: async () => {

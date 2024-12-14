@@ -15,7 +15,9 @@ export type Field = {
     | "textarea"
     | "file";
     label: string;
+    placeholder?: string;
     required: boolean;
+    icon?: string;
     value?: any;
     error?: string;
 };
@@ -266,6 +268,7 @@ export default async ({
                     <TextField
                         type={field.type as "text" | "email" | "password"}
                         label={field.label}
+                        placeholder={field.placeholder}
                         name={name}
                         value={currentState.values[name] || ""}
                         required={field.required}

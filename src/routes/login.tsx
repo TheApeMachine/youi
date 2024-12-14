@@ -52,12 +52,14 @@ export const Login = async (): Promise<JSX.Element> => {
                             email: {
                                 type: "email",
                                 label: "Email",
+                                placeholder: "Enter your email",
                                 icon: "person",
                                 required: true
                             },
                             password: {
                                 type: "password",
                                 label: "Password",
+                                placeholder: "Enter your password",
                                 icon: "lock",
                                 required: true
                             }

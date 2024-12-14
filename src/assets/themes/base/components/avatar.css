@@ -1,0 +1,28 @@
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-offset);
+    border-radius: 50%;
+    box-shadow: var(--ring) var(--color-brand);
+    outline: 8px solid var(--color-bg);
+    outline-offset: 2px;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    &.md {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    &.xxl {
+        transform: translateY(-20px);
+        width: 10rem;
+        height: 10rem;
+    }
+}

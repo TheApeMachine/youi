@@ -1,0 +1,25 @@
+.text {
+    &.brand {
+        color: var(--color-brand);
+    }
+
+    &.offset {
+        color: var(--color-text-offset);
+    }
+
+    &.muted {
+        color: var(--color-muted);
+    }
+
+    &.danger {
+        color: var(--color-danger);
+    }
+
+    &.success {
+        color: var(--color-success);
+    }
+
+    &.warning {
+        color: var(--color-warning);
+    }
+}

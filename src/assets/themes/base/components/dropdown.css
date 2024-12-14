@@ -1,0 +1,22 @@
+.dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .dropdown-content {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: opacity var(--transition-medium) var(--ease-in-out),
+            visibility var(--transition-medium) var(--ease-in-out),
+            transform var(--transition-medium) var(--ease-in-out);
+        z-index: 1000;
+
+        &.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+    }
+}

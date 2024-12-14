@@ -1,13 +1,16 @@
 import { jsx } from "@/lib/vdom";
 import { Column } from "@/lib/ui/flex/Flex";
+import Icon from "../icon/Icon";
 
 export default async ({
     type = "text",
     label,
     name,
+    icon,
     value = "",
     error,
     required = false,
+    placeholder,
     onChange,
     onBlur,
     ...props
@@ -15,9 +18,11 @@ export default async ({
     type?: "text" | "email" | "password";
     label?: string;
     name: string;
+    icon?: string;
     value?: string;
     error?: string;
     required?: boolean;
+    placeholder?: string;
     onChange?: (value: string) => void;
     onBlur?: (value: string) => void;
 }) => {
@@ -33,6 +38,7 @@ export default async ({
 
     return (
         <Column className="field">
+            {icon && <Icon icon={icon} />}
             <label for={name}>{label}</label>
             <input
                 id={name}
@@ -40,6 +46,7 @@ export default async ({
                 name={name}
                 value={value}
                 required={required}
+                placeholder={placeholder}
                 className={error ? "error" : ""}
                 onInput={handleChange}
                 onBlur={handleBlur}

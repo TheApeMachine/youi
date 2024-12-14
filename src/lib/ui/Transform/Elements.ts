@@ -1,5 +1,5 @@
 import { jsx as h } from "@/lib/vdom";
-import { DynamicIsland, getAnimation } from "../DynamicIsland";
+import { DynamicIsland, getAnimation } from "../dynamic-island/DynamicIsland";
 import { TemplateObject } from "../types";
 import gsap from "gsap";
 export const Elements = async () => {

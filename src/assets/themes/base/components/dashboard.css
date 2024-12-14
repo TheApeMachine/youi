@@ -1,0 +1,27 @@
+.dashboard-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+        "actions profile calendar"
+        "metrics activity calendar";
+}
+
+.grid-area-actions {
+    grid-area: actions;
+}
+
+.grid-area-profile {
+    grid-area: profile;
+}
+
+.grid-area-calendar {
+    grid-area: calendar;
+}
+
+.grid-area-metrics {
+    grid-area: metrics;
+}
+
+.grid-area-activity {
+    grid-area: activity;
+}

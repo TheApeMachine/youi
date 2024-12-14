@@ -1,0 +1,64 @@
+form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--form-gap);
+}
+
+.field {
+    gap: var(--field-gap);
+    transition: var(--transition-all-long);
+
+    &:has(input:focus),
+    &:has(.error-message),
+    &:has(input:not(:placeholder-shown)) {
+        > label {
+            transform: translate(0, 0);
+            color: var(--color-text);
+        }
+    }
+
+    &:has(input:focus) {
+        .error-message {
+            transform: translateY(0);
+            color: var(--color-danger);
+            transition: var(--transition-all-long);
+        }
+    }
+
+    >label {
+        text-align: left;
+        color: var(--color-text-muted);
+        transform: translate(10%, 210%);
+        transition: var(--transition-all-long);
+    }
+
+    >input {
+        --is-valid: 0;
+        --is-invalid: 1;
+        padding: var(--field-padding);
+        gap: var(--field-gap);
+        background: var(--surface-background);
+        border: var(--surface-border);
+        border-radius: var(--field-border-radius);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        max-width: 100%;
+        width: 100%;
+        color: var(--color-text);
+        outline: none;
+        font-weight: 200;
+        box-shadow: var(--surface-shadow);
+        transition: var(--transition-all-long);
+
+        &.error {
+            background: var(--surface-background-error);
+        }
+    }
+
+    .error-message {
+        transform: translateY(-210%);
+        color: var(--color-danger);
+        transition: var(--transition-all-long);
+        pointer-events: none;
+    }
+}

@@ -112,7 +112,7 @@
 
     --form-gap: var(--space-md);
 
-    --field-padding: var(--space-sm);
+    --field-padding: var(--space-sm) var(--space-lg);
     --field-border-radius: var(--radius-xxl);
     --field-gap: var(--space-sm);
 

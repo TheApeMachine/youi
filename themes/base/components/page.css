@@ -5,32 +5,30 @@
     padding: var(--md);
     background: var(--color-background);
 
-    > * {
+    >* {
         background: var(--color-background);
         border: var(--border);
         border-radius: var(--radius);
     }
 
-    > header {
+    >header {
         align-items: center;
         justify-content: space-between;
         padding: var(--md);
     }
 
-    > aside {
+    >aside {
         padding: var(--md);
         overflow-y: auto;
     }
 
-    > main {
-        grid-area: main;
-        display: flex;
+    >main {
         align-items: center;
         justify-content: center;
         padding: var(--md);
     }
 
-    > article {
+    >article {
         grid-area: article;
         padding: var(--md);
         display: flex;
@@ -43,7 +41,7 @@
         }
     }
 
-    > footer {
+    >footer {
         grid-area: footer;
         text-align: center;
         padding: var(--md);

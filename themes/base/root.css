@@ -10,28 +10,19 @@
     --xl: calc(1.5 * var(--unit));
     --xxl: calc(2 * var(--unit));
 
+    /* Border */
+    --border-width: 1px;
+    --border-style: solid;
+
     /* Border radius */
     --radius: var(--unit);
-    --radius-xxs: calc(0.25 * var(--unit));
-    --radius-xs: calc(0.5 * var(--unit));
-    --radius-sm: calc(0.75 * var(--unit));
-    --radius-md: calc(1 * var(--unit));
-    --radius-lg: calc(1.25 * var(--unit));
-    --radius-xl: calc(1.5 * var(--unit));
-    --radius-xxl: calc(2 * var(--unit));
-
-    /* Transitions */
-    --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-duration: 0.3s;
-    --hover-transform: translateY(-2px);
-
-    /* Common transitions */
-    --transition-all: all var(--transition-duration) var(--transition-timing);
-    --transition-transform: transform var(--transition-duration) var(--transition-timing);
-    --transition-opacity: opacity var(--transition-duration) var(--transition-timing);
-    --transition-colors: background var(--transition-duration) var(--transition-timing),
-        border var(--transition-duration) var(--transition-timing),
-        color var(--transition-duration) var(--transition-timing);
+    --radius-xxs: var(--xxs);
+    --radius-xs: var(--xs);
+    --radius-sm: var(--sm);
+    --radius-md: var(--md);
+    --radius-lg: var(--lg);
+    --radius-xl: var(--xl);
+    --radius-xxl: var(--xxl);
 }
 
 /* Light mode tokens */
@@ -47,8 +38,6 @@
     --color-error: #FF3B30;
 
     /* Borders */
-    --border-width: 1px;
-    --border-style: solid;
     --border-color: rgba(0, 0, 0, 0.1);
     --border: var(--border-width) var(--border-style) var(--border-color);
     --border-hover: var(--border-width) var(--border-style) rgba(0, 0, 0, 0.2);
@@ -72,8 +61,6 @@
     --color-error: #FF453A;
 
     /* Borders */
-    --border-width: 1px;
-    --border-style: solid;
     --border-color: rgba(255, 255, 255, 0.1);
     --border: var(--border-width) var(--border-style) var(--border-color);
     --border-hover: var(--border-width) var(--border-style) rgba(255, 255, 255, 0.2);

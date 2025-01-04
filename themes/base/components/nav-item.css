@@ -1,27 +1,37 @@
+:root {
+    --nav-item-background: var(--color-background);
+    --nav-item-border: var(--border);
+    --nav-item-border-radius: var(--radius);
+    --nav-item-padding: var(--sm);
+    --nav-item-gap: var(--xs);
+    --nav-item-font-size: var(--font-size-sm);
+    --nav-item-font-weight: var(--font-weight-medium);
+}
+
 .dynamic-island.nav-item {
     display: flex;
     flex-direction: column;
-    gap: var(--xs);
-    padding: var(--sm);
-    background: var(--color-background);
-    border: var(--border);
-    border-radius: var(--radius);
+    gap: var(--nav-item-gap);
+    padding: var(--nav-item-padding);
+    height: unset;
+    background: var(--nav-item-background);
+    border: var(--nav-item-border);
+    border-radius: var(--nav-item-border-radius);
     cursor: pointer;
-    transition: var(--transition-all);
 
     >header {
-        font-size: 1.1em;
-        font-weight: 500;
+        font-size: var(--nav-item-font-size);
+        font-weight: var(--nav-item-font-weight);
     }
 
     >main {
-        font-size: 0.9em;
-        opacity: 0.7;
+        font-size: var(--nav-item-main-font-size);
+        opacity: var(--nav-item-main-opacity);
     }
 
     &:hover {
-        background: var(--color-background-hover);
-        border: var(--border-hover);
-        transform: var(--hover-transform);
+        background: var(--nav-item-background-hover);
+        border: var(--nav-item-border-hover);
+        transform: var(--nav-item-hover-transform);
     }
 }

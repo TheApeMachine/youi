@@ -1,24 +1,22 @@
-export const Button = () => {
+export const Button = (label = "Dynamic Island", onMorph = null) => {
     const classes = ["button"];
 
-    const header = () => {
-        return "";
+    const state = {
+        label
     };
 
-    const aside = () => {
-        return "";
-    };
+    const header = () => "";
+    const aside = () => "";
+    const main = () => state.label;
+    const article = () => "";
+    const footer = () => "";
 
-    const main = () => {
-        return "Dynamic Island";
-    };
-
-    const article = () => {
-        return "";
-    };
-
-    const footer = () => {
-        return "";
+    const morphs = {
+        onClick: () => {
+            if (onMorph) {
+                return onMorph();
+            }
+        }
     };
 
     return {
@@ -27,8 +25,10 @@ export const Button = () => {
         aside,
         main,
         article,
-        footer
-    }
-}
+        footer,
+        state,
+        morphs
+    };
+};
 
 export default Button;

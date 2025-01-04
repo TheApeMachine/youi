@@ -1,0 +1,51 @@
+.dynamic-island.page {
+    position: fixed;
+    inset: 0;
+    gap: var(--md);
+    padding: var(--md);
+    background: var(--color-background);
+
+    > * {
+        background: var(--color-background);
+        border: var(--border);
+        border-radius: var(--radius);
+    }
+
+    > header {
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--md);
+    }
+
+    > aside {
+        padding: var(--md);
+        overflow-y: auto;
+    }
+
+    > main {
+        grid-area: main;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--md);
+    }
+
+    > article {
+        grid-area: article;
+        padding: var(--md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--md);
+
+        .token-controls-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+    }
+
+    > footer {
+        grid-area: footer;
+        text-align: center;
+        padding: var(--md);
+    }
+}

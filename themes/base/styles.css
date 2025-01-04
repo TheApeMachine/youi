@@ -1,8 +1,8 @@
 /* Base styles */
-@import url("root.css");
 @import url("reset.css");
-@import url("layout.css");
+@import url("root.css");
 @import url("animation.css");
+@import url("layout.css");
 
 /* Components */
 @import url("components/dynamic-island.css");

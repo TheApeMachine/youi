@@ -1,4 +1,5 @@
 .dynamic-island {
+    position: relative;
     display: grid;
     grid-template-areas:
         "header header header"
@@ -6,40 +7,35 @@
         "footer footer footer";
     grid-template-columns: auto 1fr auto;
     grid-template-rows: auto 1fr auto;
-    background: var(--color-background);
-    overflow: hidden;
-    min-height: 48px;
+    width: 100%;
+    height: 100%;
 
-    &:not(.page) {
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    >header,
-    >aside,
-    >main,
-    >article,
-    >footer {
+    > header,
+    > aside,
+    > main,
+    > article,
+    > footer {
         display: flex;
     }
 
-    >header {
+    > header {
         grid-area: header;
     }
 
-    >aside {
+    > aside {
         grid-area: aside;
     }
 
-    >main {
+    > main {
         grid-area: main;
+        width: 100%;
     }
 
-    >article {
+    > article {
         grid-area: article;
     }
 
-    >footer {
+    > footer {
         grid-area: footer;
     }
 }

@@ -1,40 +1,48 @@
-const DynamicIsland = ({
-    classes = [],
-    header,
-    aside,
-    main,
-    article,
-    footer,
-    onClick = null,
-    onSelect = null
-}) => {
+const DynamicIsland = (component) => {
     const id = window.crypto.randomUUID();
+
+    // Extract component configuration
+    const {
+        classes = [],
+        header = () => "",
+        aside = () => "",
+        main = () => "",
+        article = () => "",
+        footer = () => "",
+        onClick,
+        onSelect
+    } = component;
 
     const init = () => {
         const island = document.createElement("div");
         island.id = id;
         island.className = ["dynamic-island", ...classes].join(" ");
+        island.style.viewTransitionName = `island-${id}`;
 
+        // Create the five fundamental elements with unique IDs
         const headerElement = document.createElement("header");
+        headerElement.id = `${id}-header`;
+
         const asideElement = document.createElement("aside");
+        asideElement.id = `${id}-aside`;
+
         const mainElement = document.createElement("main");
+        mainElement.id = `${id}-main`;
+
         const articleElement = document.createElement("article");
+        articleElement.id = `${id}-article`;
+
         const footerElement = document.createElement("footer");
+        footerElement.id = `${id}-footer`;
 
-        // Set unique view transition names based on component class
-        const componentClass = classes[0] || 'default';
-        headerElement.style.viewTransitionName = `${componentClass}-header`;
-        asideElement.style.viewTransitionName = `${componentClass}-aside`;
-        mainElement.style.viewTransitionName = `${componentClass}-main`;
-        articleElement.style.viewTransitionName = `${componentClass}-article`;
-        footerElement.style.viewTransitionName = `${componentClass}-footer`;
+        // Add content with ID for component use
+        headerElement.append(header(id));
+        asideElement.append(aside(id));
+        mainElement.append(main(id));
+        articleElement.append(article(id));
+        footerElement.append(footer(id));
 
-        headerElement.append(header());
-        asideElement.append(aside());
-        mainElement.append(main());
-        articleElement.append(article());
-        footerElement.append(footer());
-
+        // Maintain structure
         island.append(
             headerElement,
             asideElement,
@@ -43,35 +51,90 @@ const DynamicIsland = ({
             footerElement
         );
 
+        // Handle events
         if (onClick) {
-            island.addEventListener('click', onClick);
+            island.addEventListener('click', (e) => {
+                // Don't trigger onClick if clicking a list item
+                if (!e.target.closest('li')) {
+                    document.startViewTransition(() => {
+                        onClick(id, e);
+                    });
+                }
+            });
+        }
+
+        if (onSelect) {
+            island.addEventListener('click', (e) => {
+                const item = e.target.closest('li');
+                if (item) {
+                    e.stopPropagation();
+                    document.startViewTransition(() => {
+                        onSelect(id, item.textContent, e);
+                    });
+                }
+            });
         }
 
         return island;
-    }
+    };
 
-    const update = (newProps) => {
+    const update = (newComponent) => {
         const island = document.getElementById(id);
         if (!island) return;
 
         document.startViewTransition(() => {
-            const headerEl = island.querySelector("header");
-            const asideEl = island.querySelector("aside");
-            const mainEl = island.querySelector("main");
-            const articleEl = island.querySelector("article");
-            const footerEl = island.querySelector("footer");
+            const {
+                classes: newClasses = [],
+                header: newHeader = () => "",
+                aside: newAside = () => "",
+                main: newMain = () => "",
+                article: newArticle = () => "",
+                footer: newFooter = () => "",
+                onClick: newOnClick,
+                onSelect: newOnSelect
+            } = newComponent;
 
-            headerEl.innerHTML = '';
-            asideEl.innerHTML = '';
-            mainEl.innerHTML = '';
-            articleEl.innerHTML = '';
-            footerEl.innerHTML = '';
+            // Update classes
+            island.className = ["dynamic-island", ...newClasses].join(" ");
 
-            headerEl.append(newProps.header());
-            asideEl.append(newProps.aside());
-            mainEl.append(newProps.main());
-            articleEl.append(newProps.article());
-            footerEl.append(newProps.footer());
+            // Update content
+            const headerEl = document.getElementById(`${id}-header`);
+            const asideEl = document.getElementById(`${id}-aside`);
+            const mainEl = document.getElementById(`${id}-main`);
+            const articleEl = document.getElementById(`${id}-article`);
+            const footerEl = document.getElementById(`${id}-footer`);
+
+            headerEl.replaceChildren(newHeader(id));
+            asideEl.replaceChildren(newAside(id));
+            mainEl.replaceChildren(newMain(id));
+            articleEl.replaceChildren(newArticle(id));
+            footerEl.replaceChildren(newFooter(id));
+
+            // Update event handlers
+            const newIsland = island.cloneNode(true);
+            island.replaceWith(newIsland);
+
+            if (newOnClick) {
+                newIsland.addEventListener('click', (e) => {
+                    if (!e.target.closest('li')) {
+                        document.startViewTransition(() => {
+                            newOnClick(id, e);
+                        });
+                    }
+                });
+            }
+
+            if (newOnSelect) {
+                newIsland.addEventListener('click', (e) => {
+                    const item = e.target.closest('li');
+                    if (item) {
+                        e.stopPropagation();
+                        document.startViewTransition(() => {
+                            newOnSelect(id, item.textContent, e);
+                        });
+                    }
+                });
+            }
         });
     };
 

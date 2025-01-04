@@ -11,40 +11,51 @@
     --dropdown-hover-transform: var(--hover-transform);
 }
 
-.dropdown {
+.dynamic-island.dropdown {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
     padding: var(--dropdown-padding);
     color: var(--dropdown-color);
     background: var(--dropdown-background-color);
     border: var(--dropdown-border);
     border-radius: var(--dropdown-radius);
     cursor: pointer;
-    view-transition-name: dropdown;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    ul {
-        list-style: none;
-        view-transition-name: dropdown-list;
+    > main {
+        justify-content: center;
+        align-items: center;
         width: 100%;
-        opacity: 0;
-        animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        animation-delay: 0.15s;
+    }
 
-        >li {
-            padding: var(--xs);
-            opacity: 0;
-            transform: translateY(10px);
-            animation: slideUpFade 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    > footer {
+        display: none;
+        transform: translateY(-100px);
+        width: 100%;
 
-            @for $i from 1 through 10 {
-                &:nth-child(#{$i}) {
-                    animation-delay: calc(0.1s + #{$i} * 0.05s);
-                }
+        ul {
+            list-style: none;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background: var(--dropdown-background-color);
+            border-radius: var(--dropdown-radius);
+
+            > li {
+                padding: var(--dropdown-padding);
+                cursor: pointer;
             }
+        }
+    }
+
+    &.open {
+        > footer {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            transform: translateY(0);
         }
     }
 }

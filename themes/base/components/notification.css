@@ -12,18 +12,13 @@
     --notification-hover-transform: var(--hover-transform);
 }
 
-.notification {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: var(--notification-gap);
+.dynamic-island.notification {
     padding: var(--notification-padding);
     color: var(--notification-color);
     background: var(--notification-background);
     border: var(--notification-border);
     border-radius: var(--notification-radius);
-    align-items: center;
-    view-transition-name: notification;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
 
     &:hover {
         background: var(--notification-hover-background);
@@ -31,18 +26,16 @@
         transform: var(--notification-hover-transform);
     }
 
-    .notification-icon {
+    /* Layout the notification content using the Dynamic Island grid */
+    > aside {
+        justify-content: center;
+        align-items: center;
         font-size: var(--notification-icon-size);
-        opacity: 0;
-        transform: scale(0.8);
-        animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        animation-delay: 0.1s;
     }
 
-    .notification-message {
-        opacity: 0;
-        transform: translateX(20px);
-        animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        animation-delay: 0.2s;
+    > main {
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: var(--notification-gap);
     }
 }

@@ -1,10 +1,12 @@
 import DynamicIsland from "./components/dynamic-island.js";
+import Block from "./components/ui/block.js";
 import Button from "./components/ui/button.js";
 import Dropdown from "./components/ui/dropdown.js";
 import Notification from "./components/ui/notification.js";
 import Progress from "./components/ui/progress.js";
 import QuickActions from "./components/ui/quick-actions.js";
 import NavItem from "./components/ui/nav-item.js";
+import Toggle from "./components/ui/toggle.js";
 import TokenControls, { defaultTokenGroups } from "./components/ui/token-controls.js";
 
 export const YoUI = () => {
@@ -14,7 +16,7 @@ export const YoUI = () => {
             id: 'button',
             label: 'Button',
             description: 'A simple button that morphs on interaction',
-            component: Button
+            component: () => Button('Click me', () => states[1].component())
         },
         {
             id: 'dropdown',
@@ -47,72 +49,26 @@ export const YoUI = () => {
         }
     ];
 
-    // Theme controls
-    const ModeToggle = () => {
-        const classes = ["mode-toggle"];
-
-        const main = () => {
-            return document.documentElement.dataset.mode === 'light' ? '🌙' : '☀️';
-        };
-
-        const onClick = () => {
-            document.startViewTransition(() => {
-                const currentMode = document.documentElement.dataset.mode;
-                const newMode = currentMode === 'light' ? 'dark' : 'light';
-                document.documentElement.dataset.mode = newMode;
-                localStorage.setItem('youi-mode', newMode);
-
-                // Update the icon
-                const modeIcon = document.querySelector('.mode-toggle main');
-                if (modeIcon) {
-                    modeIcon.textContent = newMode === 'light' ? '🌙' : '☀️';
-                }
-            });
-        };
-
-        return { classes, header: () => "", aside: () => "", main, article: () => "", footer: () => "", onClick };
-    };
-
-    const ThemeSelector = () => {
-        const classes = ["theme-selector"];
-        const themes = [
-            { value: 'base', label: 'Base Theme' },
-            { value: 'neumorphic', label: 'Neumorphic' }
-        ];
-
-        const onSelect = (selectedTheme) => {
-            document.startViewTransition(() => {
-                document.documentElement.dataset.theme = selectedTheme.toLowerCase();
-                localStorage.setItem('youi-theme', selectedTheme.toLowerCase());
-            });
-        };
-
-        return Dropdown(themes.map(t => t.label), onSelect, true);
-    };
-
     // Create the main page state
     const MainPage = () => {
         const classes = ["page"];
-        let currentDemoIsland = null;
+        let demoIsland = null;
 
         const header = () => {
-            const headerContent = document.createElement("div");
-            headerContent.className = "header-content";
-
-            const title = document.createElement("div");
-            title.className = "title";
-            title.innerHTML = `
-                <h1>YoUI Dynamic Island</h1>
-                <p>A morphing component system</p>
-            `;
-
-            const controls = document.createElement("div");
-            controls.className = "theme-controls";
-            controls.appendChild(DynamicIsland(ModeToggle()).init());
-            controls.appendChild(DynamicIsland(ThemeSelector()).init());
-
-            headerContent.append(title, controls);
-            return headerContent;
+            return DynamicIsland(Block({
+                header: () => "",
+                aside: () => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <h1>YoUI Dynamic Island</h1>
+                        <p>A morphing component system</p>
+                    `;
+                    return div;
+                },
+                main: () => "",
+                article: () => DynamicIsland(Toggle({ items: ['🌙', '☀️'] })).init(),
+                footer: () => ""
+            })).init();
         };
 
         const aside = () => {
@@ -124,29 +80,27 @@ export const YoUI = () => {
             sidebarContent.appendChild(description);
 
             states.forEach(state => {
-                const handleClick = () => {
-                    document.startViewTransition(() => {
-                        const demoContainer = document.querySelector('.demo-container');
-                        if (demoContainer) {
-                            if (currentDemoIsland) {
-                                currentDemoIsland.remove();
-                            }
-                            currentDemoIsland = DynamicIsland(state.component()).init();
-                            demoContainer.appendChild(currentDemoIsland);
+                const navItem = NavItem(
+                    state.label,
+                    state.description,
+                    () => {
+                        if (demoIsland) {
+                            const component = state.component();
+                            demoIsland.update(component);
 
-                            const articleContent = document.querySelector('.state-info');
-                            if (articleContent) {
-                                articleContent.innerHTML = `
+                            // Update state info
+                            const stateInfo = document.querySelector('.state-info');
+                            if (stateInfo) {
+                                stateInfo.innerHTML = `
                                     <h2>${state.label}</h2>
                                     <p>${state.description}</p>
                                 `;
                             }
                         }
-                    });
-                };
+                    }
+                );
 
-                const navItem = DynamicIsland(NavItem(state.label, state.description, handleClick)).init();
-                sidebarContent.appendChild(navItem);
+                sidebarContent.appendChild(DynamicIsland(navItem).init());
             });
 
             return sidebarContent;
@@ -155,14 +109,18 @@ export const YoUI = () => {
         const main = () => {
             const mainContent = document.createElement("div");
             mainContent.className = "demo-container";
-            currentDemoIsland = DynamicIsland(states[0].component()).init();
-            mainContent.appendChild(currentDemoIsland);
+            demoIsland = DynamicIsland(states[0].component());
+            mainContent.appendChild(demoIsland.init());
             return mainContent;
         };
 
         const article = () => {
             const articleContent = document.createElement("div");
             articleContent.className = "state-info";
+            articleContent.innerHTML = `
+                <h2>${states[0].label}</h2>
+                <p>${states[0].description}</p>
+            `;
 
             // Add token controls
             const tokenControlsContainer = document.createElement("div");

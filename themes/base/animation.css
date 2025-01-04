@@ -1,0 +1,195 @@
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutLeft {
+    to {
+        transform: translateX(-30px);
+        opacity: 0;
+    }
+}
+
+::view-transition-old(button),
+::view-transition-new(button) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(button) {
+    animation: 0.3s cubic-bezier(0.4, 0, 0.2, 1) both fade-out;
+}
+
+::view-transition-new(button) {
+    animation: 0.3s cubic-bezier(0.4, 0, 0.2, 1) both scaleIn;
+}
+
+::view-transition-old(dropdown),
+::view-transition-new(dropdown) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    width: 100%;
+    transform-origin: center;
+}
+
+::view-transition-old(dropdown) {
+    animation: morphOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+::view-transition-new(dropdown) {
+    animation: morphIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes morphOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes morphIn {
+    from {
+        opacity: 0;
+        transform: scale(1.05);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Animate individual sections */
+::view-transition-old(header),
+::view-transition-new(header) {
+    animation: 0.3s cubic-bezier(0.4, 0, 0.2, 1) both slideDown;
+}
+
+::view-transition-old(footer),
+::view-transition-new(footer) {
+    animation: 0.3s cubic-bezier(0.4, 0, 0.2, 1) both slideUp;
+}
+
+@keyframes fade-out {
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+/* Add a nice transition for the entire island */
+.dynamic-island {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Generate transitions for multiple items with staggered delays */
+::view-transition-old(dropdown-item-0),
+::view-transition-new(dropdown-item-0) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(dropdown-item-1),
+::view-transition-new(dropdown-item-1) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-delay: 0.05s;
+}
+
+::view-transition-old(dropdown-item-2),
+::view-transition-new(dropdown-item-2) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-delay: 0.1s;
+}
+
+/* Apply animations */
+::view-transition-old(dropdown-item-0),
+::view-transition-old(dropdown-item-1),
+::view-transition-old(dropdown-item-2) {
+    animation-name: slideOutLeft;
+}
+
+::view-transition-new(dropdown-item-0),
+::view-transition-new(dropdown-item-1),
+::view-transition-new(dropdown-item-2) {
+    animation-name: slideInRight;
+}
+
+/* Remove the conflicting dropdown-item transition name from CSS */
+.dropdown ul>li {
+    /* remove or comment out the view-transition-name here */
+    padding: var(--dropdown-padding);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

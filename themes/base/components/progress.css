@@ -1,0 +1,64 @@
+:root {
+    --progress-color: var(--color-text);
+    --progress-background: var(--color-background);
+    --progress-padding: var(--sm);
+    --progress-margin: var(--xs);
+    --progress-border: var(--border);
+    --progress-radius: var(--radius);
+
+    --progress-bar-height: 6px;
+    --progress-bar-background: var(--color-background-hover);
+    --progress-bar-fill: var(--color-primary);
+
+    --progress-hover-background: var(--color-background-hover);
+    --progress-hover-border: var(--border-hover);
+    --progress-hover-transform: var(--hover-transform);
+}
+
+.progress {
+    padding: var(--progress-padding);
+    color: var(--progress-color);
+    background: var(--progress-background);
+    border: var(--progress-border);
+    border-radius: var(--progress-radius);
+    view-transition-name: progress;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        background: var(--progress-hover-background);
+        border: var(--progress-hover-border);
+        transform: var(--progress-hover-transform);
+    }
+
+    .progress-label {
+        margin-bottom: var(--progress-margin);
+        opacity: 0;
+        animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .progress-container {
+        width: 100%;
+        height: var(--progress-bar-height);
+        background: var(--progress-bar-background);
+        border-radius: var(--progress-radius);
+        overflow: hidden;
+        opacity: 0;
+        animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        animation-delay: 0.1s;
+
+        .progress-bar {
+            height: 100%;
+            background: var(--progress-bar-fill);
+            border-radius: var(--progress-radius);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    }
+
+    .progress-percent {
+        margin-top: var(--progress-margin);
+        text-align: right;
+        opacity: 0;
+        animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        animation-delay: 0.2s;
+    }
+}

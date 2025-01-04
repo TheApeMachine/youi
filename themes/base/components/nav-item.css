@@ -1,0 +1,27 @@
+.dynamic-island.nav-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--xs);
+    padding: var(--sm);
+    background: var(--color-background);
+    border: var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition-all);
+
+    >header {
+        font-size: 1.1em;
+        font-weight: 500;
+    }
+
+    >main {
+        font-size: 0.9em;
+        opacity: 0.7;
+    }
+
+    &:hover {
+        background: var(--color-background-hover);
+        border: var(--border-hover);
+        transform: var(--hover-transform);
+    }
+}

@@ -1,0 +1,36 @@
+:root {
+    --theme-controls-gap: var(--sm);
+    --theme-controls-padding: var(--sm);
+}
+
+.theme-controls {
+    position: fixed;
+    top: var(--md);
+    right: var(--md);
+    display: flex;
+    gap: var(--theme-controls-gap);
+    z-index: 1000;
+
+    /* Mode toggle specific styles */
+    .mode-toggle {
+        cursor: pointer;
+
+        &.dynamic-island {
+            min-width: 48px;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+    }
+
+    /* Theme selector specific styles */
+    .theme-selector {
+        cursor: pointer;
+
+        &.dynamic-island {
+            min-width: 120px;
+        }
+    }
+}

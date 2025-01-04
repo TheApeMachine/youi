@@ -1,0 +1,123 @@
+.dynamic-island.token-controls {
+    >header {
+        margin-bottom: var(--md);
+        padding: var(--sm);
+
+        h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        p {
+            margin: var(--xs) 0 0;
+            opacity: 0.7;
+        }
+    }
+
+    .token-groups {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sm);
+        padding: var(--sm);
+
+        .dynamic-island.token-group {
+            cursor: pointer;
+            transition: var(--transition-all);
+            border: var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+
+            &:hover {
+                background: var(--color-background-hover);
+                transform: var(--hover-transform);
+            }
+
+            .token-group-header {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: var(--sm);
+                font-size: 1.1em;
+
+                .group-icon {
+                    font-family: monospace;
+                    font-size: 1.2em;
+                    opacity: 0.7;
+                }
+            }
+
+            .token-controls-group {
+                display: flex;
+                flex-direction: column;
+                gap: var(--sm);
+                padding: var(--sm);
+                border-top: var(--border);
+                background: var(--color-background);
+
+                .token-control {
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--xs);
+
+                    .label-container {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+
+                        label {
+                            font-size: 0.9em;
+                            text-transform: capitalize;
+                        }
+
+                        .value-display {
+                            font-size: 0.8em;
+                            opacity: 0.7;
+                        }
+                    }
+
+                    input {
+                        width: 100%;
+                        padding: var(--xs);
+                        border: var(--border);
+                        border-radius: var(--radius-sm);
+                        background: var(--color-background);
+                        color: var(--color-text);
+
+                        &[type="range"] {
+                            padding: 0;
+                            cursor: pointer;
+                        }
+
+                        &[type="color"] {
+                            height: 32px;
+                            padding: 0;
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .token-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding: var(--sm);
+
+        .reset-button {
+            padding: var(--sm) var(--md);
+            border: var(--border);
+            border-radius: var(--radius);
+            background: var(--color-background);
+            color: var(--color-text);
+            cursor: pointer;
+            transition: var(--transition-all);
+
+            &:hover {
+                background: var(--color-background-hover);
+                transform: var(--hover-transform);
+            }
+        }
+    }
+}

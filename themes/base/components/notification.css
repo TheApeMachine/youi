@@ -1,0 +1,48 @@
+:root {
+    --notification-color: var(--color-text);
+    --notification-background: var(--color-background);
+    --notification-padding: var(--sm);
+    --notification-gap: var(--sm);
+    --notification-icon-size: 1.5em;
+    --notification-border: var(--border);
+    --notification-radius: var(--radius);
+
+    --notification-hover-background: var(--color-background-hover);
+    --notification-hover-border: var(--border-hover);
+    --notification-hover-transform: var(--hover-transform);
+}
+
+.notification {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--notification-gap);
+    padding: var(--notification-padding);
+    color: var(--notification-color);
+    background: var(--notification-background);
+    border: var(--notification-border);
+    border-radius: var(--notification-radius);
+    align-items: center;
+    view-transition-name: notification;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        background: var(--notification-hover-background);
+        border: var(--notification-hover-border);
+        transform: var(--notification-hover-transform);
+    }
+
+    .notification-icon {
+        font-size: var(--notification-icon-size);
+        opacity: 0;
+        transform: scale(0.8);
+        animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        animation-delay: 0.1s;
+    }
+
+    .notification-message {
+        opacity: 0;
+        transform: translateX(20px);
+        animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        animation-delay: 0.2s;
+    }
+}

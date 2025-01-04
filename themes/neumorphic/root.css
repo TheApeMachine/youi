@@ -1,0 +1,64 @@
+/* Inherit base spacing and transitions */
+@import url("../base/root.css");
+
+/* Neumorphic specific tokens */
+[data-theme="neumorphic"] {
+    --radius: 16px;
+    --hover-transform: scale(0.98);
+}
+
+/* Light mode */
+[data-theme="neumorphic"][data-mode="light"] {
+    /* Colors */
+    --color-background: #e0e5ec;
+    --color-background-hover: #e0e5ec;
+    --color-text: #2d3436;
+    --color-primary: #4A90E2;
+    --color-secondary: #9B59B6;
+    --color-success: #2ECC71;
+    --color-warning: #F1C40F;
+    --color-error: #E74C3C;
+
+    /* Neumorphic shadows */
+    --shadow-sm: 3px 3px 6px #a3b1c6, -3px -3px 6px #ffffff;
+    --shadow-md: 5px 5px 10px #a3b1c6, -5px -5px 10px #ffffff;
+    --shadow-lg: 10px 10px 20px #a3b1c6, -10px -10px 20px #ffffff;
+
+    /* Pressed state shadow */
+    --shadow-pressed: inset 3px 3px 6px #a3b1c6, inset -3px -3px 6px #ffffff;
+
+    /* Borders */
+    --border-width: 0;
+    --border-style: none;
+    --border-color: transparent;
+    --border: none;
+    --border-hover: none;
+}
+
+/* Dark mode */
+[data-theme="neumorphic"][data-mode="dark"] {
+    /* Colors */
+    --color-background: #2d3436;
+    --color-background-hover: #2d3436;
+    --color-text: #e0e5ec;
+    --color-primary: #5FA1E2;
+    --color-secondary: #B07CC6;
+    --color-success: #4EDB89;
+    --color-warning: #F4D03F;
+    --color-error: #EC7063;
+
+    /* Neumorphic shadows */
+    --shadow-sm: 3px 3px 6px #1a1f20, -3px -3px 6px #40494c;
+    --shadow-md: 5px 5px 10px #1a1f20, -5px -5px 10px #40494c;
+    --shadow-lg: 10px 10px 20px #1a1f20, -10px -10px 20px #40494c;
+
+    /* Pressed state shadow */
+    --shadow-pressed: inset 3px 3px 6px #1a1f20, inset -3px -3px 6px #40494c;
+
+    /* Borders */
+    --border-width: 0;
+    --border-style: none;
+    --border-color: transparent;
+    --border: none;
+    --border-hover: none;
+}

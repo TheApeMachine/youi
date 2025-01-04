@@ -1,0 +1,45 @@
+.dynamic-island {
+    display: grid;
+    grid-template-areas:
+        "header header header"
+        "aside main article"
+        "footer footer footer";
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto 1fr auto;
+    background: var(--color-background);
+    overflow: hidden;
+    min-height: 48px;
+
+    &:not(.page) {
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    >header,
+    >aside,
+    >main,
+    >article,
+    >footer {
+        display: flex;
+    }
+
+    >header {
+        grid-area: header;
+    }
+
+    >aside {
+        grid-area: aside;
+    }
+
+    >main {
+        grid-area: main;
+    }
+
+    >article {
+        grid-area: article;
+    }
+
+    >footer {
+        grid-area: footer;
+    }
+}

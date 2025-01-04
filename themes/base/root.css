@@ -1,0 +1,85 @@
+/* Base tokens that don't change between modes */
+:root {
+    /* Spacing */
+    --unit: 1rem;
+    --xxs: calc(0.25 * var(--unit));
+    --xs: calc(0.5 * var(--unit));
+    --sm: calc(0.75 * var(--unit));
+    --md: calc(1 * var(--unit));
+    --lg: calc(1.25 * var(--unit));
+    --xl: calc(1.5 * var(--unit));
+    --xxl: calc(2 * var(--unit));
+
+    /* Border radius */
+    --radius: var(--unit);
+    --radius-xxs: calc(0.25 * var(--unit));
+    --radius-xs: calc(0.5 * var(--unit));
+    --radius-sm: calc(0.75 * var(--unit));
+    --radius-md: calc(1 * var(--unit));
+    --radius-lg: calc(1.25 * var(--unit));
+    --radius-xl: calc(1.5 * var(--unit));
+    --radius-xxl: calc(2 * var(--unit));
+
+    /* Transitions */
+    --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-duration: 0.3s;
+    --hover-transform: translateY(-2px);
+
+    /* Common transitions */
+    --transition-all: all var(--transition-duration) var(--transition-timing);
+    --transition-transform: transform var(--transition-duration) var(--transition-timing);
+    --transition-opacity: opacity var(--transition-duration) var(--transition-timing);
+    --transition-colors: background var(--transition-duration) var(--transition-timing),
+        border var(--transition-duration) var(--transition-timing),
+        color var(--transition-duration) var(--transition-timing);
+}
+
+/* Light mode tokens */
+[data-mode="light"] {
+    /* Colors */
+    --color-background: #ffffff;
+    --color-background-hover: #f5f5f5;
+    --color-text: #1a1a1a;
+    --color-primary: #007AFF;
+    --color-secondary: #5856D6;
+    --color-success: #34C759;
+    --color-warning: #FF9500;
+    --color-error: #FF3B30;
+
+    /* Borders */
+    --border-width: 1px;
+    --border-style: solid;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border: var(--border-width) var(--border-style) var(--border-color);
+    --border-hover: var(--border-width) var(--border-style) rgba(0, 0, 0, 0.2);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode tokens */
+[data-mode="dark"] {
+    /* Colors */
+    --color-background: #1a1a1a;
+    --color-background-hover: #2a2a2a;
+    --color-text: #ffffff;
+    --color-primary: #0A84FF;
+    --color-secondary: #5E5CE6;
+    --color-success: #32D74B;
+    --color-warning: #FF9F0A;
+    --color-error: #FF453A;
+
+    /* Borders */
+    --border-width: 1px;
+    --border-style: solid;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border: var(--border-width) var(--border-style) var(--border-color);
+    --border-hover: var(--border-width) var(--border-style) rgba(255, 255, 255, 0.2);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+}

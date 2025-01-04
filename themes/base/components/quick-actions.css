@@ -1,0 +1,74 @@
+:root {
+    --quick-actions-color: var(--color-text);
+    --quick-actions-background: var(--color-background);
+    --quick-actions-padding: var(--sm);
+    --quick-actions-gap: var(--sm);
+    --quick-actions-border: var(--border);
+    --quick-actions-radius: var(--radius);
+
+    --action-button-padding: var(--sm);
+    --action-button-gap: var(--xs);
+    --action-icon-size: 1.5em;
+    --action-label-size: 0.8em;
+
+    --quick-actions-hover-background: var(--color-background-hover);
+    --quick-actions-hover-border: var(--border-hover);
+    --quick-actions-hover-transform: var(--hover-transform);
+}
+
+.quick-actions {
+    padding: var(--quick-actions-padding);
+    color: var(--quick-actions-color);
+    background: var(--quick-actions-background);
+    border: var(--quick-actions-border);
+    border-radius: var(--quick-actions-radius);
+    view-transition-name: quick-actions;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        background: var(--quick-actions-hover-background);
+        border: var(--quick-actions-hover-border);
+        transform: var(--quick-actions-hover-transform);
+    }
+
+    .actions-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+        gap: var(--quick-actions-gap);
+        width: 100%;
+
+        .action-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--action-button-gap);
+            padding: var(--action-button-padding);
+            color: inherit;
+            background: none;
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: slideUpFade 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+
+            @for $i from 1 through 10 {
+                &:nth-child(#{$i}) {
+                    animation-delay: calc(0.1s + #{$i} * 0.05s);
+                }
+            }
+
+            .action-icon {
+                font-size: var(--action-icon-size);
+            }
+
+            .action-label {
+                font-size: var(--action-label-size);
+                text-align: center;
+            }
+
+            &:hover {
+                transform: var(--quick-actions-hover-transform);
+            }
+        }
+    }
+}

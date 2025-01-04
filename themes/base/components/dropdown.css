@@ -1,0 +1,50 @@
+:root {
+    --dropdown-color: var(--color-text);
+    --dropdown-background-color: var(--color-background);
+    --dropdown-border: var(--border);
+    --dropdown-padding: var(--xs);
+    --dropdown-radius: var(--radius);
+
+    --dropdown-hover-background-color: var(--color-background-hover);
+    --dropdown-hover-border: var(--border-hover);
+
+    --dropdown-hover-transform: var(--hover-transform);
+}
+
+.dropdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--dropdown-padding);
+    color: var(--dropdown-color);
+    background: var(--dropdown-background-color);
+    border: var(--dropdown-border);
+    border-radius: var(--dropdown-radius);
+    cursor: pointer;
+    view-transition-name: dropdown;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    ul {
+        list-style: none;
+        view-transition-name: dropdown-list;
+        width: 100%;
+        opacity: 0;
+        animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        animation-delay: 0.15s;
+
+        >li {
+            padding: var(--xs);
+            opacity: 0;
+            transform: translateY(10px);
+            animation: slideUpFade 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+
+            @for $i from 1 through 10 {
+                &:nth-child(#{$i}) {
+                    animation-delay: calc(0.1s + #{$i} * 0.05s);
+                }
+            }
+        }
+    }
+}

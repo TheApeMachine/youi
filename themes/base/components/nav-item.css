@@ -9,29 +9,26 @@
 }
 
 .dynamic-island.nav-item {
-    display: flex;
-    flex-direction: column;
-    gap: var(--nav-item-gap);
     padding: var(--nav-item-padding);
+    width: 100%;
     height: unset;
     background: var(--nav-item-background);
     border: var(--nav-item-border);
     border-radius: var(--nav-item-border-radius);
     cursor: pointer;
+    pointer-events: all;
+    -webkit-pointer-events: all;
+    -moz-pointer-events: all;
+    -ms-pointer-events: all;
+    -o-pointer-events: all;
 
-    >header {
+    > header {
         font-size: var(--nav-item-font-size);
         font-weight: var(--nav-item-font-weight);
     }
 
-    >main {
+    > main {
         font-size: var(--nav-item-main-font-size);
         opacity: var(--nav-item-main-opacity);
-    }
-
-    &:hover {
-        background: var(--nav-item-background-hover);
-        border: var(--nav-item-border-hover);
-        transform: var(--nav-item-hover-transform);
     }
 }

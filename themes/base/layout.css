@@ -12,3 +12,39 @@ body {
     background: var(--color-background);
     color: var(--color-text);
 }
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand) var(--color-background);
+}
+
+*::-webkit-scrollbar {
+    height: var(--xs);
+    width: var(--xs);
+}
+
+*::-webkit-scrollbar-track {
+    border-radius: var(--xs);
+    background-color: var(--color-background);
+}
+
+*::-webkit-scrollbar-track:hover {
+    background-color: var(--color-background-muted);
+}
+
+*::-webkit-scrollbar-track:active {
+    background-color: var(--color-background-muted);
+}
+
+*::-webkit-scrollbar-thumb {
+    border-radius: var(--xs);
+    background-color: var(--color-brand);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-brand);
+}
+
+*::-webkit-scrollbar-thumb:active {
+    background-color: var(--color-brand);
+}

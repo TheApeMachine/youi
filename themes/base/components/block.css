@@ -1,0 +1,11 @@
+.dynamic-island.block {
+    width: 100%;
+
+    > main {
+        width: 100%;
+    }
+
+    > article {
+        gap: var(--md);
+    }
+}

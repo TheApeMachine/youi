@@ -4,29 +4,23 @@
     --button-border: var(--border);
     --button-padding: var(--xs);
     --button-radius: var(--radius);
-
-    --button-hover-background-color: var(--color-background-hover);
-    --button-hover-border: var(--border-hover);
-
-    --button-hover-transform: var(--hover-transform);
 }
 
-.button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--button-padding);
-    color: var(--button-color);
-    background: var(--button-background-color);
+.dynamic-island.button {
     border: var(--button-border);
     border-radius: var(--button-radius);
     cursor: pointer;
-    transition: transform 0.2s ease-in-out, background 0.2s ease-in-out, border 0.2s ease-in-out;
-    view-transition-name: button;
+    padding: var(--button-padding);
+    color: var(--button-color);
+    background: var(--button-background-color);
+    pointer-events: all;
+    -webkit-pointer-events: all;
+    -moz-pointer-events: all;
+    -ms-pointer-events: all;
+    -o-pointer-events: all;
 
-    &:hover {
-        transform: var(--button-hover-transform);
-        background: var(--button-hover-background-color);
-        border: var(--button-hover-border);
+    > main {
+        align-items: center;
+        justify-content: center;
     }
 }

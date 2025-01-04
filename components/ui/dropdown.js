@@ -1,46 +1,56 @@
-export const Dropdown = (items = [], onSelect = null) => {
+export const Dropdown = ({
+    items = [],
+    effect = null
+}) => {
     const state = {
         isOpen: false,
         selectedItem: items[0] || "Select"
     };
 
-    const header = (id) => "";
-    const aside = (id) => "";
-    const main = (id) => state.selectedItem;
-    const article = (id) => "";
-    const footer = (id) => {
+    const getItemLabel = (item) => {
+        return typeof item === 'object' ? item.label : item;
+    };
+
+    const getItemValue = (item) => {
+        return typeof item === 'object' ? item.value : item;
+    };
+
+    const header = () => "";
+    const aside = () => "";
+    const main = () => getItemLabel(state.selectedItem);
+    const article = () => "";
+    const footer = () => {
         const list = document.createElement("ul");
-        items.forEach((item, index) => {
+        items.forEach((item) => {
             const li = document.createElement("li");
-            li.textContent = item;
+            li.textContent = getItemLabel(item);
+            li.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleSelect(null, item);
+            });
             list.appendChild(li);
         });
         return list;
     };
 
-    const onClick = (id) => {
-        const island = document.getElementById(id);
-
-        if (!state.isOpen) {
-            island.style.position = 'absolute';
-        } else {
-            island.style.position = 'static';
-        }
+    const onClick = (e) => {
+        const island = e.target.closest('.dynamic-island');
+        if (!island) return;
 
         island.classList.toggle("open");
         state.isOpen = !state.isOpen;
     };
 
     const handleSelect = (id, item) => {
-        if (onSelect) onSelect(item);
+        state.selectedItem = item;
+        if (effect) effect(getItemValue(item));
+
         const island = document.getElementById(id);
+        if (!island) return;
+
         const main = document.getElementById(`${id}-main`);
-        main.textContent = item;
+        main.textContent = getItemLabel(item);
         island.classList.remove("open");
-        island.style.position = '';
-        island.style.top = '';
-        island.style.left = '';
-        island.style.width = '';
         state.isOpen = false;
     };
 
@@ -51,8 +61,10 @@ export const Dropdown = (items = [], onSelect = null) => {
         main,
         article,
         footer,
-        onClick,
-        onSelect: handleSelect
+        events: {
+            click: onClick,
+            select: handleSelect
+        }
     };
 };
 

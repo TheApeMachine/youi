@@ -1,0 +1,78 @@
+:root {
+    --slider-color: var(--color-text);
+    --slider-background: var(--color-background);
+    --slider-padding: var(--sm);
+    --slider-gap: var(--xs);
+
+    --slider-track-height: 4px;
+    --slider-track-background: var(--color-background-hover);
+    --slider-thumb-size: 16px;
+    --slider-thumb-background: var(--color-primary);
+    --slider-thumb-border: 2px solid var(--color-background);
+}
+
+.dynamic-island.slider {
+    color: var(--slider-color);
+    background: var(--slider-background);
+    pointer-events: all;
+
+    > header {
+        font-size: var(--font-size-sm);
+    }
+
+    > main {
+        width: 100%;
+        pointer-events: all;
+
+        input[type="range"] {
+            width: 100%;
+            height: var(--slider-track-height);
+            -webkit-appearance: none;
+            background: var(--slider-track-background);
+            border-radius: var(--slider-radius);
+            outline: none;
+            pointer-events: all;
+
+            &::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: var(--slider-thumb-size);
+                height: var(--slider-thumb-size);
+                border-radius: 50%;
+                background: var(--slider-thumb-background);
+                border: var(--slider-thumb-border);
+                cursor: pointer;
+                pointer-events: all;
+            }
+
+            &::-moz-range-thumb {
+                width: var(--slider-thumb-size);
+                height: var(--slider-thumb-size);
+                border-radius: 50%;
+                background: var(--slider-thumb-background);
+                border: var(--slider-thumb-border);
+                cursor: pointer;
+                pointer-events: all;
+            }
+        }
+    }
+
+    > article {
+        pointer-events: all;
+
+        input[type="number"] {
+            width: 60px;
+            padding: var(--xs);
+            border: var(--slider-border);
+            border-radius: var(--slider-radius);
+            background: var(--slider-background);
+            color: var(--slider-color);
+            text-align: right;
+            pointer-events: all;
+
+            &::-webkit-inner-spin-button,
+            &::-webkit-outer-spin-button {
+                opacity: 1;
+            }
+        }
+    }
+}

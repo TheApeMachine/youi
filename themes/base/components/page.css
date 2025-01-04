@@ -1,49 +1,84 @@
+:root {
+    --page-header-border: var(--border);
+    --page-header-radius: var(--radius);
+    --page-header-padding: var(--md);
+    --page-header-gap: var(--sm);
+
+    --page-aside-width: 420px;
+    --page-aside-padding: var(--md);
+    --page-aside-gap: var(--sm);
+    --page-aside-border: var(--border);
+    --page-aside-radius: var(--radius);
+
+    --page-main-padding: var(--md);
+    --page-main-gap: var(--sm);
+    --page-main-border: var(--border);
+    --page-main-radius: var(--radius);
+
+    --page-footer-padding: var(--md);
+    --page-footer-gap: var(--sm);
+    --page-footer-border: var(--border);
+    --page-footer-radius: var(--radius);
+}
+
 .dynamic-island.page {
     position: fixed;
     inset: 0;
     gap: var(--md);
     padding: var(--md);
+    width: 100%;
+    height: 100%;
     background: var(--color-background);
 
-    >* {
-        background: var(--color-background);
-        border: var(--border);
-        border-radius: var(--radius);
-    }
-
-    >header {
+    > header {
         align-items: center;
         justify-content: space-between;
-        padding: var(--md);
+        gap: var(--page-header-gap);
+        padding: var(--page-header-padding);
+        border: var(--page-header-border);
+        border-radius: var(--page-header-radius);
     }
 
-    >aside {
-        padding: var(--md);
-        overflow-y: auto;
-    }
-
-    >main {
-        align-items: center;
-        justify-content: center;
-        padding: var(--md);
-    }
-
-    >article {
-        grid-area: article;
-        padding: var(--md);
-        display: flex;
+    > aside,
+    > article {
         flex-direction: column;
-        gap: var(--md);
+        gap: var(--page-aside-gap);
+        padding: var(--page-aside-padding);
+        width: var(--page-aside-width);
+        border: var(--page-aside-border);
+        border-radius: var(--page-aside-radius);
+        overflow-y: auto;
+        pointer-events: auto;
+        -webkit-pointer-events: auto;
+        -moz-pointer-events: auto;
+        -ms-pointer-events: auto;
 
-        .token-controls-container {
-            flex: 1;
-            overflow-y: auto;
+        > nav {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            gap: var(--md);
+            width: 100%;
         }
     }
 
-    >footer {
-        grid-area: footer;
+    > main {
+        align-items: center;
+        justify-content: center;
+        gap: var(--page-main-gap);
+        padding: var(--page-main-padding);
+        border: var(--page-main-border);
+        border-radius: var(--page-main-radius);
+    }
+
+    > footer {
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        padding: var(--md);
+        gap: var(--page-footer-gap);
+        padding: var(--page-footer-padding);
+        border: var(--page-footer-border);
+        border-radius: var(--page-footer-radius);
     }
 }

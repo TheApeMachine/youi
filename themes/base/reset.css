@@ -16,7 +16,8 @@
 
 @font-face {
     font-family: "Material Symbols Rounded";
-    src: url("../../fonts/MaterialSymbolsRounded-VariableFont.woff2") format("woff2-variations");
+    src: url("../../fonts/MaterialSymbolsRounded-VariableFont.woff2")
+        format("woff2-variations");
     font-weight: 100 700;
     font-style: normal;
     font-display: block;
@@ -61,6 +62,16 @@
     padding-block-end: 0;
 
     vertical-align: baseline;
+
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
+    pointer-events: none;
+    -webkit-pointer-events: none;
+    -moz-pointer-events: none;
+    -ms-pointer-events: none;
 }
 
 * {

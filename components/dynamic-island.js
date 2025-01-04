@@ -21,7 +21,8 @@ const DynamicIsland = (component) => {
     };
 
     const updateContent = (element, contentFn = () => "") => {
-        element.replaceChildren(contentFn(id));
+        const content = contentFn(id);
+        element.replaceChildren(...(Array.isArray(content) ? content : [content]));
     };
 
     const createStructure = () => {
@@ -40,29 +41,6 @@ const DynamicIsland = (component) => {
         return elements;
     };
 
-    // Event handlers
-    const attachClickHandler = (element, onClick) => {
-        if (!onClick) return;
-
-        element.addEventListener('click', (e) => {
-            if (!e.target.closest('li')) {
-                wrapInViewTransition(() => onClick(id, e));
-            }
-        });
-    };
-
-    const attachSelectHandler = (element, onSelect) => {
-        if (!onSelect) return;
-
-        element.addEventListener('click', (e) => {
-            const item = e.target.closest('li');
-            if (item) {
-                e.stopPropagation();
-                wrapInViewTransition(() => onSelect(id, item.textContent, e));
-            }
-        });
-    };
-
     const init = () => {
         const island = document.createElement("div");
         island.id = id;
@@ -72,8 +50,11 @@ const DynamicIsland = (component) => {
         const elements = createStructure();
         island.append(...Object.values(elements));
 
-        attachClickHandler(island, component.onClick);
-        attachSelectHandler(island, component.onSelect);
+        if (component.events) {
+            Object.entries(component.events).forEach(([event, handler]) => {
+                window.eventManager.subscribe(id, event, handler);
+            });
+        }
 
         return island;
     };
@@ -92,12 +73,19 @@ const DynamicIsland = (component) => {
                 updateContent(element, newComponent[section]);
             });
 
-            // Update event handlers
-            const newIsland = island.cloneNode(true);
-            island.replaceWith(newIsland);
+            // Unsubscribe from old events
+            if (component.events) {
+                Object.entries(component.events).forEach(([event, handler]) => {
+                    window.eventManager.unsubscribe(id, event, handler);
+                });
+            }
 
-            attachClickHandler(newIsland, newComponent.onClick);
-            attachSelectHandler(newIsland, newComponent.onSelect);
+            // Subscribe to new events
+            if (newComponent.events) {
+                Object.entries(newComponent.events).forEach(([event, handler]) => {
+                    window.eventManager.subscribe(id, event, handler);
+                });
+            }
         });
     };
 

@@ -1,0 +1,19 @@
+.dynamic-island.toggle {
+    cursor: pointer;
+    pointer-events: all;
+    -webkit-pointer-events: all;
+    -moz-pointer-events: all;
+    -ms-pointer-events: all;
+
+    > main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        > span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+}

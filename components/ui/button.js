@@ -1,4 +1,4 @@
-export const Button = (label = "Dynamic Island", onMorph = null) => {
+export const Button = (label = "Dynamic Island", onClick = null) => {
     const classes = ["button"];
 
     const state = {
@@ -11,11 +11,9 @@ export const Button = (label = "Dynamic Island", onMorph = null) => {
     const article = () => "";
     const footer = () => "";
 
-    const morphs = {
-        onClick: () => {
-            if (onMorph) {
-                return onMorph();
-            }
+    const handleClick = (e) => {
+        if (onClick) {
+            return onClick();
         }
     };
 
@@ -27,7 +25,9 @@ export const Button = (label = "Dynamic Island", onMorph = null) => {
         article,
         footer,
         state,
-        morphs
+        events: {
+            click: handleClick
+        }
     };
 };
 

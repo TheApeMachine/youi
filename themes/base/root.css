@@ -23,6 +23,8 @@
     --radius-lg: var(--lg);
     --radius-xl: var(--xl);
     --radius-xxl: var(--xxl);
+
+    --color-brand: #6c50ff;
 }
 
 /* Light mode tokens */
@@ -30,12 +32,13 @@
     /* Colors */
     --color-background: #ffffff;
     --color-background-hover: #f5f5f5;
+    --color-background-muted: #eaeaea;
     --color-text: #1a1a1a;
-    --color-primary: #007AFF;
-    --color-secondary: #5856D6;
-    --color-success: #34C759;
-    --color-warning: #FF9500;
-    --color-error: #FF3B30;
+    --color-text-muted: #333333;
+    --color-info: #007aff;
+    --color-success: #34c759;
+    --color-warning: #ff9500;
+    --color-error: #ff3b30;
 
     /* Borders */
     --border-color: rgba(0, 0, 0, 0.1);
@@ -53,17 +56,19 @@
     /* Colors */
     --color-background: #1a1a1a;
     --color-background-hover: #2a2a2a;
+    --color-background-muted: #666666;
     --color-text: #ffffff;
-    --color-primary: #0A84FF;
-    --color-secondary: #5E5CE6;
-    --color-success: #32D74B;
-    --color-warning: #FF9F0A;
-    --color-error: #FF453A;
+    --color-text-muted: #999999;
+    --color-primary: #0a84ff;
+    --color-success: #32d74b;
+    --color-warning: #ff9f0a;
+    --color-error: #ff453a;
 
     /* Borders */
     --border-color: rgba(255, 255, 255, 0.1);
     --border: var(--border-width) var(--border-style) var(--border-color);
-    --border-hover: var(--border-width) var(--border-style) rgba(255, 255, 255, 0.2);
+    --border-hover: var(--border-width) var(--border-style)
+        rgba(255, 255, 255, 0.2);
 
     /* Shadows */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);

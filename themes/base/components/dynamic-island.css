@@ -7,8 +7,6 @@
         "footer footer footer";
     grid-template-columns: auto 1fr auto;
     grid-template-rows: auto 1fr auto;
-    width: 100%;
-    height: 100%;
 
     > header,
     > aside,
@@ -28,7 +26,6 @@
 
     > main {
         grid-area: main;
-        width: 100%;
     }
 
     > article {

@@ -1,26 +1,24 @@
-export const NavItem = (label, description, onClick) => {
-    const classes = ["nav-item"];
-
-    const header = () => {
-        const headerEl = document.createElement("strong");
-        headerEl.textContent = label;
-        return headerEl;
-    };
-
-    const main = () => {
-        const descEl = document.createElement("span");
-        descEl.textContent = description;
-        return descEl;
-    };
-
+export const NavItem = ({
+    label,
+    description,
+    events
+}) => {
     return {
-        classes,
-        header,
+        classes: ["nav-item"],
+        header: () => {
+            const headerEl = document.createElement("strong");
+            headerEl.textContent = label;
+            return headerEl;
+        },
         aside: () => "",
-        main,
+        main: () => {
+            const descEl = document.createElement("span");
+            descEl.textContent = description;
+            return descEl;
+        },
         article: () => "",
         footer: () => "",
-        onClick
+        events
     };
 };
 

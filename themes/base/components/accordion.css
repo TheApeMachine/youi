@@ -1,0 +1,39 @@
+:root {
+    --accordion-color: var(--color-text);
+    --accordion-background: var(--color-background);
+    --accordion-header-background: var(--color-background-hover);
+    --accordion-padding: var(--sm);
+    --accordion-gap: var(--xs);
+    --accordion-border: var(--border);
+    --accordion-radius: var(--radius);
+}
+
+.dynamic-island.accordion {
+    color: var(--accordion-color);
+    background: var(--accordion-background);
+    border: var(--accordion-border);
+    border-radius: var(--accordion-radius);
+    overflow: hidden;
+    cursor: pointer;
+    pointer-events: all;
+    -webkit-pointer-events: all;
+    -moz-pointer-events: all;
+    -ms-pointer-events: all;
+    -o-pointer-events: all;
+
+    > header {
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    > main {
+        display: none;
+        flex-direction: column;
+        gap: var(--accordion-gap);
+    }
+
+    &.open > main {
+        display: flex;
+        flex-direction: column;
+    }
+}

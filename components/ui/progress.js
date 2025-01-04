@@ -1,39 +1,34 @@
-export const Progress = (progress = 0, label = "Loading...") => {
+export const Progress = ({
+    progress = 0,
+    label = "Default loading label...",
+    effect = null
+}) => {
     const classes = ["progress"];
 
     const header = () => {
-        const labelEl = document.createElement("div");
-        labelEl.className = "progress-label";
+        const labelEl = document.createElement("label");
         labelEl.textContent = label;
         return labelEl;
     };
 
-    const aside = () => {
-        return "";
-    };
+    const aside = () => "";
 
     const main = () => {
-        const progressContainer = document.createElement("div");
-        progressContainer.className = "progress-container";
-
-        const progressBar = document.createElement("div");
-        progressBar.className = "progress-bar";
-        progressBar.style.width = `${progress}%`;
-
-        progressContainer.appendChild(progressBar);
-        return progressContainer;
+        const progressBar = document.createElement("progress");
+        progressBar.value = progress;
+        progressBar.max = 100;
+        return progressBar;
     };
 
-    const article = () => {
-        const percentEl = document.createElement("div");
-        percentEl.className = "progress-percent";
-        percentEl.textContent = `${progress}%`;
-        return percentEl;
-    };
+    const article = () => `${progress}%`;
 
     const footer = () => {
         return "";
     };
+
+    if (effect) {
+        effect();
+    }
 
     return {
         classes,
